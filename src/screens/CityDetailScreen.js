@@ -64,7 +64,7 @@ export function CityDetailScreen({ route, navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalData, setModalData] = useState({ title: '', content: '', icon: Info });
 
-  const cityMonuments = MONUMENTOS.filter(m => m.cityId === city.name.toLowerCase());
+  const cityMonuments = MONUMENTOS[city.name] || [];
 
   const openInfo = (title, content, icon) => {
     setModalData({ title, content, icon });
@@ -114,7 +114,7 @@ export function CityDetailScreen({ route, navigation }) {
             </View>
             <View style={[styles.statCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
               <CheckCircle color="#2ECC71" size={20} />
-              <Text style={[styles.statValue, { color: theme.text }]}>42</Text>
+              <Text style={[styles.statValue, { color: theme.text }]}>{cityMonuments.length}</Text>
               <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Puntos</Text>
             </View>
           </View>
@@ -161,6 +161,7 @@ export function CityDetailScreen({ route, navigation }) {
               <TouchableOpacity 
                 key={monument.id} 
                 style={[styles.monumentCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
+                onPress={() => navigation.navigate('PlaceDetail', { place: monument })}
               >
                 <Image source={{ uri: monument.image }} style={styles.monumentImage} />
                 <View style={styles.monumentInfo}>
@@ -168,15 +169,17 @@ export function CityDetailScreen({ route, navigation }) {
                     <Text style={[styles.monumentName, { color: theme.text }]}>{monument.name}</Text>
                     <View style={[styles.benefitTag, { backgroundColor: theme.primary }]}>
                       <Ticket color="#FFFFFF" size={12} />
-                      <Text style={styles.benefitText}>{monument.precio === 0 ? 'GRATIS' : '-50%'}</Text>
+                      <Text style={styles.benefitText}>INFO TOTAL</Text>
                     </View>
                   </View>
                   <View style={styles.accessRow}>
                     <Accessibility color={theme.primary} size={14} />
-                    <Text style={[styles.accessText, { color: theme.textSecondary }]}>Acceso Total Adaptado</Text>
+                    <Text style={[styles.accessText, { color: theme.textSecondary }]}>
+                      {monument.technicalSpecs?.doorWidth ? `Puerta: ${monument.technicalSpecs.doorWidth}` : 'Accesibilidad verificada'}
+                    </Text>
                   </View>
                   <Text style={[styles.monumentDesc, { color: theme.textSecondary }]} numberOfLines={2}>
-                    {monument.descripcion}
+                    {monument.description}
                   </Text>
                 </View>
               </TouchableOpacity>

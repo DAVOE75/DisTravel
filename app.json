@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "distravel",
+    "name": "Distravel",
     "slug": "distravel",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#1a2b4c"
+      "backgroundColor": "#1C2D41"
     },
     "ios": {
       "supportsTablet": true

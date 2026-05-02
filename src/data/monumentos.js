@@ -1,230 +1,207 @@
-export const MONUMENTOS = [
-  { 
-    id: '1', 
-    name: 'Mezquita de Córdoba', 
-    city: 'Córdoba',
-    category: 'Religioso',
-    coordinates: { latitude: 37.8789, longitude: -4.7794 },
-    location: 'Calle Cardenal Herrero, 1, 14003 Córdoba', 
-    rating: '4.9', 
-    image: 'https://images.unsplash.com/photo-1595121404120-137b0169d27a?auto=format&fit=crop&w=800',
-    description: 'La Mezquita-Catedral de Córdoba es el monumento más importante de todo el Occidente cristiano y uno de los más asombrosos del mundo.',
-    basePrice: 13,
-    discount33: 10,
-    discount65: 0,
-    hasCompanion: true,
-    schedule: {
-      lunes: '10:00 - 19:00',
-      martes: '10:00 - 19:00',
-      miercoles: '10:00 - 19:00',
-      jueves: '10:00 - 19:00',
-      viernes: '10:00 - 19:00',
-      sabado: '10:00 - 19:00',
-      domingo: '08:30 - 11:30, 16:00 - 19:00'
+export const MONUMENTOS = {
+  'Madrid': [
+    {
+      id: 'm1',
+      name: 'Museo Nacional del Prado',
+      category: 'Museos',
+      image: 'https://images.unsplash.com/photo-1543783230-22e030303030?auto=format&fit=crop&w=800&q=80',
+      description: 'Una de las pinacotecas más importantes del mundo, con obras de Velázquez, Goya y El Greco.',
+      schedule: 'Lunes a sábado: 10:00 - 20:00. Domingos y festivos: 10:00 - 19:00.',
+      price: 'General: 15€. Reducida: 7.50€.',
+      disabilityBenefit: 'GRATIS para personas con discapacidad (>33%) y un acompañante (si la discapacidad es >65% o requiere ayuda).',
+      // DATOS TÉCNICOS (El Océano Azul)
+      technicalSpecs: {
+        doorWidth: '120cm',
+        turningSpace: 'Sí (>150cm)',
+        magneticLoop: 'Disponible en mostradores',
+        brailleSignage: 'En ascensores y puntos clave',
+        adaptedAudio: 'Audioguías con audiodescripción',
+        adaptedToilet: 'Sí, 4 puntos en Planta 0 y 1'
+      },
+      verifiedByCommunity: {
+        status: 'Alta Confianza',
+        lastCheck: 'Hace 2 días',
+        userCount: 42
+      },
+      location: { latitude: 40.4137, longitude: -3.6921 }
     },
-    featured: true,
-    accessibility: {
-      wheelchair: true,
-      elevator: true,
-      audioGuide: true,
-      adaptedWC: true,
-      braille: false,
-      parking: true
+    {
+      id: 'm2',
+      name: 'Palacio Real de Madrid',
+      category: 'Monumentos',
+      image: 'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?auto=format&fit=crop&w=800&q=80',
+      description: 'Residencia oficial del Rey de España, aunque solo se usa para actos de Estado.',
+      schedule: 'Invierno: 10:00 - 18:00. Verano: 10:00 - 19:00.',
+      price: 'General: 12€. Reducida: 6€.',
+      disabilityBenefit: 'GRATIS para personas con discapacidad acreditada y su acompañante.',
+      technicalSpecs: {
+        doorWidth: '150cm',
+        turningSpace: 'Sí',
+        magneticLoop: 'No disponible',
+        brailleSignage: 'Limitado',
+        adaptedAudio: 'Disponible',
+        adaptedToilet: 'Sí, en el Patio de Armas'
+      },
+      verifiedByCommunity: {
+        status: 'Verificado',
+        lastCheck: 'Hace 1 semana',
+        userCount: 28
+      },
+      location: { latitude: 40.4179, longitude: -3.7143 }
     }
-  },
-  { 
-    id: '2', 
-    name: 'Museo del Prado', 
-    city: 'Madrid',
-    category: 'Museo',
-    coordinates: { latitude: 40.4138, longitude: -3.6921 },
-    location: 'Calle de Ruiz de Alarcón, 23, 28014 Madrid', 
-    rating: '4.9', 
-    image: 'https://images.unsplash.com/photo-1544013501-56450514016a?auto=format&fit=crop&w=800',
-    description: 'El Museo Nacional del Prado es uno de los más importantes del mundo, así como uno de los más visitados.',
-    basePrice: 15,
-    discount33: 0,
-    discount65: 0,
-    hasCompanion: true,
-    schedule: {
-      lunes: '10:00 - 20:00',
-      martes: '10:00 - 20:00',
-      miercoles: '10:00 - 20:00',
-      jueves: '10:00 - 20:00',
-      viernes: '10:00 - 20:00',
-      sabado: '10:00 - 20:00',
-      domingo: '10:00 - 19:00'
+  ],
+  'Granada': [
+    {
+      id: 'g1',
+      name: 'La Alhambra y el Generalife',
+      category: 'Monumentos',
+      image: 'https://images.unsplash.com/photo-1544013919-455b81a176ee?auto=format&fit=crop&w=800&q=80',
+      description: 'Palacio y fortaleza andalusí, joya de la arquitectura nazarí.',
+      schedule: '8:30 - 20:00 (Verano) / 8:30 - 18:00 (Invierno).',
+      price: 'General: 19€.',
+      disabilityBenefit: 'Tarifa Reducida especial y gratuidad según grado. Consultar taquilla para acompañantes.',
+      technicalSpecs: {
+        doorWidth: 'Variable (Rutas especiales)',
+        turningSpace: 'Zonas limitadas',
+        magneticLoop: 'No',
+        brailleSignage: 'Maquetas tiflológicas disponibles',
+        adaptedAudio: 'Sí, audioguía especial',
+        adaptedToilet: 'Sí, en zonas de descanso'
+      },
+      verifiedByCommunity: {
+        status: 'Requiere Atención (Rutas empedradas)',
+        lastCheck: 'Hace 3 días',
+        userCount: 15
+      },
+      location: { latitude: 37.1760, longitude: -3.5881 }
+    }
+  ],
+  'Barcelona': [
+    {
+      id: 'b1',
+      name: 'Sagrada Família',
+      category: 'Monumentos',
+      image: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=800&q=80',
+      description: 'La obra maestra de Gaudí, templo expiatorio en construcción desde 1882.',
+      schedule: '9:00 - 18:00 (Invierno) / 9:00 - 20:00 (Verano).',
+      price: 'General: 26€.',
+      disabilityBenefit: 'GRATIS para personas con discapacidad (>33%) y un acompañante acreditado.',
+      technicalSpecs: {
+        doorWidth: '110cm',
+        turningSpace: 'Sí',
+        magneticLoop: 'Disponible',
+        brailleSignage: 'Sí, en paneles táctiles',
+        adaptedAudio: 'App oficial accesible',
+        adaptedToilet: 'Sí, accesible'
+      },
+      verifiedByCommunity: {
+        status: 'Alta Confianza (Ascensor adaptado)',
+        lastCheck: 'Hace 1 día',
+        userCount: 56
+      },
+      location: { latitude: 41.4036, longitude: 2.1744 }
     },
-    featured: true,
-    accessibility: {
-      wheelchair: true,
-      elevator: true,
-      audioGuide: true,
-      adaptedWC: true,
-      braille: true,
-      parking: false
+    {
+      id: 'b2',
+      name: 'Park Güell',
+      category: 'Monumentos',
+      image: 'https://images.unsplash.com/photo-1523531294919-4bcd7c65e216?auto=format&fit=crop&w=800&q=80',
+      description: 'Parque público con jardines y elementos arquitectónicos singulares.',
+      schedule: '9:30 - 19:30.',
+      price: 'General: 10€.',
+      disabilityBenefit: 'GRATIS para personas con discapacidad + acompañante. Requiere reserva previa.',
+      technicalSpecs: {
+        doorWidth: 'Abierto',
+        turningSpace: 'Zonas con pendientes elevadas',
+        magneticLoop: 'No',
+        brailleSignage: 'No',
+        adaptedAudio: 'No',
+        adaptedToilet: 'Sí, en entrada principal'
+      },
+      verifiedByCommunity: {
+        status: 'Difícil (Ruta recomendada para sillas)',
+        lastCheck: 'Hace 4 días',
+        userCount: 31
+      },
+      location: { latitude: 41.4145, longitude: 2.1527 }
     }
-  },
-  { 
-    id: '6', 
-    name: 'Castillo de Santa Bárbara', 
-    city: 'Alicante',
-    category: 'Fortaleza',
-    coordinates: { latitude: 38.3491, longitude: -0.4777 },
-    location: 'Monte Benacantil, 03002 Alicante', 
-    rating: '4.8', 
-    image: 'https://images.unsplash.com/photo-1544918877-460635b6d13e?auto=format&fit=crop&w=800',
-    description: 'Fortaleza medieval situada sobre el monte Benacantil. Dispone de acceso gratuito y un ascensor directo desde la Playa del Postiguet, además de acceso por carretera con parking adaptado.',
-    basePrice: 0,
-    discount33: 0,
-    discount65: 0,
-    hasCompanion: true,
-    schedule: {
-      lunes: '10:00 - 20:00',
-      martes: '10:00 - 20:00',
-      miercoles: '10:00 - 20:00',
-      jueves: '10:00 - 20:00',
-      viernes: '10:00 - 20:00',
-      sabado: '10:00 - 20:00',
-      domingo: '10:00 - 20:00'
-    },
-    featured: true,
-    accessibility: {
-      wheelchair: true,
-      elevator: true,
-      audioGuide: true,
-      adaptedWC: true,
-      braille: false,
-      parking: true
+  ],
+  'Sevilla': [
+    {
+      id: 's1',
+      name: 'Catedral de Sevilla y Giralda',
+      category: 'Monumentos',
+      image: 'https://images.unsplash.com/photo-1559564484-e48b3e040ff4?auto=format&fit=crop&w=800&q=80',
+      description: 'La catedral gótica más grande del mundo y su famosa torre campanario.',
+      schedule: '10:45 - 17:00.',
+      price: 'General: 11€.',
+      disabilityBenefit: 'GRATIS para residentes, menores de 13 y personas con discapacidad >65% + acompañante.',
+      technicalSpecs: {
+        doorWidth: '120cm',
+        turningSpace: 'Sí',
+        magneticLoop: 'No',
+        brailleSignage: 'No',
+        adaptedAudio: 'Disponible',
+        adaptedToilet: 'Sí'
+      },
+      verifiedByCommunity: {
+        status: 'Verificado (Giralda no accesible)',
+        lastCheck: 'Hace 1 semana',
+        userCount: 22
+      },
+      location: { latitude: 37.3858, longitude: -5.9931 }
     }
-  },
-  { 
-    id: '7', 
-    name: 'MARQ Museo Arqueológico', 
-    city: 'Alicante',
-    category: 'Museo',
-    coordinates: { latitude: 38.3536, longitude: -0.4764 },
-    location: 'Plaza Dr. Gómez Ulla, s/n, 03013 Alicante', 
-    rating: '4.9', 
-    image: 'https://images.unsplash.com/photo-1518998053574-53f0261f5952?auto=format&fit=crop&w=800',
-    description: 'Premiado como Museo Europeo del Año en 2004, el MARQ es pionero en arqueología de vanguardia y accesibilidad universal.',
-    basePrice: 3,
-    discount33: 1.5,
-    discount65: 0,
-    hasCompanion: true,
-    schedule: {
-      lunes: 'Cerrado',
-      martes: '10:00 - 19:00',
-      miercoles: '10:00 - 19:00',
-      jueves: '10:00 - 19:00',
-      viernes: '10:00 - 19:00',
-      sabado: '10:00 - 20:30',
-      domingo: '10:00 - 14:00'
-    },
-    featured: true,
-    accessibility: {
-      wheelchair: true,
-      elevator: true,
-      audioGuide: true,
-      adaptedWC: true,
-      braille: true,
-      parking: true
+  ],
+  'Bilbao': [
+    {
+      id: 'bi1',
+      name: 'Museo Guggenheim Bilbao',
+      category: 'Museos',
+      image: 'https://images.unsplash.com/photo-1518684079-3c830dcef090?auto=format&fit=crop&w=800&q=80',
+      description: 'Icono de la arquitectura contemporánea diseñado por Frank Gehry.',
+      schedule: '10:00 - 19:00 (Cerrado lunes en invierno).',
+      price: 'General: 16€.',
+      disabilityBenefit: 'Tarifa Reducida: 7.50€. Acompañante GRATIS si se requiere asistencia.',
+      technicalSpecs: {
+        doorWidth: 'Automática amplia',
+        turningSpace: 'Excelente',
+        magneticLoop: 'Sí, en mostrador y audioguías',
+        brailleSignage: 'Sí',
+        adaptedAudio: 'Sí, videoguías en lengua de signos',
+        adaptedToilet: 'Sí, en todas las plantas'
+      },
+      verifiedByCommunity: {
+        status: 'Máxima Excelencia (5 estrellas)',
+        lastCheck: 'Hace 2 días',
+        userCount: 38
+      },
+      location: { latitude: 43.2687, longitude: -2.9340 }
     }
-  },
-  { 
-    id: '8', 
-    name: 'MACA Museo de Arte Contemporáneo', 
-    city: 'Alicante',
-    category: 'Museo',
-    coordinates: { latitude: 38.3461, longitude: -0.4806 },
-    location: 'Plaza de Santa María, 3, 03002 Alicante', 
-    rating: '4.7', 
-    image: 'https://images.unsplash.com/photo-1554188248-986adbb73be4?auto=format&fit=crop&w=800',
-    description: 'Ubicado en la Casa de la Asegurada (1685), este museo alberga una impresionante colección de arte del siglo XX. Es totalmente accesible.',
-    basePrice: 0,
-    discount33: 0,
-    discount65: 0,
-    hasCompanion: false,
-    schedule: {
-      lunes: 'Cerrado',
-      martes: '10:00 - 20:00',
-      miercoles: '10:00 - 20:00',
-      jueves: '10:00 - 20:00',
-      viernes: '10:00 - 20:00',
-      sabado: '10:00 - 20:00',
-      domingo: '10:00 - 14:00'
-    },
-    accessibility: {
-      wheelchair: true,
-      elevator: true,
-      audioGuide: true,
-      adaptedWC: true,
-      braille: false,
-      parking: false
+  ],
+  'Valencia': [
+    {
+      id: 'v1',
+      name: 'Ciudad de las Artes y las Ciencias',
+      category: 'Monumentos',
+      image: 'https://images.unsplash.com/photo-1558913650-847ba8491823?auto=format&fit=crop&w=800&q=80',
+      description: 'Complejo arquitectónico, cultural y de entretenimiento.',
+      schedule: '10:00 - 18:00 (Varía según edificio).',
+      price: 'Completa: 38.60€.',
+      disabilityBenefit: 'Tarifa Reducida especial (aprox 40% dto) para personas con discapacidad.',
+      technicalSpecs: {
+        doorWidth: '150cm',
+        turningSpace: 'Sí',
+        magneticLoop: 'En el Hemisfèric',
+        brailleSignage: 'Sí, en maquetas',
+        adaptedAudio: 'Disponible',
+        adaptedToilet: 'Sí, múltiples puntos'
+      },
+      verifiedByCommunity: {
+        status: 'Muy Alta Accesibilidad',
+        lastCheck: 'Hace 5 días',
+        userCount: 45
+      },
+      location: { latitude: 39.4582, longitude: -0.3503 }
     }
-  },
-  { 
-    id: '9', 
-    name: 'Concatedral de San Nicolás', 
-    city: 'Alicante',
-    category: 'Religioso',
-    coordinates: { latitude: 38.3458, longitude: -0.4828 },
-    location: 'Plaza de San Nicolás, 2, 03002 Alicante', 
-    rating: '4.6', 
-    image: 'https://images.unsplash.com/photo-1590494444539-7104b2b292e8?auto=format&fit=crop&w=800',
-    description: 'Ejemplo notable del estilo herreriano y barroco. Su interior amplio y sin desniveles facilita la visita a personas con movilidad reducida.',
-    basePrice: 0,
-    discount33: 0,
-    discount65: 0,
-    hasCompanion: false,
-    schedule: {
-      lunes: '07:30 - 13:00, 17:30 - 20:00',
-      martes: '07:30 - 13:00, 17:30 - 20:00',
-      miercoles: '07:30 - 13:00, 17:30 - 20:00',
-      jueves: '07:30 - 13:00, 17:30 - 20:00',
-      viernes: '07:30 - 13:00, 17:30 - 20:00',
-      sabado: '08:30 - 13:00, 17:30 - 21:00',
-      domingo: '08:30 - 13:30, 17:30 - 21:00'
-    },
-    accessibility: {
-      wheelchair: true,
-      elevator: false,
-      audioGuide: false,
-      adaptedWC: false,
-      braille: false,
-      parking: false
-    }
-  },
-  { 
-    id: '10', 
-    name: 'Área Accesible Playa del Postiguet', 
-    city: 'Alicante',
-    category: 'Naturaleza',
-    coordinates: { latitude: 38.3456, longitude: -0.4782 },
-    location: 'Calle de Jovellanos, 03002 Alicante', 
-    rating: '4.8', 
-    image: 'https://images.unsplash.com/photo-1534067783941-51c9c330ecd4?auto=format&fit=crop&w=800',
-    description: 'Área de servicios para personas con discapacidad que incluye baño asistido, sillas anfibias y zonas de sombra reservadas.',
-    basePrice: 0,
-    discount33: 0,
-    discount65: 0,
-    hasCompanion: true,
-    schedule: {
-      lunes: '10:00 - 19:00',
-      martes: '10:00 - 19:00',
-      miercoles: '10:00 - 19:00',
-      jueves: '10:00 - 19:00',
-      viernes: '10:00 - 19:00',
-      sabado: '10:00 - 19:00',
-      domingo: '10:00 - 19:00'
-    },
-    accessibility: {
-      wheelchair: true,
-      elevator: false,
-      audioGuide: false,
-      adaptedWC: true,
-      braille: false,
-      parking: true
-    }
-  }
-];
+  ]
+};

@@ -9,6 +9,7 @@ import {
   ScrollView
 } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
+import { useUser } from '../context/UserContext';
 import { 
   ChevronLeft, 
   Moon, 
@@ -16,29 +17,43 @@ import {
   Bell, 
   Shield, 
   Accessibility, 
-  Circle
+  Circle,
+  Globe,
+  Languages,
+  ChevronRight
 } from 'lucide-react-native';
 import { typography } from '../theme/typography';
 
-const SettingRow = ({ icon: Icon, title, value, onToggle, isLast, theme, isDarkMode }) => (
+const SettingRow = ({ icon: Icon, title, value, onToggle, isLast, theme, isDarkMode, type = 'switch', description }) => (
   <View style={[styles.row, { borderBottomColor: theme.border }, isLast && { borderBottomWidth: 0 }]}>
     <View style={styles.rowLeft}>
       <View style={[styles.iconContainer, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }]}>
         <Icon color={theme.primary} size={20} />
       </View>
-      <Text style={[styles.rowTitle, { color: theme.text }]}>{title}</Text>
+      <View style={{ flex: 1 }}>
+        <Text style={[styles.rowTitle, { color: theme.text }]}>{title}</Text>
+        {description && <Text style={[styles.rowDesc, { color: theme.textSecondary }]}>{description}</Text>}
+      </View>
     </View>
-    <Switch 
-      value={value} 
-      onValueChange={onToggle}
-      trackColor={{ false: '#767577', true: theme.primary }}
-      thumbColor={value ? '#FFFFFF' : '#f4f3f4'}
-    />
+    {type === 'switch' ? (
+      <Switch 
+        value={value} 
+        onValueChange={onToggle}
+        trackColor={{ false: '#767577', true: theme.primary }}
+        thumbColor={value ? '#FFFFFF' : '#f4f3f4'}
+      />
+    ) : (
+      <TouchableOpacity style={styles.rowRight} onPress={onToggle}>
+        <Text style={[styles.rowValue, { color: theme.primary }]}>{value}</Text>
+        <ChevronRight color={theme.textSecondary} size={18} />
+      </TouchableOpacity>
+    )}
   </View>
 );
 
 export function SettingsScreen({ navigation }) {
   const { isDarkMode, toggleTheme, theme } = useTheme();
+  const { userData, updateUserData } = useUser();
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
@@ -49,59 +64,64 @@ export function SettingsScreen({ navigation }) {
         >
           <ChevronLeft color={theme.text} size={24} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.text }, typography.h2]}>Ajustes</Text>
+        <Text style={[styles.headerTitle, { color: theme.text }, typography.h2]}>Configuración</Text>
         <View style={{ width: 40 }} />
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>Apariencia</Text>
+        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>Personalización</Text>
         <View style={[styles.section, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <SettingRow 
             icon={isDarkMode ? Moon : Sun} 
-            title="Modo Oscuro" 
+            title="Tema Visual" 
+            description={isDarkMode ? 'Modo Oscuro activado' : 'Modo Claro activado'}
             value={isDarkMode} 
             onToggle={toggleTheme}
+            theme={theme}
+            isDarkMode={isDarkMode}
+          />
+          <SettingRow 
+            icon={Languages} 
+            title="Idioma de la App" 
+            type="select"
+            value="Español (ES)" 
+            onToggle={() => {}}
             isLast={true}
             theme={theme}
             isDarkMode={isDarkMode}
           />
         </View>
 
-        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>Accesibilidad</Text>
+        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>Accesibilidad Premium</Text>
         <View style={[styles.section, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <SettingRow 
             icon={Accessibility} 
-            title="Asistente de Voz" 
-            value={false} 
-            onToggle={() => {}}
+            title="Guiado por Voz" 
+            description="Asistente de audio durante la navegación"
+            value={userData.voiceGuidance} 
+            onToggle={(val) => updateUserData({ voiceGuidance: val })}
             theme={theme}
             isDarkMode={isDarkMode}
           />
           <SettingRow 
             icon={Circle} 
-            title="Alto Contraste" 
-            value={false} 
-            onToggle={() => {}}
+            title="Contraste Dinámico" 
+            description="Optimiza colores para mejor lectura"
+            value={userData.highContrast} 
+            onToggle={(val) => updateUserData({ highContrast: val })}
             isLast={true}
             theme={theme}
             isDarkMode={isDarkMode}
           />
         </View>
 
-        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>Notificaciones y Privacidad</Text>
+        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>Seguridad</Text>
         <View style={[styles.section, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <SettingRow 
-            icon={Bell} 
-            title="Notificaciones Push" 
-            value={true} 
-            onToggle={() => {}}
-            theme={theme}
-            isDarkMode={isDarkMode}
-          />
-          <SettingRow 
             icon={Shield} 
-            title="Privacidad de Datos" 
-            value={true} 
+            title="Privacidad" 
+            type="select"
+            value="Gestionar" 
             onToggle={() => {}}
             isLast={true}
             theme={theme}
@@ -110,8 +130,8 @@ export function SettingsScreen({ navigation }) {
         </View>
 
         <View style={styles.footer}>
-          <Text style={[styles.versionText, { color: theme.textSecondary }]}>Distravel v1.0.4</Text>
-          <Text style={[styles.versionText, { color: theme.textSecondary }]}>Hecho con ❤️ para un turismo sin barreras</Text>
+          <Text style={[styles.versionText, { color: theme.textSecondary }]}>Distravel PRO v1.3.5</Text>
+          <Text style={[styles.versionText, { color: theme.textSecondary }]}>Hecho para un turismo inclusivo 🌍</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -163,6 +183,7 @@ const styles = StyleSheet.create({
   rowLeft: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
   iconContainer: {
     width: 40,
@@ -175,6 +196,19 @@ const styles = StyleSheet.create({
   rowTitle: {
     fontSize: 16,
     fontWeight: '600',
+  },
+  rowDesc: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  rowRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rowValue: {
+    fontSize: 14,
+    fontWeight: '600',
+    marginRight: 8,
   },
   footer: {
     marginTop: 20,

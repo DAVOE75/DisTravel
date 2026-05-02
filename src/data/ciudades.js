@@ -2,182 +2,521 @@ export const CIUDADES_PREMIUM = {
   'Madrid': {
     name: 'Madrid', province: 'Madrid', region: 'Madrid',
     description: 'Capital de España y Villa y Corte, centro geográfico, político y cultural del país.',
-    history: 'Su nombre deriva del árabe Mayrit, "lugar de abundancia de aguas". Fundada como fortaleza musulmana por Muhammad I en el siglo IX, se convirtió en capital de la monarquía española con Felipe II en 1561. Ha sido el escenario de hitos como la Guerra de la Independencia (1808) y la Movida madrileña, transformándose de un alcázar medieval a una metrópolis europea cosmopolita y vanguardista.',
-    climate: 'Clima mediterráneo continentalizado. Se caracteriza por inviernos fríos y secos (con temperaturas que pueden bajar de 0°C) y veranos muy calurosos, superando a menudo los 35°C. Sin embargo, su baja humedad hace que el calor sea más llevadero. El otoño y la primavera ofrecen cielos de un azul velazqueño único y temperaturas ideales para el paseo.',
-    geography: 'Ubicada en el centro de la Península Ibérica, en la meseta central, a una altitud media de 657 metros. Está atravesada por el río Manzanares. Su relieve es suave pero con ondulaciones que marcan barrios como las Vistillas o el entorno del Palacio Real. Es una ciudad con una accesibilidad muy trabajada en sus grandes ejes comerciales y museísticos.',
-    landscape: 'Un contraste fascinante entre el Madrid de los Austrias (callejuelas estrechas y piedra), el Madrid de los Borbones (grandes avenidas como la Castellana y el Paseo del Prado) y el moderno skyline de las Cuatro Torres. Destaca el pulmón verde del Parque del Retiro y la Casa de Campo.',
+    history: 'Su nombre deriva del árabe Mayrit, "lugar de abundancia de aguas". Fundada como fortaleza musulmana por Muhammad I en el siglo IX, se convirtió en capital de la monarquía española con Felipe II en 1561.',
+    climate: 'Mediterráneo continentalizado. Inviernos fríos y veranos calurosos.',
+    geography: 'Meseta central, 657 metros de altitud.',
+    landscape: 'Contraste entre el Madrid de los Austrias y la arquitectura contemporánea.',
     image: 'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?auto=format&fit=crop&w=800&q=80',
     tags: ['Capital', 'Museos', 'Accesible']
   },
   'Barcelona': {
     name: 'Barcelona', province: 'Barcelona', region: 'Cataluña',
-    description: 'La gran metrópolis del Mediterráneo, capital del modernismo y ventana de Europa al sur.',
-    history: 'Sus raíces se hunden en la Barcino romana, de la que aún quedan vestigios en el Barrio Gótico. Fue el corazón del Condado de Barcelona y la Corona de Aragón. En el siglo XIX, el Plan Cerdá dio origen al Eixample, permitiendo que arquitectos como Antoni Gaudí convirtieran la ciudad en un museo al aire libre. Las Olimpiadas de 1992 marcaron su apertura definitiva al mar y su estatus como ciudad global.',
-    climate: 'Mediterráneo marítimo. Inviernos suaves y veranos cálidos pero húmedos. La proximidad del mar actúa como regulador térmico, evitando extremos. La primavera es la estación más variable, mientras que el final del verano suele traer las típicas "llevantades" o lluvias intensas de corta duración.',
-    geography: 'Asentada en una llanura litoral de unos 5 km de ancho, limitada por el mar, el río Llobregat al sur, el Besòs al norte y la sierra de Collserola al oeste (con el Tibidabo como punto más alto). Esta disposición en pendiente hacia el mar facilita la orientación, aunque barrios como Gràcia o el Carmel presentan pendientes pronunciadas.',
-    landscape: 'Un mosaico de épocas: la verticalidad gótica de la Catedral, el estallido de color y formas orgánicas de la Sagrada Familia y el Parque Güell, y la arquitectura contemporánea del Fórum o la Torre Glòries, todo ello con el azul del Mediterráneo como telón de fondo.',
+    description: 'La gran metrópolis del Mediterráneo, capital del modernismo.',
+    history: 'De la Barcino romana al Plan Cerdá y las Olimpiadas de 1992.',
+    climate: 'Mediterráneo marítimo, suave y húmedo.',
+    geography: 'Llanura litoral entre el mar y Collserola.',
+    landscape: 'Gótico, Modernismo de Gaudí y playas urbanas.',
     image: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=800&q=80',
     tags: ['Gaudí', 'Mar', 'Modernismo']
   },
   'Sevilla': {
     name: 'Sevilla', province: 'Sevilla', region: 'Andalucía',
-    description: 'Corazón de Andalucía, ciudad de duende, azahar y un patrimonio universal.',
-    history: 'Fue la Hispalis romana y la Isbiliya árabe. Tras la Reconquista por Fernando III en 1248, se convirtió en una de las ciudades más importantes de la Corona de Castilla. Su mayor esplendor llegó en el siglo XVI, cuando se le concedió el monopolio del comercio con las Indias, convirtiéndose en la metrópolis más rica de Europa y cuna de grandes pintores como Velázquez o Murillo.',
-    climate: 'Mediterráneo con matices continentales. Es una de las ciudades más calurosas de Europa; los veranos son largos y secos, con máximas que superan los 40°C frecuentemente. Los inviernos son suaves y cortos. La primavera, especialmente durante la Semana Santa y la Feria de Abril, es la mejor época, cuando la ciudad huele a azahar.',
-    geography: 'Situada en plena depresión del Guadalquivir, el único río navegable de España. Su terreno es llano y está a escasa altitud sobre el nivel del mar. El río ha sido su motor económico y su frontera natural, dividiendo el centro histórico del carismático barrio de Triana.',
-    landscape: 'La silueta de la Giralda dominando el horizonte, el Real Alcázar con su arquitectura mudéjar, la inmensa Plaza de España y el laberinto de calles blancas y patios frescos del Barrio de Santa Cruz.',
+    description: 'Ciudad de luz, color y duende a orillas del Guadalquivir.',
+    history: 'Hispalis romana, Isbiliya árabe y puerto de Indias en el Renacimiento.',
+    climate: 'Mediterráneo con matices continentales. Veranos muy calurosos.',
+    geography: 'Depresión del Guadalquivir, en una llanura aluvial.',
+    landscape: 'Giralda, Torre del Oro y el barrio de Santa Cruz.',
     image: 'https://images.unsplash.com/photo-1559121010-447efdd92824?auto=format&fit=crop&w=800&q=80',
-    tags: ['Giralda', 'Flamenco', 'Historia']
+    tags: ['Flamenco', 'Historia', 'Calor']
   },
   'Valencia': {
-    name: 'Valencia', province: 'Valencia', region: 'Comunidad Valenciana',
-    description: 'La ciudad de la luz y el diseño, donde el pasado medieval abraza el futuro más audaz.',
-    history: 'Valentia Edetanorum fue fundada por los romanos en el 138 a.C. Tras siglos de dominio musulmán, Jaume I la reconquistó en 1238. Vivió su Siglo de Oro en el XV, gracias al comercio de la seda (la Lonja es testigo de ello). En el siglo XXI, la transformación del cauce del río Turia en un jardín de 9 km y la construcción de la Ciudad de las Artes y las Ciencias la situaron como referente mundial de arquitectura.',
-    climate: 'Mediterráneo suave con una temperatura media anual de 18°C. Los inviernos son muy cortos y templados, casi primaverales. Los veranos son calurosos con alta humedad, lo que invita a disfrutar de sus amplias playas urbanas. El mes de marzo es emblemático por las Fallas y su clima luminoso.',
-    geography: 'Ubicada en la llanura de la huerta valenciana, en la orilla derecha del río Turia. Es una de las ciudades más llanas de España, lo que la convierte en un destino excepcionalmente accesible para personas con movilidad reducida. Al sur se encuentra la Albufera, un ecosistema de humedales único.',
-    landscape: 'La huerta circundante, las torres medievales de Quart y Serranos, y el contraste radical entre el gótico de la Catedral y el blanco futurista de los edificios de Santiago Calatrava.',
-    image: 'https://images.unsplash.com/photo-1529551739587-e242c564f727?auto=format&fit=crop&w=800&q=80',
-    tags: ['Diseño', 'Ciencia', 'Playa']
+    name: 'Valencia', province: 'Valencia', region: 'C. Valenciana',
+    description: 'Tierra de luz, pólvora y modernidad futurista junto al mar.',
+    history: 'Fundada por los romanos, vivió su siglo de oro en el XV con el comercio de la seda.',
+    climate: 'Mediterráneo suave.',
+    geography: 'Llanura litoral del Golfo de Valencia.',
+    landscape: 'Ciudad de las Artes y las Ciencias y playas de la Malvarrosa.',
+    image: 'https://images.unsplash.com/photo-1512753360425-076135899661?auto=format&fit=crop&w=800&q=80',
+    tags: ['Arroz', 'Mar', 'Futurismo']
   },
   'Bilbao': {
     name: 'Bilbao', province: 'Vizcaya', region: 'País Vasco',
-    description: 'Símbolo de la regeneración urbana, donde el hierro industrial se hizo arte y diseño.',
-    history: 'Villa fundada en 1300 por Diego López de Haro. Su destino estuvo ligado a la explotación del hierro y la industria siderúrgica hasta finales del siglo XX. La crisis industrial obligó a una reinvención total, culminada con la inauguración del Museo Guggenheim en 1997, que transformó una ría gris en un eje cultural y turístico de primer orden mundial.',
-    climate: 'Oceánico húmedo. Caracterizado por lluvias frecuentes (el famoso "sirimiri") y temperaturas suaves sin grandes extremos térmicos. Los veranos son frescos e ideales para escapar del calor del sur, y los inviernos son templados. El paisaje circundante es de un verde intenso debido a la pluviosidad constante.',
-    geography: 'Se asienta en el encajonado valle del río Nervión, lo que la obliga a crecer de forma alargada siguiendo el curso de la ría hacia el mar. Está rodeada de montes como el Artxanda o el Pagasarri, que actúan como miradores naturales de la ciudad.',
-    landscape: 'El brillo curvilíneo del titanio del Guggenheim, los puentes vanguardistas que cruzan la ría, el Casco Viejo (las Siete Calles) con su sabor tradicional y los nuevos edificios firmados por premios Pritzker como Foster o Pelli.',
+    description: 'De la industria al arte de vanguardia en el corazón del Nervión.',
+    history: 'Villa comercial que se transformó de ciudad industrial a icono global del diseño.',
+    climate: 'Oceánico, templado y lluvioso.',
+    geography: 'En el valle del río Nervión, rodeada de montes.',
+    landscape: 'Museo Guggenheim y arquitectura de titanio.',
     image: 'https://images.unsplash.com/photo-1549893072-4bc678117f45?auto=format&fit=crop&w=800&q=80',
-    tags: ['Guggenheim', 'Ría', 'Vanguardia']
+    tags: ['Diseño', 'Ría', 'Vanguardia']
   },
-  'Toledo': {
-    name: 'Toledo', province: 'Toledo', region: 'Castilla-La Mancha',
-    description: 'La ciudad de las tres culturas, un laberinto de historia que parece detenido en el tiempo.',
-    history: 'Antigua Toletum romana y capital del Reino Visigodo. Es mundialmente conocida como la "Ciudad de las Tres Culturas" por la convivencia pacífica de cristianos, musulmanes y judíos durante siglos. Fue capital del Imperio Español hasta que la corte se mudó a Madrid. El Greco inmortalizó su espíritu en sus pinturas.',
-    climate: 'Continental seco. Caracterizado por inviernos fríos y veranos muy calurosos y áridos. La mejor época para visitarla es en primavera o durante la festividad del Corpus Christi, cuando las calles se engalanan y cubren con toldos.',
-    geography: 'Ubicada sobre una colina escarpada rodeada por un pronunciado meandro del río Tajo, que servía de foso natural defensivo. Su casco histórico es un laberinto de calles estrechas y empinadas, aunque cuenta con escaleras mecánicas modernas para facilitar el acceso.',
-    landscape: 'Vistas panorámicas desde el Mirador del Valle, donde se aprecia el Alcázar y la Catedral Primada sobresaliendo entre un mar de tejados de teja árabe y murallas medievales.',
-    image: 'https://images.unsplash.com/photo-1563829023477-84a1a5b8cae7?auto=format&fit=crop&w=800&q=80',
-    tags: ['Historia', 'Culturas', 'Meandro']
-  },
-  'Granada': {
-    name: 'Granada', province: 'Granada', region: 'Andalucía',
-    description: 'La joya del Reino Nazarí, mística, histórica y custodiada por Sierra Nevada.',
-    history: 'Capital del Reino Nazarí de Granada hasta 1492, cuando los Reyes Católicos completaron la Reconquista. Su monumento cumbre, la Alhambra, es el mejor ejemplo de arquitectura islámica en Occidente. Ha sido cuna de poetas como Lorca y centro de mezcla cultural entre lo andalusí y lo renacentista tras la toma cristiana.',
-    climate: 'Mediterráneo continentalizado. A diferencia de la costa andaluza, Granada tiene inviernos fríos y veranos calurosos y secos. La proximidad de Sierra Nevada hace que el aire sea puro y refresque las noches de verano. El otoño es particularmente bello en los jardines del Generalife.',
-    geography: 'Ubicada a los pies de Sierra Nevada, en la confluencia de los ríos Genil y Darro. La ciudad se divide entre la vega llana y las colinas históricas de la Alhambra, el Albaicín y el Sacromonte, lo que genera calles empinadas y miradores espectaculares.',
-    landscape: 'La Alhambra roja dominando la colina de la Sabika, el laberinto de casas blancas del Albaicín y las cumbres nevadas de Sierra Nevada al fondo, creando uno de los horizontes más icónicos del mundo.',
-    image: 'https://images.unsplash.com/photo-1544013919-455b81a176ee?auto=format&fit=crop&w=800&q=80',
-    tags: ['Alhambra', 'Sierra Nevada', 'Mística']
-  },
-  'Santander': {
-    name: 'Santander', province: 'Cantabria', region: 'Cantabria',
-    description: 'Ciudad señorial, elegante y abierta a una de las bahías más bellas del mundo.',
-    history: 'Importante puerto comercial desde la Edad Media para el Reino de Castilla. En el siglo XIX y principios del XX se convirtió en el destino de veraneo predilecto de la monarquía española (Alfonso XIII), lo que le dio su aire aristocrático actual. En 1941, un devastador incendio destruyó casi todo su centro histórico, que fue reconstruido siguiendo cánones modernos y monumentales.',
-    climate: 'Atlántico húmedo. Temperaturas muy suaves y agradables, con veranos frescos e inviernos sin heladas. Las lluvias son frecuentes pero intermitentes, lo que mantiene el entorno siempre verde y exuberante.',
-    geography: 'Se extiende a lo largo de una bahía orientada al sur, protegida de los embates del Mar Cantábrico. El terreno es ondulado, con colinas que bajan hacia las playas del Sardinero y la península de la Magdalena.',
-    landscape: 'La bahía salpicada de barcos de vela, la Península de la Magdalena con su palacio real, las playas de arena fina y el moderno Centro Botín suspendido sobre el agua.',
-    image: 'https://images.unsplash.com/photo-1533200140228-57d622955fba?auto=format&fit=crop&w=800&q=80',
-    tags: ['Bahía', 'Elegancia', 'Mar Cantábrico']
+  'Málaga': {
+    name: 'Málaga', province: 'Málaga', region: 'Andalucía',
+    description: 'Capital de la Costa del Sol y cuna de Picasso.',
+    history: 'Una de las ciudades más antiguas de Europa, fundada por los fenicios.',
+    climate: 'Mediterráneo subtropical.',
+    geography: 'Litoral mediterráneo andaluz.',
+    landscape: 'Alcazaba, Teatro Romano y playas cosmopolitas.',
+    image: 'https://images.unsplash.com/photo-1512753360425-076135899661?auto=format&fit=crop&w=800&q=80',
+    tags: ['Sol', 'Picasso', 'Mar']
   },
   'Zaragoza': {
     name: 'Zaragoza', province: 'Zaragoza', region: 'Aragón',
-    description: 'Ciudad de las cuatro culturas, cruce de caminos histórico a orillas del gran Ebro.',
-    history: 'Antigua Salduie ibérica y Caesaraugusta romana. Fue capital de la Taifa de Zaragoza y posteriormente del Reino de Aragón. Famosa por los Sitios de Zaragoza durante la invasión napoleónica, donde la ciudad demostró una resistencia heroica. La Expo 2008 marcó su última gran transformación urbana.',
-    climate: 'Mediterráneo continentalizado con escasas precipitaciones. Un fenómeno característico es el Cierzo, un viento fuerte y frío del noroeste que limpia el cielo pero baja la sensación térmica. Veranos muy calurosos e inviernos fríos.',
-    geography: 'Situada en una posición estratégica en el valle del Ebro, en la desembocadura de los ríos Huerva y Gállego. Su centro es mayoritariamente llano y está adaptado para ser una ciudad muy caminable y accesible.',
-    landscape: 'La imponente silueta de la Basílica del Pilar reflejada en las aguas del Ebro, el mudéjar del Palacio de la Aljafería y el nuevo parque lineal de la ribera del río.',
-    image: 'https://images.unsplash.com/photo-1507027682794-35e6c12ad5b4?auto=format&fit=crop&w=800&q=80',
-    tags: ['Basílica del Pilar', 'Ebro', 'Mudéjar']
+    description: 'Ciudad de las cuatro culturas y la Virgen del Pilar.',
+    history: 'Salduie íbera, Caesaraugusta romana y Saraqusta árabe.',
+    climate: 'Mediterráneo continental con Cierzo frecuente.',
+    geography: 'Valle del Ebro.',
+    landscape: 'Basílica del Pilar y Palacio de la Aljafería.',
+    image: 'https://images.unsplash.com/photo-1559121010-447efdd92824?auto=format&fit=crop&w=800&q=80',
+    tags: ['Ebro', 'Mudéjar', 'Historia']
   },
-  'Palma': {
-    name: 'Palma', province: 'Islas Baleares', region: 'Islas Baleares',
-    description: 'Capital de las Baleares, elegancia gótica frente a las aguas turquesas del Mediterráneo.',
-    history: 'Fundada como campamento romano en el 123 a.C. Tras la conquista cristiana por Jaume I en 1229, se convirtió en una potencia comercial del Mediterráneo. Su Lonja y su Catedral son testimonios del poderío marítimo del Reino de Mallorca.',
-    climate: 'Mediterráneo insular. Inviernos muy suaves y veranos cálidos y húmedos. La brisa marina, llamada "embat", suaviza las temperaturas diurnas. El sol brilla casi 3.000 horas al año.',
-    geography: 'Se sitúa en la costa suroeste de la isla de Mallorca, en la bahía de Palma. Ciudad mayoritariamente llana junto al mar, con barrios antiguos que suben suavemente hacia el Castillo de Bellver.',
-    landscape: 'La Catedral de la Seu (con el mayor rosetón gótico del mundo), el Palacio de la Almudaina, el puerto lleno de veleros y el Castillo de Bellver, único en España por su planta circular.',
-    image: 'https://images.unsplash.com/photo-1512401372551-84090956501a?auto=format&fit=crop&w=800&q=80',
-    tags: ['Catedral', 'Mar', 'Baleares']
+  'Granada': {
+    name: 'Granada', province: 'Granada', region: 'Andalucía',
+    description: 'La joya nazarí a los pies de Sierra Nevada.',
+    history: 'Último reino musulmán de la península antes de la Reconquista en 1492.',
+    climate: 'Mediterráneo continentalizado de montaña.',
+    geography: 'Pie de Sierra Nevada, en la Vega de Granada.',
+    landscape: 'Alhambra y Generalife.',
+    image: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=800&q=80',
+    tags: ['Alhambra', 'Nieve', 'Historia']
   },
-  'Alicante': {
-    name: 'Alicante', province: 'Alicante', region: 'Comunidad Valenciana',
-    description: 'La Ciudad de la Luz, donde el Mediterráneo abraza una historia milenaria bajo el sol.',
-    history: 'Asentamiento ibérico original (Lucentum) y posterior ciudad romana. Durante siglos fue un enclave estratégico clave para el comercio mediterráneo. El Castillo de Santa Bárbara ha sido testigo de asedios y batallas navales, convirtiéndose hoy en el símbolo de una ciudad que ha sabido unir su tradición pesquera con el turismo más cosmopolita.',
-    climate: 'Mediterráneo árido. Con más de 300 días de sol al año y una temperatura media de 18°C. Los inviernos son casi inexistentes y los veranos largos y cálidos, refrescados por la brisa marina. Es el refugio perfecto para quienes huyen del frío europeo.',
-    geography: 'Ubicada en la costa central de la provincia homónima, la ciudad se despliega a los pies del monte Benacantil. Su paseo marítimo, la Explanada de España con sus teselas onduladas, es uno de los espacios urbanos más emblemáticos y accesibles de España.',
-    landscape: 'Un contraste entre el azul intenso del mar, el blanco de las casas de la Santa Cruz y el imponente perfil de piedra del Castillo que vigila la bahía.',
-    image: 'https://images.unsplash.com/photo-1512753360425-076135899661?auto=format&fit=crop&w=800&q=80',
-    tags: ['Playa Postiguet', 'Castillo', 'Sol']
+  'Vitoria-Gasteiz': {
+    name: 'Vitoria-Gasteiz', province: 'Álava', region: 'País Vasco',
+    description: 'Green Capital de Europa, ciudad de almendras medievales.',
+    history: 'Fundada por Sancho VI de Navarra, hoy es la sede de las instituciones vascas.',
+    climate: 'Oceánico continentalizado.',
+    geography: 'Llanada Alavesa.',
+    landscape: 'Casco histórico en forma de almendra y anillo verde.',
+    image: 'https://images.unsplash.com/photo-1549893072-4bc678117f45?auto=format&fit=crop&w=800&q=80',
+    tags: ['Ecológica', 'Medieval', 'Paz']
   },
-  'Córdoba': {
-    name: 'Córdoba', province: 'Córdoba', region: 'Andalucía',
-    description: 'La ciudad califal, un laberinto de flores, arcos de herradura y sabiduría eterna.',
-    history: 'Fue capital de la Hispania Ulterior en época romana y, sobre todo, la gran capital del Califato de Córdoba durante el siglo X, convirtiéndose en la ciudad más culta y poblada de Europa. Su Mezquita-Catedral es un monumento único en el mundo que simboliza la fusión de culturas y la grandeza arquitectónica del Islam en España.',
-    climate: 'Mediterráneo continentalizado. Veranos extremadamente calurosos (pueden superar los 45°C) e inviernos frescos. Mayo es su mes estrella, con la Fiesta de los Patios, cuando la temperatura es ideal y la ciudad estalla en flores.',
-    geography: 'Situada en una depresión del río Guadalquivir, en una llanura que se extiende hacia Sierra Morena al norte. Su casco histórico es uno de los más grandes de Europa, declarado Patrimonio de la Humanidad.',
-    landscape: 'El bosque de columnas de la Mezquita, el Puente Romano sobre el Guadalquivir, las callejuelas blancas de la Judería y el estallido de color de los geranios en los patios cordobeses.',
-    image: 'https://images.unsplash.com/photo-1564344756613-7355412510c2?auto=format&fit=crop&w=800&q=80',
-    tags: ['Mezquita', 'Patios', 'Califato']
+  'A Coruña': {
+    name: 'A Coruña', province: 'A Coruña', region: 'Galicia',
+    description: 'La ciudad de cristal, donde el mar se abraza a la Torre de Hércules.',
+    history: 'Puerto clave desde la época romana, posee el faro romano en funcionamiento más antiguo del mundo.',
+    climate: 'Oceánico suave.',
+    geography: 'En una península gallega abierta al Atlántico.',
+    landscape: 'Galerías de cristal, Torre de Hércules y paseo marítimo.',
+    image: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=800&q=80',
+    tags: ['Mar', 'Faro', 'Cristal']
+  },
+  'Toledo': {
+    name: 'Toledo', province: 'Toledo', region: 'Castilla-La Mancha',
+    description: 'La ciudad de las tres culturas y el laberinto imperial.',
+    history: 'Antigua capital visigoda y sede de la corte de Carlos I.',
+    climate: 'Mediterráneo continentalizado.',
+    geography: 'Promontorio sobre el río Tajo.',
+    landscape: 'Catedral Primada y Alcázar.',
+    image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
+    tags: ['Cultura', 'Tajo', 'Imperial']
   },
   'Salamanca': {
     name: 'Salamanca', province: 'Salamanca', region: 'Castilla y León',
-    description: 'La Ciudad Dorada, joya del saber universitario y el plateresco español.',
-    history: 'Su universidad, fundada en 1218, es la más antigua de España. Durante el Siglo de Oro, fue el centro intelectual del mundo hispánico (Fray Luis de León, Unamuno). Su arquitectura se caracteriza por el uso de la piedra de Villamayor, que adquiere un tono dorado con la luz del sol.',
-    climate: 'Continental. Inviernos largos, fríos y con heladas frecuentes. Veranos calurosos y secos. El cielo suele estar muy despejado, lo que resalta el color de sus monumentos.',
-    geography: 'Situada a orillas del río Tormes, en el campo charro. Ciudad compacta y monumental, ideal para recorrer a pie. Su núcleo histórico está muy bien conservado y es Patrimonio de la Humanidad.',
-    landscape: 'La Plaza Mayor (una de las más bellas del mundo), las dos catedrales (Vieja y Nueva) unidas, y la fachada de la Universidad, donde los visitantes buscan la famosa rana.',
-    image: 'https://images.unsplash.com/photo-1595121404120-137b0169d27a?auto=format&fit=crop&w=800&q=80',
-    tags: ['Universidad', 'Plaza Mayor', 'Plateresco']
-  },
-  'Cádiz': {
-    name: 'Cádiz', province: 'Cádiz', region: 'Andalucía',
-    description: 'La Tacita de Plata, la ciudad más antigua de Occidente, rodeada de mar y luz.',
-    history: 'Fundada por los fenicios como Gadir en el 1100 a.C. Fue el puerto de salida de las expediciones hacia las Américas y la cuna de la primera Constitución Española (La Pepa, 1812). Su historia es una crónica de navegantes, comerciantes y libertades.',
-    climate: 'Mediterráneo oceánico. Inviernos extremadamente suaves y veranos frescos gracias a la brisa atlántica. El viento de Levante es un visitante habitual que marca el carácter de sus playas.',
-    geography: 'Se asienta sobre una estrecha península que se adentra en el océano Atlántico, conectada a tierra firme por un tómbolo. Es una de las ciudades con mayor densidad de población y menos espacio para crecer, lo que la hace muy acogedora.',
-    landscape: 'La cúpula dorada de la Catedral brillando sobre el mar, el castillo de San Sebastián, el barrio de la Viña con su sabor a carnaval y la eterna playa de la Caleta.',
-    image: 'https://images.unsplash.com/photo-1528659977821-6d73f1d39203?auto=format&fit=crop&w=800&q=80',
-    tags: ['Carnaval', 'Atlántico', 'Constitución']
-  },
-  'Valladolid': {
-    name: 'Valladolid', province: 'Valladolid', region: 'Castilla y León',
-    description: 'Capital histórica de la Corte, ciudad de reyes, cine y el mejor vino de la Ribera.',
-    history: 'Fue sede de la corte española en varias ocasiones (con Felipe II y Felipe III). En Valladolid se casaron los Reyes Católicos y murió Cristóbal Colón. Es famosa por su Semana Santa (de interés turístico internacional) y por ser un centro fundamental de la lengua castellana.',
-    climate: 'Continental. Inviernos muy fríos y nublados, con nieblas frecuentes por la proximidad del río Pisuerga. Veranos calurosos y secos. La amplitud térmica diaria es muy marcada.',
-    geography: 'Ubicada en el centro de la cuenca del Duero, en la confluencia de los ríos Pisuerga y Esgueva. Es una ciudad llana, lo que facilita enormemente la movilidad y accesibilidad en su renovado centro histórico.',
-    landscape: 'La Plaza Mayor roja, la inconclusa Catedral de Herrera, la fachada barroca de San Pablo y los paseos junto al Pisuerga.',
-    image: 'https://images.unsplash.com/photo-1542361345-89e58247f2d5?auto=format&fit=crop&w=800&q=80',
-    tags: ['Semana Santa', 'Cine', 'Pisuerga']
-  },
-  'Murcia': {
-    name: 'Murcia', province: 'Murcia', region: 'Región de Murcia',
-    description: 'La Huerta de Europa, ciudad barroca y cálida a orillas del Segura.',
-    history: 'Fundada como Mursiya en el año 825 por orden de Abderramán II. Destaca por su sistema de acequias medieval que aún riega su huerta. Vivió una explosión barroca en el siglo XVIII que le dio su carácter actual, con monumentos como la fachada de su catedral.',
-    climate: 'Mediterráneo semiárido. Con inviernos suaves y veranos muy calurosos. Llueve muy poco, lo que acentúa su ambiente luminoso y festivo.',
-    geography: 'Situada en el valle del río Segura, rodeada de una fértil llanura de regadío. Es una ciudad mayoritariamente llana, perfecta para el paseo accesible.',
-    landscape: 'La impresionante fachada barroca de la Catedral, el Casino de Murcia con su patio árabe, y los jardines del Malecón junto al río.',
+    description: 'La ciudad dorada, cuna del saber universitario.',
+    history: 'Su universidad es una de las más antiguas de Europa, fundada en 1218.',
+    climate: 'Mediterráneo continentalizado riguroso.',
+    geography: 'Junto al río Tormes en la meseta norte.',
+    landscape: 'Plaza Mayor y fachadas platerescas de piedra dorada.',
     image: 'https://images.unsplash.com/photo-1543783230-22e030303030?auto=format&fit=crop&w=800&q=80',
-    tags: ['Barroco', 'Huerta', 'Catedral']
+    tags: ['Estudiantes', 'Dorada', 'Saber']
+  },
+  'Burgos': {
+    name: 'Burgos', province: 'Burgos', region: 'Castilla y León',
+    description: 'Cabeza de Castilla y corazón del gótico español.',
+    history: 'Tierra del Cid Campeador y cruce de caminos de Santiago.',
+    climate: 'Continental, inviernos largos y fríos.',
+    geography: 'Valle del río Arlanzón.',
+    landscape: 'Catedral gótica Patrimonio de la Humanidad.',
+    image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
+    tags: ['Gótico', 'El Cid', 'Frío']
+  },
+  'Santander': {
+    name: 'Santander', province: 'Cantabria', region: 'Cantabria',
+    description: 'La novia del mar, señorial y rodeada de una de las bahías más bellas.',
+    history: 'Ciudad portuaria elegida por la realeza como residencia de verano.',
+    climate: 'Oceánico, suave y húmedo.',
+    geography: 'Bahía de Santander.',
+    landscape: 'Palacio de la Magdalena y playa de El Sardinero.',
+    image: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=800&q=80',
+    tags: ['Bahía', 'Señorial', 'Verde']
   },
   'San Sebastián': {
     name: 'San Sebastián', province: 'Guipúzcoa', region: 'País Vasco',
-    description: 'La perla del Cantábrico, elegancia aristocrática y la capital mundial de la gastronomía.',
-    history: 'Villa pesquera que se transformó en el destino de veraneo de la Reina Isabel II y la alta aristocracia europea en el siglo XIX (Belle Époque). Su arquitectura afrancesada y sus palacios frente al mar le dan un aire de distinción único. Hoy es famosa por su Festival de Cine y su concentración de estrellas Michelin.',
-    climate: 'Atlántico húmedo. Precipitaciones abundantes que mantienen el paisaje de un verde esmeralda. Veranos frescos y agradables, inviernos suaves pero lluviosos. El mar Cantábrico marca el ritmo de la vida.',
-    geography: 'Ubicada en una bahía semicircular perfecta (La Concha), flanqueada por los montes Igueldo y Urgull, y con la isla de Santa Clara en el centro. El río Urumea atraviesa la ciudad antes de desembocar en el mar.',
-    landscape: 'La Playa de la Concha con su barandilla blanca icónica, el Peine del Viento de Chillida y la arquitectura de la Belle Époque del centro romántico.',
-    image: 'https://images.unsplash.com/photo-1543731068-7e0f5beff43a?auto=format&fit=crop&w=800&q=80',
-    tags: ['La Concha', 'Gastronomía', 'Belle Époque']
+    description: 'La perla del Cantábrico, elegancia belle époque y gastronomía de estrellas.',
+    history: 'Villa balnearia de la aristocracia europea en el siglo XIX.',
+    climate: 'Oceánico templado.',
+    geography: 'Bahía de la Concha.',
+    landscape: 'Playa de la Concha y Peine del Viento.',
+    image: 'https://images.unsplash.com/photo-1549893072-4bc678117f45?auto=format&fit=crop&w=800&q=80',
+    tags: ['Gourmet', 'Cine', 'Playa']
+  },
+  'Pamplona': {
+    name: 'Pamplona', province: 'Navarra', region: 'Navarra',
+    description: 'Ciudad de murallas, Sanfermines y el antiguo Reyno.',
+    history: 'Fundada por Pompeyo Magno, ha sido llave del Reino de Navarra durante siglos.',
+    climate: 'Oceánico continentalizado.',
+    geography: 'Cuenca de Pamplona sobre el río Arga.',
+    landscape: 'Murallas renacentistas y plaza del Castillo.',
+    image: 'https://images.unsplash.com/photo-1559121010-447efdd92824?auto=format&fit=crop&w=800&q=80',
+    tags: ['Fueros', 'Historia', 'San Fermín']
+  },
+  'Logroño': {
+    name: 'Logroño', province: 'La Rioja', region: 'La Rioja',
+    description: 'Capital del Rioja y encrucijada del Camino de Santiago.',
+    history: 'Ciudad ligada intrínsecamente a la cultura del vino y a la hospitalidad del peregrino.',
+    climate: 'Mediterráneo continentalizado suave.',
+    geography: 'Valle del Ebro.',
+    landscape: 'Calle Laurel y Concatedral de la Redonda.',
+    image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&w=800&q=80',
+    tags: ['Vino', 'Tapeo', 'Hospitalidad']
+  },
+  'Murcia': {
+    name: 'Murcia', province: 'Murcia', region: 'Murcia',
+    description: 'La huerta de Europa, barroca y soleada.',
+    history: 'Fundada en el 825, destaca su impresionante fachada barroca de la catedral.',
+    climate: 'Mediterráneo seco, muy caluroso en verano.',
+    geography: 'Valle del río Segura.',
+    landscape: 'Catedral de Murcia y Real Casino.',
+    image: 'https://images.unsplash.com/photo-1512753360425-076135899661?auto=format&fit=crop&w=800&q=80',
+    tags: ['Huerta', 'Sol', 'Barroco']
+  },
+  'Palma de Mallorca': {
+    name: 'Palma', province: 'Islas Baleares', region: 'Islas Baleares',
+    description: 'Capital mediterránea donde la piedra dorada brilla ante el mar.',
+    history: 'Fundada como colonia romana, su catedral es un icono gótico mundial.',
+    climate: 'Mediterráneo marítimo.',
+    geography: 'Bahía de Palma.',
+    landscape: 'La Seu (Catedral) y Castillo de Bellver.',
+    image: 'https://images.unsplash.com/photo-1512753360425-076135899661?auto=format&fit=crop&w=800&q=80',
+    tags: ['Mar', 'Isla', 'Gótico']
+  },
+  'Las Palmas de Gran Canaria': {
+    name: 'Las Palmas de G.C.', province: 'Las Palmas', region: 'Islas Canarias',
+    description: 'Metrópolis atlántica de clima perfecto y alma colonial.',
+    history: 'Fundada en 1478, escala clave de Colón en su viaje a América.',
+    climate: 'Subtropical oceánico (primavera eterna).',
+    geography: 'Litoral canario.',
+    landscape: 'Playa de Las Canteras y barrio de Vegueta.',
+    image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
+    tags: ['Playa', 'Colonial', 'Eterno Verano']
+  },
+  'Santa Cruz de Tenerife': {
+    name: 'Santa Cruz de Tenerife', province: 'S.C. Tenerife', region: 'Islas Canarias',
+    description: 'Puerto de la alegría canaria y diseño audaz.',
+    history: 'Ciudad ligada históricamente a su puerto y a su famoso carnaval.',
+    climate: 'Subtropical oceánico.',
+    geography: 'Bahía de Santa Cruz.',
+    landscape: 'Auditorio de Tenerife y Parque García Sanabria.',
+    image: 'https://images.unsplash.com/photo-1590424564245-8173400d3839?auto=format&fit=crop&w=800&q=80',
+    tags: ['Carnaval', 'Diseño', 'Puerto']
+  },
+  'Valladolid': {
+    name: 'Valladolid', province: 'Valladolid', region: 'Castilla y León',
+    description: 'Capital histórica de la corte y cuna literaria.',
+    history: 'Fue capital de España con Felipe III y lugar de muerte de Cristóbal Colón.',
+    climate: 'Mediterráneo continentalizado seco.',
+    geography: 'Confluencia del Pisuerga y el Esgueva.',
+    landscape: 'Plaza Mayor y Museo Nacional de Escultura.',
+    image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&w=800&q=80',
+    tags: ['Historia', 'Literatura', 'Corte']
+  },
+  'Alicante': {
+    name: 'Alicante', province: 'Alicante', region: 'C. Valenciana',
+    description: 'La ciudad de la luz bajo la mirada del Castillo de Santa Bárbara.',
+    history: 'Puerto mediterráneo estratégico desde los tiempos de Lucentum.',
+    climate: 'Mediterráneo seco y soleado.',
+    geography: 'Costa Blanca.',
+    landscape: 'Explanada de España y Castillo de Santa Bárbara.',
+    image: 'https://images.unsplash.com/photo-1512753360425-076135899661?auto=format&fit=crop&w=800&q=80',
+    tags: ['Sol', 'Hogueras', 'Mar']
+  },
+  'Córdoba': {
+    name: 'Córdoba', province: 'Córdoba', region: 'Andalucía',
+    description: 'Ciudad de califas y patios de flores infinitas.',
+    history: 'Fue la ciudad más importante de Occidente durante el Califato de Córdoba.',
+    climate: 'Mediterráneo con matices continentales.',
+    geography: 'Valle del Guadalquivir.',
+    landscape: 'Mezquita-Catedral y patios cordobeses.',
+    image: 'https://images.unsplash.com/photo-1559121010-447efdd92824?auto=format&fit=crop&w=800&q=80',
+    tags: ['Califato', 'Flores', 'Historia']
+  },
+  'Cádiz': {
+    name: 'Cádiz', province: 'Cádiz', region: 'Andalucía',
+    description: 'La Tacita de Plata, cuna de la libertad.',
+    history: 'Ciudad más antigua de Occidente, fundada por los fenicios.',
+    climate: 'Mediterráneo marítimo.',
+    geography: 'Casi rodeada por el mar Atlántico.',
+    landscape: 'Catedral de Cádiz y Playa de la Caleta.',
+    image: 'https://images.unsplash.com/photo-1543783230-22e030303030?auto=format&fit=crop&w=800&q=80',
+    tags: ['Fenicia', 'Libertad', 'Luz']
   },
   'Oviedo': {
     name: 'Oviedo', province: 'Asturias', region: 'Asturias',
-    description: 'Capital del Principado, ciudad limpia, señorial y cuna del prerrománico asturiano.',
-    history: 'Capital del Reino de Asturias en el siglo IX, fue el punto de partida del Camino de Santiago. Su arte prerrománico (Santa María del Naranco) es único en el mundo. Ha inspirado a escritores como Clarín, que la retrató como Vetusta en "La Regenta".',
-    climate: 'Oceánico. Temperaturas suaves durante todo el año, con inviernos frescos y veranos templados. Las lluvias son frecuentes, lo que le otorga una luz suave y un entorno verde constante.',
-    geography: 'Situada en una suave colina en el centro de Asturias, rodeada de montañas como el Monte Naranco que la protege del viento del mar.',
-    landscape: 'La Catedral de San Salvador con su torre gótica, las esculturas de sus calles (como la de Mafalda o Woody Allen) y la limpieza impecable de sus parques.',
-    image: 'https://images.unsplash.com/photo-1559863345-02eae058c2c2?auto=format&fit=crop&w=800&q=80',
-    tags: ['Prerrománico', 'Sidra', 'Vetusta']
+    description: 'Capital del paraíso natural y cuna del prerrománico.',
+    history: 'Fundada en el siglo VIII, fue capital del Reino de Asturias.',
+    climate: 'Oceánico, equilibrado.',
+    geography: 'Centro de Asturias.',
+    landscape: 'Santa María del Naranco y Catedral de San Salvador.',
+    image: 'https://images.unsplash.com/photo-1549893072-4bc678117f45?auto=format&fit=crop&w=800&q=80',
+    tags: ['Sidra', 'Historia', 'Verde']
+  },
+  'Badajoz': {
+    name: 'Badajoz', province: 'Badajoz', region: 'Extremadura',
+    description: 'Frontera abierta y fortaleza del Guadiana.',
+    history: 'Ciudad amurallada de origen árabe, clave en las relaciones con Portugal.',
+    climate: 'Mediterráneo continentalizado.',
+    geography: 'Orillas del Guadiana.',
+    landscape: 'Alcazaba y Plaza Alta.',
+    image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
+    tags: ['Frontera', 'Muralla', 'Río']
+  },
+  'Cáceres': {
+    name: 'Cáceres', province: 'Cáceres', region: 'Extremadura',
+    description: 'Laberinto de piedra y linajes nobiliarios.',
+    history: 'Su casco histórico medieval y renacentista es Patrimonio de la Humanidad.',
+    climate: 'Mediterráneo seco.',
+    geography: 'Sobre una colina en la penillanura extremeña.',
+    landscape: 'Ciudad vieja de Cáceres.',
+    image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
+    tags: ['Medieval', 'Nobles', 'Cultura']
+  },
+  'Toledo': {
+    name: 'Toledo', province: 'Toledo', region: 'Castilla-La Mancha',
+    description: 'La ciudad de las tres culturas y el laberinto imperial.',
+    history: 'Antigua capital visigoda y sede de la corte de Carlos I.',
+    climate: 'Mediterráneo continentalizado.',
+    geography: 'Promontorio sobre el río Tajo.',
+    landscape: 'Catedral Primada y Alcázar.',
+    image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
+    tags: ['Cultura', 'Tajo', 'Imperial']
+  },
+  'Albacete': {
+    name: 'Albacete', province: 'Albacete', region: 'Castilla-La Mancha',
+    description: 'La Nueva York de La Mancha, ciudad dinámica y acogedora.',
+    history: 'Cruce de caminos manchego famoso por su cuchillería.',
+    climate: 'Mediterráneo continentalizado.',
+    geography: 'Llanura de La Mancha.',
+    landscape: 'Pasaje de Lodares y Catedral de San Juan.',
+    image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&w=800&q=80',
+    tags: ['Navajas', 'Feria', 'Llanura']
+  },
+  'Guadalajara': {
+    name: 'Guadalajara', province: 'Guadalajara', region: 'Castilla-La Mancha',
+    description: 'Puerta de la Alcarria y sede del Palacio del Infantado.',
+    history: 'Sede del linaje de los Mendoza en el Renacimiento.',
+    climate: 'Mediterráneo continentalizado.',
+    geography: 'Valle del Henares.',
+    landscape: 'Palacio del Infantado y Panteón de la Duquesa de Sevillano.',
+    image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&w=800&q=80',
+    tags: ['Palacios', 'Alcarria', 'Historia']
+  },
+  'Cuenca': {
+    name: 'Cuenca', province: 'Cuenca', region: 'Castilla-La Mancha',
+    description: 'La ciudad que desafía al abismo con sus casas colgadas.',
+    history: 'Fortaleza inexpugnable entre las hoces de los ríos Júcar y Huécar.',
+    climate: 'Mediterráneo continentalizado de montaña.',
+    geography: 'Serranía de Cuenca.',
+    landscape: 'Casas Colgadas y Puente de San Pablo.',
+    image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
+    tags: ['Abismo', 'Casas Colgadas', 'Arte']
+  },
+  'Ciudad Real': {
+    name: 'Ciudad Real', province: 'Ciudad Real', region: 'Castilla-La Mancha',
+    description: 'Capital del Campo de Calatrava y tierra del Quijote.',
+    history: 'Fundada por Alfonso X el Sabio como Villa Real.',
+    climate: 'Mediterráneo continentalizado seco.',
+    geography: 'Llanura manchega.',
+    landscape: 'Puerta de Toledo e Iglesia de San Pedro.',
+    image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&w=800&q=80',
+    tags: ['Quijote', 'Llanura', 'Vino']
+  },
+  'Jaén': {
+    name: 'Jaén', province: 'Jaén', region: 'Andalucía',
+    description: 'Capital del Santo Reino y mar de olivos.',
+    history: 'Crucial en la Reconquista, posee una de las catedrales renacentistas más puras.',
+    climate: 'Mediterráneo continentalizado.',
+    geography: 'Faldas del cerro de Santa Catalina.',
+    landscape: 'Catedral de Jaén y Castillo de Santa Catalina.',
+    image: 'https://images.unsplash.com/photo-1559121010-447efdd92824?auto=format&fit=crop&w=800&q=80',
+    tags: ['Aceite', 'Olivos', 'Historia']
+  },
+  'Huelva': {
+    name: 'Huelva', province: 'Huelva', region: 'Andalucía',
+    description: 'Puerta del Descubrimiento y luz del Atlántico.',
+    history: 'Punto de partida de Colón hacia el Nuevo Mundo.',
+    climate: 'Mediterráneo oceánico suave.',
+    geography: 'Marismas de los ríos Tinto y Odiel.',
+    landscape: 'Muelle del Tinto y Monasterio de la Rábida.',
+    image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
+    tags: ['Descubrimiento', 'Marismas', 'Jamón']
+  },
+  'Almería': {
+    name: 'Almería', province: 'Almería', region: 'Andalucía',
+    description: 'Ciudad del sol infinito y desierto cinematográfico.',
+    history: 'Fue el puerto principal del Califato de Córdoba.',
+    climate: 'Subdesértico mediterráneo.',
+    geography: 'Litoral andaluz oriental.',
+    landscape: 'Alcazaba y Cabo de Gata.',
+    image: 'https://images.unsplash.com/photo-1512753360425-076135899661?auto=format&fit=crop&w=800&q=80',
+    tags: ['Sol', 'Cine', 'Desierto']
+  },
+  'Cádiz': {
+    name: 'Cádiz', province: 'Cádiz', region: 'Andalucía',
+    description: 'La Tacita de Plata, cuna de la libertad.',
+    history: 'Ciudad más antigua de Occidente, fundada por los fenicios.',
+    climate: 'Mediterráneo marítimo.',
+    geography: 'Casi rodeada por el mar Atlántico.',
+    landscape: 'Catedral de Cádiz y Playa de la Caleta.',
+    image: 'https://images.unsplash.com/photo-1543783230-22e030303030?auto=format&fit=crop&w=800&q=80',
+    tags: ['Fenicia', 'Libertad', 'Luz']
+  },
+  'Ceuta': {
+    name: 'Ceuta', province: 'Ceuta', region: 'Ceuta',
+    description: 'Dos mundos unidos por dos mares y murallas reales.',
+    history: 'Ciudad autónoma española en África, crisol de cuatro culturas.',
+    climate: 'Mediterráneo suave.',
+    geography: 'Estrecho de Gibraltar.',
+    landscape: 'Murallas Reales y foso navegable.',
+    image: 'https://images.unsplash.com/photo-1590424564245-8173400d3839?auto=format&fit=crop&w=800&q=80',
+    tags: ['Estrecho', 'Culturas', 'Puerto']
+  },
+  'Melilla': {
+    name: 'Melilla', province: 'Melilla', region: 'Melilla',
+    description: 'La joya modernista en el norte de África.',
+    history: 'Segunda ciudad con más edificios modernistas de España tras Barcelona.',
+    climate: 'Mediterráneo soleado.',
+    geography: 'Cabo de Tres Forcas.',
+    landscape: 'Melilla la Vieja y arquitectura modernista.',
+    image: 'https://images.unsplash.com/photo-1590424564245-8173400d3839?auto=format&fit=crop&w=800&q=80',
+    tags: ['Modernismo', 'Historia', 'Mar']
+  },
+  'Teruel': {
+    name: 'Teruel', province: 'Teruel', region: 'Aragón',
+    description: 'La ciudad del amor y el mudéjar.',
+    history: 'Famosa por los Amantes de Teruel y su impresionante arquitectura mudéjar Patrimonio de la Humanidad.',
+    climate: 'Mediterráneo continental de montaña.',
+    geography: 'Sur de Aragón.',
+    landscape: 'Torres mudéjares y Mausoleo de los Amantes.',
+    image: 'https://images.unsplash.com/photo-1549893072-4bc678117f45?auto=format&fit=crop&w=800&q=80',
+    tags: ['Mudéjar', 'Amor', 'Frío']
+  },
+  'Soria': {
+    name: 'Soria', province: 'Soria', region: 'Castilla y León',
+    description: 'Ciudad de poetas a orillas del Duero.',
+    history: 'Inspiración de Machado y Bécquer, conserva un aire medieval místico.',
+    climate: 'Mediterráneo continentalizado de montaña.',
+    geography: 'Alto Duero.',
+    landscape: 'Ermita de San Saturio y Monasterio de San Juan de Duero.',
+    image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&w=800&q=80',
+    tags: ['Poesía', 'Duero', 'Paz']
+  },
+  'Zamora': {
+    name: 'Zamora', province: 'Zamora', region: 'Castilla y León',
+    description: 'La perla del Duero, capital del románico urbano.',
+    history: 'Conserva el conjunto de iglesias románicas más importante de Europa en su centro urbano.',
+    climate: 'Mediterráneo continentalizado.',
+    geography: 'Borde del río Duero.',
+    landscape: 'Catedral de Zamora y murallas medievales.',
+    image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
+    tags: ['Románico', 'Duero', 'Historia']
+  },
+  'Palencia': {
+    name: 'Palencia', province: 'Palencia', region: 'Castilla y León',
+    description: 'La bella desconocida del gótico castellano.',
+    history: 'Sede de la primera universidad de España, fundada en el siglo XIII.',
+    climate: 'Mediterráneo continentalizado.',
+    geography: 'Llanura de Tierra de Campos.',
+    landscape: 'Catedral de San Antolín y Cristo del Otero.',
+    image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
+    tags: ['Gótico', 'Universidad', 'Tranquilidad']
+  },
+  'Segovia': {
+    name: 'Segovia', province: 'Segovia', region: 'Castilla y León',
+    description: 'Donde el acueducto romano abraza a la historia.',
+    history: 'Ciudad Patrimonio de la Humanidad, famosa por su acueducto y su alcázar de cuento.',
+    climate: 'Mediterráneo continentalizado.',
+    geography: 'A los pies de la Sierra de Guadarrama.',
+    landscape: 'Acueducto romano y Alcázar de Segovia.',
+    image: 'https://images.unsplash.com/photo-1543783230-22e030303030?auto=format&fit=crop&w=800&q=80',
+    tags: ['Acueducto', 'Castillo', 'Historia']
+  },
+  'Ávila': {
+    name: 'Ávila', province: 'Ávila', region: 'Castilla y León',
+    description: 'La ciudad de las murallas y los caballeros.',
+    history: 'Posee el recinto amurallado medieval mejor conservado de Europa.',
+    climate: 'Mediterráneo continentalizado de montaña.',
+    geography: 'Valle del Amblés, a gran altitud.',
+    landscape: 'Murallas de Ávila y Basílica de San Vicente.',
+    image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
+    tags: ['Murallas', 'Mística', 'Frío']
+  },
+  'Huesca': {
+    name: 'Huesca', province: 'Huesca', region: 'Aragón',
+    description: 'Puerta de los Pirineos y capital del Alto Aragón.',
+    history: 'Antigua capital del Reino de Aragón, famosa por la leyenda de la Campana.',
+    climate: 'Mediterráneo continentalizado.',
+    geography: 'Hoya de Huesca.',
+    landscape: 'Catedral de Huesca y San Pedro el Viejo.',
+    image: 'https://images.unsplash.com/photo-1549893072-4bc678117f45?auto=format&fit=crop&w=800&q=80',
+    tags: ['Pirineos', 'Aragón', 'Naturaleza']
+  },
+  'Lleida': {
+    name: 'Lleida', province: 'Lleida', region: 'Cataluña',
+    description: 'La capital de la Terra Ferma bañada por el Segre.',
+    history: 'Dominada por su catedral vieja (Seu Vella) que vigila la llanura.',
+    climate: 'Mediterráneo continentalizado seco.',
+    geography: 'Llanura del Segre.',
+    landscape: 'Seu Vella y Castillo del Rey.',
+    image: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=800&q=80',
+    tags: ['Historia', 'Segre', 'Cultura']
+  },
+  'Tarragona': {
+    name: 'Tarragona', province: 'Tarragona', region: 'Cataluña',
+    description: 'La antigua Tarraco romana frente al Mediterráneo.',
+    history: 'Capital de la Hispania Citerior, conserva un anfiteatro único junto al mar.',
+    climate: 'Mediterráneo marítimo.',
+    geography: 'Costa Daurada.',
+    landscape: 'Anfiteatro romano y Balcón del Mediterráneo.',
+    image: 'https://images.unsplash.com/photo-1512753360425-076135899661?auto=format&fit=crop&w=800&q=80',
+    tags: ['Roma', 'Mar', 'Patrimonio']
+  },
+  'Girona': {
+    name: 'Girona', province: 'Girona', region: 'Cataluña',
+    description: 'La ciudad de los cuatro ríos y el barrio judío.',
+    history: 'Su Call (barrio judío) es uno de los mejor conservados de Europa.',
+    climate: 'Mediterráneo húmedo.',
+    geography: 'Confluencia del Ter, Onyar, Güell y Galligants.',
+    landscape: 'Catedral de Girona y casas del Onyar.',
+    image: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=800&q=80',
+    tags: ['Historia', 'Ríos', 'Judío']
+  },
+  'Pontevedra': {
+    name: 'Pontevedra', province: 'Pontevedra', region: 'Galicia',
+    description: 'La capital de las Rías Baixas, paraíso peatonal.',
+    history: 'Modelo internacional de accesibilidad y ciudad pensada para las personas.',
+    climate: 'Oceánico húmedo.',
+    geography: 'Ría de Pontevedra.',
+    landscape: 'Iglesia de la Peregrina y casco antiguo peatonal.',
+    image: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=800&q=80',
+    tags: ['Accesible', 'Galicia', 'Peatonal']
+  },
+  'Ourense': {
+    name: 'Ourense', province: 'Ourense', region: 'Galicia',
+    description: 'La ciudad de las Burgas y las termas del Miño.',
+    history: 'Centro termal desde la época romana, donde el agua nace hirviendo.',
+    climate: 'Oceánico-mediterráneo continentalizado.',
+    geography: 'Orillas del Miño.',
+    landscape: 'As Burgas y Puente Romano.',
+    image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
+    tags: ['Termas', 'Agua', 'Historia']
+  },
+  'Lugo': {
+    name: 'Lugo', province: 'Lugo', region: 'Galicia',
+    description: 'La ciudad abrazada por la muralla romana.',
+    history: 'Posee la única muralla romana en el mundo que conserva su perímetro completo.',
+    climate: 'Oceánico suave.',
+    geography: 'Interior de Galicia.',
+    landscape: 'Muralla romana Patrimonio de la Humanidad.',
+    image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
+    tags: ['Muralla', 'Romana', 'Historia']
   }
-  // Se añadirán más ciudades bajo demanda, manteniendo este estándar de excelencia.
 };

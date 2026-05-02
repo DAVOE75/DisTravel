@@ -11,7 +11,8 @@ import {
   TextInput,
   Alert,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Modal
 } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
@@ -26,7 +27,7 @@ import {
   Download,
   Camera,
   Save,
-  Edit3,
+  Edit,
   X
 } from 'lucide-react-native';
 import { typography } from '../theme/typography';
@@ -53,22 +54,72 @@ const EditableField = ({ label, value, onChangeText, icon: Icon, theme, isEditin
   </View>
 );
 
-export function DisabilityDetailScreen({ navigation }) {
+export function DisabilityDetailScreen({ navigation, route }) {
   const { theme, isDarkMode } = useTheme();
   const { userData, updateUserData } = useUser();
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(route.params?.editMode || false);
   const [localData, setLocalData] = useState({ ...userData });
 
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+  React.useEffect(() => {
+    if (route.params?.editMode) {
+      setIsEditing(true);
+    }
+  }, [route.params]);
+  const [showFullImage, setShowFullImage] = useState(false);
+
+  const handleImageOption = () => {
+    Alert.alert(
+      "Actualizar Tarjeta",
+      "¿Cómo deseas añadir la foto de tu tarjeta de discapacidad?",
+      [
+        {
+          text: "Hacer Foto con Cámara",
+          onPress: takePhoto,
+        },
+        {
+          text: "Elegir de Galería",
+          onPress: pickImage,
+        },
+        {
+          text: "Cancelar",
+          style: "cancel"
+        }
+      ]
+    );
+  };
+
+  const rotateImage = () => {
+    setRotation((prev) => (prev + 90) % 360);
+  };
+
+  const takePhoto = async () => {
+    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permiso denegado', 'Necesitamos acceso a tu cámara para poder fotografiar la tarjeta.');
+      return;
+    }
+
+    let result = await ImagePicker.launchCameraAsync({
       allowsEditing: true,
-      aspect: [16, 9],
       quality: 1,
     });
 
     if (!result.canceled) {
       setLocalData({ ...localData, idCardImage: result.assets[0].uri });
+      setRotation(0); // Reset rotation on new photo
+    }
+  };
+
+  const pickImage = async () => {
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setLocalData({ ...localData, idCardImage: result.assets[0].uri });
+      setRotation(0); // Reset rotation on new photo
     }
   };
 
@@ -87,6 +138,35 @@ export function DisabilityDetailScreen({ navigation }) {
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
       
+      {/* Full Screen Presentation Modal */}
+      <Modal
+        visible={showFullImage}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowFullImage(false)}
+      >
+        <TouchableOpacity 
+          style={styles.fullImageContainer} 
+          activeOpacity={1} 
+          onPress={() => setShowFullImage(false)}
+        >
+          <View style={styles.fullImageHeader}>
+            <TouchableOpacity onPress={() => setShowFullImage(false)}>
+              <X color="#FFFFFF" size={32} />
+            </TouchableOpacity>
+          </View>
+          <Image 
+            source={{ uri: localData.idCardImage }} 
+            style={[
+              styles.fullIdCardImage,
+              { transform: [{ rotate: `${rotation}deg` }] }
+            ]}
+            resizeMode="contain"
+          />
+          <Text style={styles.presentationText}>MODO PRESENTACIÓN OFICIAL</Text>
+        </TouchableOpacity>
+      </Modal>
+
       <KeyboardAvoidingView 
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{ flex: 1 }}
@@ -104,7 +184,7 @@ export function DisabilityDetailScreen({ navigation }) {
           <View style={{ flexDirection: 'row' }}>
             {!isEditing ? (
               <TouchableOpacity style={styles.actionIconButton} onPress={() => setIsEditing(true)}>
-                <Edit3 color={theme.primary} size={22} />
+                <Edit color={theme.primary} size={22} />
               </TouchableOpacity>
             ) : (
               <TouchableOpacity style={styles.actionIconButton} onPress={handleCancel}>
@@ -115,11 +195,20 @@ export function DisabilityDetailScreen({ navigation }) {
         </View>
 
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          {/* Card Visualization with Upload option */}
-          <View style={[styles.imageContainer, { borderColor: isEditing ? theme.primary : theme.border }]}>
+          {/* Card Visualization with Upload & Transform option */}
+          <TouchableOpacity 
+            style={[styles.imageContainer, { borderColor: isEditing ? theme.primary : theme.border }]}
+            onPress={() => !isEditing && setShowFullImage(true)}
+            activeOpacity={isEditing ? 1 : 0.7}
+          >
             <Image 
               source={{ uri: localData.idCardImage }} 
-              style={[styles.idCardImage, isEditing && { opacity: 0.6 }]}
+              style={[
+                styles.idCardImage, 
+                isEditing && { opacity: 0.6 },
+                { transform: [{ rotate: `${rotation}deg` }] }
+              ]}
+              resizeMode="contain"
             />
             {!isEditing ? (
               <View style={styles.statusBadge}>
@@ -127,12 +216,21 @@ export function DisabilityDetailScreen({ navigation }) {
                 <Text style={styles.statusText}>VERIFICADO</Text>
               </View>
             ) : (
-              <TouchableOpacity style={styles.uploadOverlay} onPress={pickImage}>
-                <Camera color="#FFFFFF" size={40} />
-                <Text style={styles.uploadText}>Cambiar Foto de Tarjeta</Text>
-              </TouchableOpacity>
+              <View style={styles.uploadOverlay}>
+                <TouchableOpacity style={styles.mainUploadBtn} onPress={handleImageOption}>
+                  <Camera color="#FFFFFF" size={40} />
+                  <Text style={styles.uploadText}>Cambiar Foto</Text>
+                </TouchableOpacity>
+                
+                <View style={styles.transformTools}>
+                  <TouchableOpacity style={styles.toolBtn} onPress={rotateImage}>
+                    <Download color="#FFFFFF" size={20} style={{ transform: [{ rotate: '90deg' }] }} />
+                    <Text style={styles.toolBtnText}>Girar 90°</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
             )}
-          </View>
+          </TouchableOpacity>
 
           <View style={styles.infoSection}>
             <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>Detalles Técnicos</Text>
@@ -195,6 +293,30 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  fullImageContainer: {
+    flex: 1,
+    backgroundColor: '#000000',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fullImageHeader: {
+    position: 'absolute',
+    top: 50,
+    right: 20,
+    zIndex: 10,
+  },
+  fullIdCardImage: {
+    width: '95%',
+    height: '70%',
+  },
+  presentationText: {
+    color: 'rgba(255,255,255,0.5)',
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 2,
+    position: 'absolute',
+    bottom: 40,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -236,6 +358,32 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.4)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  mainUploadBtn: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  transformTools: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255,255,255,0.2)',
+    paddingTop: 15,
+    width: '80%',
+  },
+  toolBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 12,
+  },
+  toolBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    marginLeft: 8,
+    fontSize: 12,
   },
   uploadText: {
     color: '#FFFFFF',

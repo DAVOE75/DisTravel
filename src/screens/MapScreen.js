@@ -13,25 +13,44 @@ import { colors } from '../theme/colors';
 import { MONUMENTOS } from '../data/monumentos';
 import { ChevronLeft, Info, Sun, Moon, MapPin } from 'lucide-react-native';
 import { mapStyles } from '../theme/mapStyles';
+import { useTheme } from '../theme/ThemeContext';
+import { useUser } from '../context/UserContext';
 
-export function MapScreen({ navigation }) {
+export function MapScreen({ route, navigation }) {
+  const { city } = route.params || {};
+  const { theme } = useTheme();
+  const { userData } = useUser();
   const [mapTheme, setMapTheme] = useState('dark');
   
-  // Perfil de usuario simulado (esto vendría de un Contexto Global de perfil)
-  const userProfile = {
-    disabilityDegree: 65, 
-    hasCompanion: true
-  };
+  // Obtener monumentos de la ciudad seleccionada o todos
+  const displayMonuments = city ? (MONUMENTOS[city.name] || []) : Object.values(MONUMENTOS).flat();
 
+  // Calcular color del marcador basado en beneficios reales
   const getMarkerColor = (monument) => {
-    if (monument.basePrice === 0) return colors.success; // Verde: Gratis
-    if (userProfile.disabilityDegree >= 65 && monument.discount65 === 0) return colors.success;
-    if (userProfile.disabilityDegree >= 33) return '#3498db'; // Azul: Descuento
-    return colors.primary; // Naranja: General
+    const isFree = monument.disabilityBenefit.toLowerCase().includes('gratis') || 
+                   monument.disabilityBenefit.toLowerCase().includes('gratuita');
+    
+    if (isFree) return '#2ECC71'; // Verde: Gratis
+    if (monument.disabilityBenefit.toLowerCase().includes('reducida') || 
+        monument.disabilityBenefit.toLowerCase().includes('descuento')) return '#3498db'; // Azul: Descuento
+    return '#E67E22'; // Naranja: General
   };
 
   const toggleTheme = () => {
     setMapTheme(mapTheme === 'dark' ? 'light' : 'dark');
+  };
+
+  // Región inicial: Centrar en el primer monumento si hay ciudad
+  const initialRegion = displayMonuments.length > 0 ? {
+    latitude: displayMonuments[0].location.latitude,
+    longitude: displayMonuments[0].location.longitude,
+    latitudeDelta: 0.05,
+    longitudeDelta: 0.05,
+  } : {
+    latitude: 40.4168, // Madrid por defecto
+    longitude: -3.7038,
+    latitudeDelta: 10,
+    longitudeDelta: 10,
   };
 
   return (
@@ -40,37 +59,32 @@ export function MapScreen({ navigation }) {
       
       <MapView
         style={styles.map}
-        initialRegion={{
-          latitude: 38.3452,
-          longitude: -0.4815,
-          latitudeDelta: 0.05,
-          longitudeDelta: 0.05,
-        }}
+        initialRegion={initialRegion}
         customMapStyle={mapTheme === 'dark' ? mapStyles.dark : mapStyles.light}
       >
-        {MONUMENTOS.map((monument) => (
+        {displayMonuments.map((monument) => (
           <Marker
             key={monument.id}
-            coordinate={monument.coordinates}
+            coordinate={monument.location}
           >
-            {/* Custom Marker Icon */}
             <View style={styles.customMarker}>
               <MapPin 
-                size={32} 
+                size={34} 
                 color={getMarkerColor(monument)} 
-                fill={getMarkerColor(monument) + '40'} // Transparent fill
+                fill={getMarkerColor(monument) + '30'}
               />
             </View>
 
-            <Callout onPress={() => navigation.navigate('PlaceDetail', { place: monument })}>
-              <View style={styles.callout}>
+            <Callout 
+              tooltip
+              onPress={() => navigation.navigate('PlaceDetail', { place: monument })}
+            >
+              <View style={[styles.callout, { backgroundColor: '#FFFFFF', borderRadius: 16 }]}>
                 <Text style={styles.calloutTitle}>{monument.name}</Text>
-                <Text style={styles.calloutPrice}>
-                  {monument.basePrice === 0 ? '¡Entrada Gratis!' : `Desde ${monument.basePrice}€`}
-                </Text>
+                <Text style={styles.calloutPrice}>{monument.price}</Text>
                 <View style={styles.infoRow}>
-                  <Info size={12} color={colors.primary} />
-                  <Text style={styles.calloutAction}>Ver detalles y accesibilidad</Text>
+                  <Info size={12} color="#E67E22" />
+                  <Text style={styles.calloutAction}>Toca para info total</Text>
                 </View>
               </View>
             </Callout>
