@@ -18,6 +18,8 @@ const INITIAL_USER_DATA = {
   isLoggedIn: false,
   voiceGuidance: false,
   highContrast: false,
+  isAdmin: true,
+  id: 'admin_1',
 };
 
 export const UserProvider = ({ children }) => {
