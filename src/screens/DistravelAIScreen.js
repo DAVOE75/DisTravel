@@ -28,7 +28,9 @@ import {
   MapPin,
   Library,
   Info,
-  Accessibility
+  Accessibility,
+  Edit,
+  Check
 } from 'lucide-react-native';
 import { typography } from '../theme/typography';
 
@@ -95,6 +97,10 @@ export function DistravelAIScreen({ navigation }) {
     }
   };
 
+  const [isCorrecting, setIsCorrecting] = useState(false);
+  const [correctionText, setCorrectionText] = useState('');
+  const [isVerifyingCorrection, setIsVerifyingCorrection] = useState(false);
+
   const startExploration = async () => {
     const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
     if (permissionResult.granted === false) {
@@ -108,6 +114,7 @@ export function DistravelAIScreen({ navigation }) {
       setCapturedImage(result.assets[0].uri);
       setIsAnalyzing(true);
       setExplorerResult(null);
+      setIsCorrecting(false);
       
       setTimeout(() => {
         setExplorerResult({
@@ -119,6 +126,24 @@ export function DistravelAIScreen({ navigation }) {
         setIsAnalyzing(false);
       }, 2500);
     }
+  };
+
+  const handleCorrection = () => {
+    if (!correctionText.trim()) return;
+    
+    setIsVerifyingCorrection(true);
+    
+    setTimeout(() => {
+      setExplorerResult(prev => ({
+        ...prev,
+        verified: true,
+        description: `${prev.description}\n\n[Actualización Verificada por IA]: ${correctionText}`,
+      }));
+      setIsVerifyingCorrection(false);
+      setIsCorrecting(false);
+      setCorrectionText('');
+      Alert.alert("Verificación Exitosa", "La IA ha verificado tu corrección y ha actualizado la información del lugar.");
+    }, 2000);
   };
 
   return (
@@ -289,8 +314,27 @@ export function DistravelAIScreen({ navigation }) {
           </TouchableOpacity>
 
           {explorerResult && (
-            <View style={[styles.resultCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-              <Text style={[styles.resultTitle, { color: theme.text, marginBottom: 5 }]}>{explorerResult.name}</Text>
+            <View style={[styles.resultCard, { backgroundColor: theme.surface, borderColor: explorerResult.verified ? theme.success : theme.border }]}>
+              <View style={styles.resultHeader}>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.resultTitle, { color: theme.text, marginBottom: 5 }]}>{explorerResult.name}</Text>
+                  {explorerResult.verified && (
+                    <View style={styles.verifiedRow}>
+                      <ShieldCheck color={theme.success} size={14} />
+                      <Text style={[styles.verifiedLabel, { color: theme.success }]}>Verificado por IA</Text>
+                    </View>
+                  )}
+                </View>
+                {!isCorrecting && (
+                  <TouchableOpacity 
+                    style={[styles.correctionBtn, { backgroundColor: theme.primary + '15' }]}
+                    onPress={() => setIsCorrecting(true)}
+                  >
+                    <Edit color={theme.primary} size={16} />
+                  </TouchableOpacity>
+                )}
+              </View>
+
               <Text style={[styles.explorerDesc, { color: theme.textSecondary }]}>{explorerResult.description}</Text>
               
               <View style={[styles.infoBox, { backgroundColor: theme.primary + '10' }]}>
@@ -302,6 +346,43 @@ export function DistravelAIScreen({ navigation }) {
                 <Accessibility color={theme.success} size={16} />
                 <Text style={[styles.infoBoxText, { color: theme.text }]}>Accesibilidad: {explorerResult.accessInfo}</Text>
               </View>
+
+              {isCorrecting && (
+                <View style={[styles.correctionForm, { borderTopColor: theme.border }]}>
+                  <Text style={[styles.correctionLabel, { color: theme.text }]}>¿Qué información es incorrecta?</Text>
+                  <TextInput 
+                    style={[styles.correctionInput, { color: theme.text, backgroundColor: theme.background, borderColor: theme.border }]}
+                    placeholder="Escribe la corrección aquí..."
+                    placeholderTextColor={theme.textSecondary}
+                    multiline
+                    value={correctionText}
+                    onChangeText={setCorrectionText}
+                  />
+                  <View style={styles.correctionActions}>
+                    <TouchableOpacity 
+                      style={[styles.cancelBtn, { borderColor: theme.border }]}
+                      onPress={() => setIsCorrecting(false)}
+                      disabled={isVerifyingCorrection}
+                    >
+                      <Text style={[styles.cancelBtnText, { color: theme.textSecondary }]}>Cancelar</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      style={[styles.verifyBtn, { backgroundColor: theme.primary }]}
+                      onPress={handleCorrection}
+                      disabled={isVerifyingCorrection}
+                    >
+                      {isVerifyingCorrection ? (
+                        <ActivityIndicator size="small" color="#FFFFFF" />
+                      ) : (
+                        <>
+                          <Check color="#FFFFFF" size={18} />
+                          <Text style={styles.verifyBtnText}>Verificar</Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
             </View>
           )}
         </ScrollView>
@@ -351,4 +432,15 @@ const styles = StyleSheet.create({
   explorerDesc: { fontSize: 14, lineHeight: 20, marginBottom: 15 },
   infoBox: { flexDirection: 'row', padding: 12, borderRadius: 12, marginBottom: 10, alignItems: 'flex-start' },
   infoBoxText: { flex: 1, fontSize: 13, marginLeft: 10, lineHeight: 18 },
+  verifiedRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
+  verifiedLabel: { fontSize: 11, fontWeight: '700', marginLeft: 5, textTransform: 'uppercase' },
+  correctionBtn: { width: 36, height: 36, borderRadius: 18, justifyContent: 'center', alignItems: 'center' },
+  correctionForm: { marginTop: 20, paddingTop: 20, borderTopWidth: 1 },
+  correctionLabel: { fontSize: 14, fontWeight: '700', marginBottom: 10 },
+  correctionInput: { borderRadius: 12, padding: 15, height: 100, textAlignVertical: 'top', borderWidth: 1, fontSize: 14, marginBottom: 15 },
+  correctionActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 10 },
+  cancelBtn: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10, borderWidth: 1 },
+  cancelBtnText: { fontWeight: '700', fontSize: 14 },
+  verifyBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10, gap: 8 },
+  verifyBtnText: { color: '#FFFFFF', fontWeight: '800', fontSize: 14 },
 });

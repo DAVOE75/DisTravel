@@ -113,8 +113,27 @@ export function HomeScreen({ navigation }) {
            (city.tags && city.tags.some(tag => normalize(tag).includes(query)));
   });
 
+  const PROVINCES = {
+    '01': 'Álava', '02': 'Albacete', '03': 'Alicante', '04': 'Almería', '05': 'Ávila',
+    '06': 'Badajoz', '07': 'Baleares', '08': 'Barcelona', '09': 'Burgos', '10': 'Cáceres',
+    '11': 'Cádiz', '12': 'Castellón', '13': 'Ciudad Real', '14': 'Córdoba', '15': 'A Coruña',
+    '16': 'Cuenca', '17': 'Girona', '18': 'Granada', '19': 'Guadalajara', '20': 'Guipúzcoa',
+    '21': 'Huelva', '22': 'Huesca', '23': 'Jaén', '24': 'León', '25': 'Lleida',
+    '26': 'La Rioja', '27': 'Lugo', '28': 'Madrid', '29': 'Málaga', '30': 'Murcia',
+    '31': 'Navarra', '32': 'Ourense', '33': 'Asturias', '34': 'Palencia', '35': 'Las Palmas',
+    '36': 'Pontevedra', '37': 'Salamanca', '38': 'S.C. Tenerife', '39': 'Cantabria', '40': 'Segovia',
+    '41': 'Sevilla', '42': 'Soria', '43': 'Tarragona', '44': 'Teruel', '45': 'Toledo',
+    '46': 'Valencia', '47': 'Valladolid', '48': 'Vizcaya', '49': 'Zamora', '50': 'Zaragoza',
+    '51': 'Ceuta', '52': 'Melilla'
+  };
+
+  const getProvince = (code) => PROVINCES[code] || 'España';
+
   const matchedTowns = searchQuery.length >= 3 
-    ? municipiosData.filter(m => normalize(m.label).includes(normalize(searchQuery))).slice(0, 10)
+    ? municipiosData
+        .filter(m => normalize(m.label).includes(normalize(searchQuery)))
+        .map(m => ({ ...m, province: getProvince(m.parent_code) }))
+        .slice(0, 10)
     : [];
 
   const getGreeting = () => {
@@ -138,7 +157,7 @@ export function HomeScreen({ navigation }) {
           <View>
             <View style={styles.brandContainer}>
                <Image 
-                source={require('../../assets/logo_official.jpg')} 
+                source={require('../../assets/logo_official.png')} 
                 style={styles.headerLogo} 
                 resizeMode="contain"
               />
@@ -180,66 +199,83 @@ export function HomeScreen({ navigation }) {
           </View>
         </View>
 
-        {/* Resultados de Pueblos de España */}
-        {matchedTowns.length > 0 && (
-          <View style={styles.townsSection}>
-            <Text style={[styles.sectionTitle, { color: theme.text }, typography.h3]}>Pueblos Encontrados</Text>
-            {matchedTowns.map((town, index) => (
-              <TouchableOpacity 
-                key={`${town.code}-${index}`}
-                style={[styles.townItem, { borderBottomColor: theme.border }]}
-                onPress={() => {
-                  setSearchQuery('');
-                  navigation.navigate('CityDetail', { 
-                    city: { 
-                      name: town.label, 
-                      province: town.province || 'España',
-                      image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
-                      description: 'Explora los lugares accesibles de este municipio.',
-                      history: 'Información histórica en proceso de verificación.',
-                      tags: ['Pueblo']
-                    } 
-                  });
-                }}
-              >
-                <MapPin color={theme.primary} size={18} />
-                <Text style={[styles.townLabel, { color: theme.text }]}>{town.label}</Text>
-                <ChevronRight color={theme.textSecondary} size={16} />
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-          
-          {/* Resultados Desplegables en tiempo real */}
-          {searchQuery.length > 0 && (
-            <View style={[styles.searchResultsDropdown, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-              {filteredCities.length > 0 ? (
-                filteredCities.slice(0, 5).map((city, index) => (
-                  <TouchableOpacity 
-                    key={index} 
-                    style={[styles.searchResultItem, { borderBottomColor: theme.border }]}
-                    onPress={() => {
-                      setSearchQuery('');
-                      navigation.navigate('CityDetail', { city });
-                    }}
-                  >
-                    <View style={styles.searchResultLeft}>
-                      <MapPin color={theme.primary} size={16} />
-                      <View style={{ marginLeft: 12 }}>
-                        <Text style={[styles.searchResultName, { color: theme.text }]}>{city.name}</Text>
-                        <Text style={[styles.searchResultProvince, { color: theme.textSecondary }]}>{city.province}</Text>
+        {/* Resultados de búsqueda UNIFICADOS */}
+        {searchQuery.length > 0 && (
+          <View style={[styles.searchResultsDropdown, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+            <ScrollView style={{ maxHeight: 300 }} keyboardShouldPersistTaps="handled">
+              {/* Sección de Ciudades Premium / Propias */}
+              {filteredCities.length > 0 && (
+                <View>
+                  <Text style={[styles.dropdownSectionTitle, { color: theme.primary }]}>CIUDADES DESTACADAS</Text>
+                  {filteredCities.map((city, index) => (
+                    <TouchableOpacity 
+                      key={`city-${index}`} 
+                      style={[styles.searchResultItem, { borderBottomColor: theme.border }]}
+                      onPress={() => {
+                        setSearchQuery('');
+                        navigation.navigate('CityDetail', { city });
+                      }}
+                    >
+                      <View style={styles.searchResultLeft}>
+                        <View style={[styles.resultIcon, { backgroundColor: theme.primary + '15' }]}>
+                          <Building2 color={theme.primary} size={16} />
+                        </View>
+                        <View style={{ marginLeft: 12 }}>
+                          <Text style={[styles.searchResultName, { color: theme.text }]}>{city.name}</Text>
+                          <Text style={[styles.searchResultProvince, { color: theme.textSecondary }]}>{city.province}</Text>
+                        </View>
                       </View>
-                    </View>
-                    <ChevronRight color={theme.textSecondary} size={16} />
-                  </TouchableOpacity>
-                ))
-              ) : (
-                <View style={styles.noResultsContainer}>
-                  <Text style={{ color: theme.textSecondary }}>No se encontraron ciudades</Text>
+                      <ChevronRight color={theme.textSecondary} size={16} />
+                    </TouchableOpacity>
+                  ))}
                 </View>
               )}
-            </View>
-          )}
+
+              {/* Sección de Pueblos (Base de datos general) */}
+              {matchedTowns.length > 0 && (
+                <View>
+                  <Text style={[styles.dropdownSectionTitle, { color: theme.textSecondary, marginTop: 10 }]}>PUEBLOS Y MUNICIPIOS</Text>
+                  {matchedTowns.map((town, index) => (
+                    <TouchableOpacity 
+                      key={`town-${index}`}
+                      style={[styles.searchResultItem, { borderBottomColor: theme.border }]}
+                      onPress={() => {
+                        setSearchQuery('');
+                        navigation.navigate('CityDetail', { 
+                          city: { 
+                            name: town.label, 
+                            province: town.province || 'España',
+                            image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
+                            description: 'Explora los lugares accesibles de este municipio.',
+                            history: 'Información histórica en proceso de verificación.',
+                            tags: ['Pueblo']
+                          } 
+                        });
+                      }}
+                    >
+                      <View style={styles.searchResultLeft}>
+                        <View style={[styles.resultIcon, { backgroundColor: theme.textSecondary + '15' }]}>
+                          <MapPin color={theme.textSecondary} size={16} />
+                        </View>
+                        <View style={{ marginLeft: 12 }}>
+                          <Text style={[styles.searchResultName, { color: theme.text }]}>{town.label}</Text>
+                          <Text style={[styles.searchResultProvince, { color: theme.textSecondary }]}>{town.province || 'España'}</Text>
+                        </View>
+                      </View>
+                      <ChevronRight color={theme.textSecondary} size={16} />
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+
+              {filteredCities.length === 0 && matchedTowns.length === 0 && (
+                <View style={styles.noResultsContainer}>
+                  <Text style={{ color: theme.textSecondary }}>No se encontraron resultados</Text>
+                </View>
+              )}
+            </ScrollView>
+          </View>
+        )}
 
         <View style={styles.sectionContainer}>
           <Text style={[styles.sectionTitle, { color: theme.text }, typography.h2]}>Herramientas de Élite 🌟</Text>
@@ -623,21 +659,19 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     marginTop: 2,
   },
-  townsSection: {
-    paddingHorizontal: 20,
-    marginTop: 10,
-    marginBottom: 10,
+  dropdownSectionTitle: {
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1,
+    paddingHorizontal: 15,
+    paddingTop: 15,
+    paddingBottom: 5,
   },
-  townItem: {
-    flexDirection: 'row',
+  resultIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 0.5,
-  },
-  townLabel: {
-    flex: 1,
-    marginLeft: 12,
-    fontSize: 16,
-    fontWeight: '500',
   },
 });

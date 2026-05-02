@@ -15,13 +15,13 @@ const INITIAL_USER_DATA = {
   expiryDate: '',
   idCardImage: null,
   profileImage: null,
-  isLoggedIn: true,
+  isLoggedIn: false,
   voiceGuidance: false,
   highContrast: false,
   isAdmin: true,
-  id: 'admin_1',
+  id: 'guest',
   contributions: [],
-  customCityData: {}, // Guardará { 'alcoy': { image: '...', history: '...' } }
+  customCityData: {},
 };
 
 export const UserProvider = ({ children }) => {
@@ -36,17 +36,15 @@ export const UserProvider = ({ children }) => {
         const jsonValue = await AsyncStorage.getItem(STORAGE_KEY);
         if (jsonValue != null) {
           const parsed = JSON.parse(jsonValue);
-          // Mezclamos con INITIAL_USER_DATA para asegurar campos nuevos
-          setUserData({ ...INITIAL_USER_DATA, ...parsed, isLoggedIn: true });
+          // Mezclamos con INITIAL_USER_DATA para asegurar campos nuevos y forzamos Admin
+          setUserData({ ...INITIAL_USER_DATA, ...parsed, isAdmin: true });
         } else {
-          // Si no hay datos, forzamos login directo para pruebas
-          setUserData({ ...INITIAL_USER_DATA, isLoggedIn: true });
+          setUserData({ ...INITIAL_USER_DATA, isAdmin: true });
         }
       } catch (e) {
         console.error('Error cargando los datos del usuario:', e);
-        setUserData({ ...INITIAL_USER_DATA, isLoggedIn: true });
+        setUserData(INITIAL_USER_DATA);
       } finally {
-        // Un pequeño retraso para asegurar que el motor de renderizado esté listo
         setTimeout(() => setIsLoading(false), 500);
       }
     };
@@ -67,8 +65,10 @@ export const UserProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      setUserData(INITIAL_USER_DATA);
-      await AsyncStorage.removeItem(STORAGE_KEY);
+      const loggedOutData = { ...userData, isLoggedIn: false };
+      setUserData(loggedOutData);
+      const jsonValue = JSON.stringify(loggedOutData);
+      await AsyncStorage.setItem(STORAGE_KEY, jsonValue);
     } catch (e) {
       console.error('Error al cerrar sesión:', e);
     }

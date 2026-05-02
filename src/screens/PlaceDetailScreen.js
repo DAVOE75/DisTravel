@@ -31,6 +31,7 @@ export function PlaceDetailScreen({ route, navigation }) {
   const { theme, isDarkMode } = useTheme();
 
   const openInMaps = () => {
+    if (!place.location) return;
     const scheme = Platform.select({ ios: 'maps:0,0?q=', android: 'geo:0,0?q=' });
     const latLng = `${place.location.latitude},${place.location.longitude}`;
     const label = place.name;
@@ -41,13 +42,32 @@ export function PlaceDetailScreen({ route, navigation }) {
     Linking.openURL(url);
   };
 
+  // Fallbacks for community added places
+  const image = place.image || 'https://images.unsplash.com/photo-1543731068-7e0f5beff43a';
+  const category = place.category || 'Lugar';
+  const description = place.description || place.freeInfo || 'No hay descripción disponible.';
+  const verifiedStatus = place.verified ? 'Verificado' : (place.verifiedByCommunity?.status || 'Comunidad');
+  const lastCheck = place.verifiedByCommunity?.lastCheck || 'Reciente';
+  
+  const technicalSpecs = place.technicalSpecs || {
+    doorWidth: 'N/A',
+    turningSpace: 'N/A',
+    magneticLoop: 'N/A',
+    brailleSignage: 'N/A'
+  };
+
+  const price = place.price || (place.tariffs ? `${place.tariffs[0]?.price || '0'}€` : 'Consultar');
+  const disabilityBenefit = place.disabilityBenefit || place.freeInfo || 'Consultar en taquilla';
+  const schedule = place.schedule || (place.morningOpen ? `${place.morningOpen} - ${place.morningClose}` : 'Consultar horario');
+  const accessibility = place.accessibility || 'Información de accesibilidad pendiente de verificar.';
+
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <StatusBar barStyle="light-content" />
       
       {/* Hero Image */}
       <View style={styles.heroContainer}>
-        <Image source={{ uri: place.image }} style={styles.heroImage} />
+        <Image source={{ uri: image }} style={styles.heroImage} />
         <View style={styles.overlay} />
         
         <SafeAreaView style={styles.headerActions}>
@@ -61,7 +81,7 @@ export function PlaceDetailScreen({ route, navigation }) {
 
         <View style={styles.heroContent}>
           <View style={[styles.badge, { backgroundColor: theme.primary }]}>
-            <Text style={styles.badgeText}>{place.category.toUpperCase()}</Text>
+            <Text style={styles.badgeText}>{category.toUpperCase()}</Text>
           </View>
           <Text style={[styles.placeName, typography.h1]}>{place.name}</Text>
         </View>
@@ -72,7 +92,7 @@ export function PlaceDetailScreen({ route, navigation }) {
         <View style={[styles.infoBar, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <View style={styles.infoItem}>
             <Clock color={theme.primary} size={20} />
-            <Text style={[styles.infoText, { color: theme.text }]}>Abierto Hoy</Text>
+            <Text style={[styles.infoText, { color: theme.text }]}>Horario</Text>
           </View>
           <View style={styles.infoDivider} />
           <TouchableOpacity style={styles.infoItem} onPress={openInMaps}>
@@ -83,58 +103,58 @@ export function PlaceDetailScreen({ route, navigation }) {
 
         {/* Section: Description */}
         <View style={styles.section}>
-          <View style={styles.verifiedBadge}>
-            <CheckCircle2 color="#2ECC71" size={16} />
-            <Text style={styles.verifiedText}>
-              {place.verifiedByCommunity.status} • {place.verifiedByCommunity.lastCheck}
+          <View style={[styles.verifiedBadge, { backgroundColor: place.verified ? '#2ECC7115' : '#FF950015' }]}>
+            <CheckCircle2 color={place.verified ? '#2ECC71' : '#FF9500'} size={16} />
+            <Text style={[styles.verifiedText, { color: place.verified ? '#27AE60' : '#E67E22' }]}>
+              {verifiedStatus} • {lastCheck}
             </Text>
           </View>
           <Text style={[styles.sectionTitle, { color: theme.text }, typography.h3]}>Sobre este lugar</Text>
-          <Text style={[styles.description, { color: theme.textSecondary }]}>{place.description}</Text>
+          <Text style={[styles.description, { color: theme.textSecondary }]}>{description}</Text>
         </View>
 
-        {/* Section: Technical Specs (THE BLUE OCEAN) */}
+        {/* Section: Technical Specs */}
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <View style={styles.cardHeader}>
             <Info color={theme.primary} size={24} />
-            <Text style={[styles.cardTitle, { color: theme.text }, typography.h3]}>Especificaciones Técnicas</Text>
+            <Text style={[styles.cardTitle, { color: theme.text }, typography.h3]}>Especificaciones</Text>
           </View>
           
           <View style={styles.specsGrid}>
             <View style={styles.specItem}>
               <Text style={[styles.specLabel, { color: theme.textSecondary }]}>Ancho Puertas</Text>
-              <Text style={[styles.specValue, { color: theme.text }]}>{place.technicalSpecs.doorWidth}</Text>
+              <Text style={[styles.specValue, { color: theme.text }]}>{technicalSpecs.doorWidth}</Text>
             </View>
             <View style={styles.specItem}>
               <Text style={[styles.specLabel, { color: theme.textSecondary }]}>Espacio Giro</Text>
-              <Text style={[styles.specValue, { color: theme.text }]}>{place.technicalSpecs.turningSpace}</Text>
+              <Text style={[styles.specValue, { color: theme.text }]}>{technicalSpecs.turningSpace}</Text>
             </View>
             <View style={styles.specItem}>
               <Text style={[styles.specLabel, { color: theme.textSecondary }]}>Bucle Magnético</Text>
-              <Text style={[styles.specValue, { color: theme.text }]}>{place.technicalSpecs.magneticLoop}</Text>
+              <Text style={[styles.specValue, { color: theme.text }]}>{technicalSpecs.magneticLoop}</Text>
             </View>
             <View style={styles.specItem}>
               <Text style={[styles.specLabel, { color: theme.textSecondary }]}>Braille</Text>
-              <Text style={[styles.specValue, { color: theme.text }]}>{place.technicalSpecs.brailleSignage}</Text>
+              <Text style={[styles.specValue, { color: theme.text }]}>{technicalSpecs.brailleSignage}</Text>
             </View>
           </View>
         </View>
 
-        {/* Section: Prices & Discounts (The Essence) */}
+        {/* Section: Prices & Discounts */}
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <View style={styles.cardHeader}>
             <CreditCard color={theme.primary} size={24} />
             <Text style={[styles.cardTitle, { color: theme.text }, typography.h3]}>Tarifas y Descuentos</Text>
           </View>
           <View style={styles.priceRow}>
-            <Text style={[styles.priceLabel, { color: theme.textSecondary }]}>Precio General</Text>
-            <Text style={[styles.priceValue, { color: theme.text }]}>{place.price}</Text>
+            <Text style={[styles.priceLabel, { color: theme.textSecondary }]}>Precio Base</Text>
+            <Text style={[styles.priceValue, { color: theme.text }]}>{price}</Text>
           </View>
           <View style={[styles.discountBox, { backgroundColor: theme.primary + '15' }]}>
             <Info color={theme.primary} size={20} />
             <View style={styles.discountTextContent}>
               <Text style={[styles.discountTitle, { color: theme.primary }]}>Beneficio Discapacidad</Text>
-              <Text style={[styles.discountDesc, { color: theme.text }]}>{place.disabilityBenefit}</Text>
+              <Text style={[styles.discountDesc, { color: theme.text }]}>{disabilityBenefit}</Text>
             </View>
           </View>
         </View>
@@ -143,35 +163,18 @@ export function PlaceDetailScreen({ route, navigation }) {
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <View style={styles.cardHeader}>
             <Clock color={theme.primary} size={24} />
-            <Text style={[styles.cardTitle, { color: theme.text }, typography.h3]}>Horarios Detallados</Text>
+            <Text style={[styles.cardTitle, { color: theme.text }, typography.h3]}>Horarios</Text>
           </View>
-          <Text style={[styles.scheduleText, { color: theme.textSecondary }]}>{place.schedule}</Text>
-        </View>
-
-        {/* Section: Help Community */}
-        <View style={[styles.helpSection, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <View style={styles.helpHeader}>
-            <AlertTriangle color={theme.primary} size={24} />
-            <Text style={[styles.helpTitle, { color: theme.text }, typography.h3]}>¿La información es correcta?</Text>
-          </View>
-          <Text style={[styles.helpDesc, { color: theme.textSecondary }]}>
-            Si has detectado que el precio ha cambiado o que el descuento por discapacidad es distinto, avísanos para ayudar a otros viajeros.
-          </Text>
-          <TouchableOpacity 
-            style={[styles.reportBtn, { borderColor: theme.primary }]}
-            onPress={() => navigation.navigate('Report', { placeName: place.name })}
-          >
-            <Text style={[styles.reportBtnText, { color: theme.primary }]}>Ajustar Información</Text>
-          </TouchableOpacity>
+          <Text style={[styles.scheduleText, { color: theme.textSecondary }]}>{schedule}</Text>
         </View>
 
         {/* Section: Accessibility Details */}
         <View style={[styles.card, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <View style={styles.cardHeader}>
             <Accessibility color={theme.primary} size={24} />
-            <Text style={[styles.cardTitle, { color: theme.text }, typography.h3]}>Ficha de Accesibilidad</Text>
+            <Text style={[styles.cardTitle, { color: theme.text }, typography.h3]}>Accesibilidad</Text>
           </View>
-          <Text style={[styles.accessibilityText, { color: theme.textSecondary }]}>{place.accessibility}</Text>
+          <Text style={[styles.accessibilityText, { color: theme.textSecondary }]}>{accessibility}</Text>
         </View>
 
         <View style={{ height: 40 }} />

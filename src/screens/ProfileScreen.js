@@ -152,6 +152,9 @@ export function ProfileScreen({ navigation }) {
           </View>
           <Text style={[styles.userName, { color: theme.text }, typography.h1]}>{userData?.name || 'Viajero'}</Text>
           <Text style={[styles.userEmail, { color: theme.textSecondary }]}>{userData?.email || 'viajero@distravel.com'}</Text>
+          {userData?.phone && (
+            <Text style={[styles.userPhone, { color: theme.primary }]}>{userData.phone}</Text>
+          )}
         </View>
 
         {/* Disability Card Preview Section */}
@@ -399,6 +402,11 @@ const styles = StyleSheet.create({
   userEmail: {
     fontSize: 14,
     opacity: 0.7,
+  },
+  userPhone: {
+    fontSize: 14,
+    fontWeight: '700',
+    marginTop: 4,
   },
   cardSection: {
     paddingHorizontal: 20,

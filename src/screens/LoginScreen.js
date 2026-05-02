@@ -28,18 +28,35 @@ import { typography } from '../theme/typography';
 
 export function LoginScreen({ navigation }) {
   const { theme, isDarkMode } = useTheme();
-  const { updateUserData } = useUser();
+  const { updateUserData, userData } = useUser();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = (method) => {
     // Simulamos login exitoso
-    updateUserData({ 
+    // Solo sobreescribimos si los datos actuales están vacíos
+    const updates = { 
       isLoggedIn: true,
       loginMethod: method,
-      name: method === 'Email' ? 'Viajero' : `Usuario ${method}`,
-      email: email || `user@${method.toLowerCase()}.com`
-    });
+    };
+
+    if (!userData.name) {
+      updates.name = method === 'Email' ? 'Viajero' : `Usuario ${method}`;
+    }
+    
+    if (email && email !== userData.email) {
+      updates.email = email;
+    } else if (!userData.email) {
+      updates.email = `user@${method.toLowerCase()}.com`;
+    }
+
+    // Para pruebas de administración: si es el email de admin, activamos admin
+    if (updates.email?.includes('admin')) {
+      updates.isAdmin = true;
+      updates.id = 'admin_1';
+    }
+
+    updateUserData(updates);
     Alert.alert('¡Bienvenido!', `Has iniciado sesión con ${method}`);
   };
 
@@ -69,7 +86,7 @@ export function LoginScreen({ navigation }) {
           <View style={styles.header}>
             <View style={styles.logoContainer}>
               <Image 
-                source={require('../../assets/logo_official.jpg')} 
+                source={require('../../assets/logo_official.png')} 
                 style={styles.logo} 
                 resizeMode="contain"
               />

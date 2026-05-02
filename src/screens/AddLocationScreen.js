@@ -42,14 +42,15 @@ import MapView, { Marker } from 'react-native-maps';
 const CATEGORIES = ['Museo', 'Iglesia', 'Parque', 'Restaurante', 'Hotel', 'Atracción'];
 const DAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
-export function AddLocationScreen({ navigation }) {
+export function AddLocationScreen({ route, navigation }) {
   const { theme, isDarkMode } = useTheme();
   const { updateUserData, userData } = useUser();
+  const { defaultCity } = route.params || {};
 
   const [formData, setFormData] = useState({
     name: '',
     category: 'Museo',
-    city: '',
+    city: defaultCity || '',
     province: '',
     freeInfo: '',
     isSplitSchedule: false,
@@ -58,13 +59,15 @@ export function AddLocationScreen({ navigation }) {
     afternoonOpen: '16:00',
     afternoonClose: '20:00',
     closedHolidays: true,
+    image: null,
   });
 
   const [isRecognizing, setIsRecognizing] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const [tariffs, setTariffs] = useState([
     { id: '1', label: 'Adulto', price: '' },
-    { id: '2', label: 'Discapacitado', price: '' }
+    { id: '2', label: 'PCD / Discapacidad', price: '0' }
   ]);
 
   const [openingDays, setOpeningDays] = useState({
@@ -81,7 +84,6 @@ export function AddLocationScreen({ navigation }) {
   const [isSearchingLocation, setIsSearchingLocation] = useState(false);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
 
-  // 1. Geolocalizar al usuario al entrar
   React.useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
@@ -98,10 +100,8 @@ export function AddLocationScreen({ navigation }) {
     })();
   }, []);
 
-  // 2. Smart Pinning: Buscar por nombre al perder el foco (onBlur)
   const searchPlaceByName = async () => {
     if (formData.name.length < 5) return;
-    
     setIsSearchingLocation(true);
     try {
       const results = await Location.geocodeAsync(formData.name);
@@ -113,12 +113,11 @@ export function AddLocationScreen({ navigation }) {
           longitudeDelta: 0.005,
         };
         setLocation(newRegion);
-        // Detectar ciudad automáticamente
         const reverse = await Location.reverseGeocodeAsync(results[0]);
         if (reverse && reverse.length > 0) {
           setFormData(prev => ({ 
             ...prev, 
-            city: reverse[0].city || reverse[0].subregion || '',
+            city: reverse[0].city || reverse[0].subregion || prev.city,
             province: reverse[0].region || ''
           }));
         }
@@ -127,6 +126,23 @@ export function AddLocationScreen({ navigation }) {
       console.log('Geocode error:', error);
     } finally {
       setIsSearchingLocation(false);
+    }
+  };
+
+  const pickImage = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permissionResult.granted === false) {
+      Alert.alert("Permiso denegado", "Necesitamos acceso a tu galería.");
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [16, 9],
+      quality: 0.8,
+    });
+    if (!result.canceled) {
+      setFormData(prev => ({ ...prev, image: result.assets[0].uri }));
     }
   };
 
@@ -149,80 +165,43 @@ export function AddLocationScreen({ navigation }) {
   const handleAIRecognition = async () => {
     const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
     if (permissionResult.granted === false) {
-      Alert.alert("Permiso necesario", "Necesitamos acceso a la cámara para identificar el lugar.");
+      Alert.alert("Permiso necesario", "Necesitamos acceso a la cámara.");
       return;
     }
-
     const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.7 });
-
     if (!result.canceled) {
       setIsRecognizing(true);
-      
-      // Simulación de análisis IA Profundo
       setTimeout(async () => {
-        // Identificamos un lugar de ejemplo basado en el contexto de Alcoy/Cartagena
         const detectedPlace = {
-          name: "Museo Naval de Cartagena",
+          name: "Museo Arqueológico Municipal",
           category: "Museo",
-          province: "Murcia",
-          morningOpen: "10:00",
-          morningClose: "14:00",
-          afternoonOpen: "16:00",
-          afternoonClose: "20:00",
+          province: "Alicante",
+          morningOpen: "10:00", morningClose: "14:00",
+          afternoonOpen: "17:00", afternoonClose: "20:00",
           isSplitSchedule: true,
-          freeInfo: "Gratis los sábados tarde",
+          freeInfo: "Gratis con tarjeta acreditativa",
+          image: "https://images.unsplash.com/photo-1572910358445-576e2750504b",
           tariffs: [
-            { id: 1, label: 'Adulto', price: '3' },
-            { id: 2, label: 'Reducida', price: '1.5' },
-            { id: 3, label: 'Discapacidad', price: '0' },
+            { id: 1, label: 'Adulto', price: '4' },
+            { id: 2, label: 'PCD', price: '0' },
           ]
         };
-
         setFormData({
-          ...formData,
-          name: detectedPlace.name,
-          category: detectedPlace.category,
-          province: detectedPlace.province,
-          morningOpen: detectedPlace.morningOpen,
-          morningClose: detectedPlace.morningClose,
-          afternoonOpen: detectedPlace.afternoonOpen,
-          afternoonClose: detectedPlace.afternoonClose,
-          isSplitSchedule: detectedPlace.isSplitSchedule,
-          freeInfo: detectedPlace.freeInfo
+          ...detectedPlace,
+          city: formData.city || defaultCity || ''
         });
-        
         setTariffs(detectedPlace.tariffs);
-        
-        // Auto-ubicar en el mapa
-        try {
-          const geocoded = await Location.geocodeAsync(detectedPlace.name + ", " + detectedPlace.province);
-          if (geocoded.length > 0) {
-            setRegion({
-              ...region,
-              latitude: geocoded[0].latitude,
-              longitude: geocoded[0].longitude,
-            });
-            setMarker({
-              latitude: geocoded[0].latitude,
-              longitude: geocoded[0].longitude,
-            });
-          }
-        } catch (e) {
-          console.log("Error geocoding detected place", e);
-        }
-
         setIsRecognizing(false);
-        Alert.alert("¡Identificado con IA!", `He detectado que es el ${detectedPlace.name}. He rellenado los horarios y tarifas oficiales por ti.`);
-      }, 2500);
+        Alert.alert("¡IA: Lugar Identificado!", `Detectado: ${detectedPlace.name}. Datos oficiales cargados.`);
+      }, 2000);
     }
   };
 
   const handleSave = async () => {
-    if (!formData.name) {
-      Alert.alert('Faltan datos', 'El nombre del lugar es obligatorio.');
+    if (!formData.name || !formData.city) {
+      Alert.alert('Faltan datos', 'El nombre y la ciudad son obligatorios.');
       return;
     }
-
     const newPlace = {
       id: Date.now().toString(),
       ...formData,
@@ -230,20 +209,20 @@ export function AddLocationScreen({ navigation }) {
       openingDays,
       location,
       isUserAdded: true,
-      verified: false
+      verified: userData.isAdmin || false,
+      verifiedByCommunity: {
+        status: userData.isAdmin ? 'Oficial' : 'Pendiente',
+        lastCheck: new Date().toLocaleDateString()
+      }
     };
-
     const currentContributions = userData.contributions || [];
-    const currentPoints = userData.points || 0;
-    
     await updateUserData({
       contributions: [...currentContributions, newPlace],
-      points: currentPoints + 50
+      points: (userData.points || 0) + (userData.isAdmin ? 0 : 50)
     });
-
     Alert.alert(
-      '¡Lugar Registrado! 🏆', 
-      'Has ganado +50 Puntos Distravel por tu contribución. ¡La comunidad te lo agradece!',
+      userData.isAdmin ? 'Lugar Publicado' : '¡Contribución Enviada! 🏆', 
+      userData.isAdmin ? 'El lugar ya es visible para todos.' : 'Has ganado +50 Puntos. ¡Gracias!',
       [{ text: 'OK', onPress: () => navigation.goBack() }]
     );
   };
@@ -260,7 +239,37 @@ export function AddLocationScreen({ navigation }) {
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-          {/* Map Selection */}
+          <View style={styles.imageSection}>
+            <TouchableOpacity 
+              style={[styles.imagePlaceholder, { backgroundColor: theme.surface, borderColor: theme.border }]}
+              onPress={pickImage}
+            >
+              {formData.image ? (
+                <Image source={{ uri: formData.image }} style={styles.previewImage} />
+              ) : (
+                <View style={styles.placeholderContent}>
+                  <Camera color={theme.primary} size={40} />
+                  <Text style={[styles.placeholderText, { color: theme.textSecondary }]}>Subir Foto de Galería</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.aiScanBtn, { backgroundColor: theme.primary }]}
+              onPress={handleAIRecognition}
+              disabled={isRecognizing}
+            >
+              {isRecognizing ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <>
+                  <Sparkles color="#FFF" size={20} />
+                  <Text style={styles.aiScanText}>Escanear con IA</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+
           <View style={[
             styles.mapWrapper, 
             isMapExpanded && styles.mapExpanded,
@@ -269,7 +278,27 @@ export function AddLocationScreen({ navigation }) {
             <MapView
               style={styles.map}
               region={location}
-              onRegionChangeComplete={(region) => setLocation(region)}
+              onRegionChangeComplete={async (region) => {
+                setLocation(region);
+                if (isMapExpanded) {
+                  try {
+                    const reverse = await Location.reverseGeocodeAsync({
+                      latitude: region.latitude,
+                      longitude: region.longitude
+                    });
+                    if (reverse && reverse.length > 0) {
+                      const place = reverse[0];
+                      setFormData(prev => ({
+                        ...prev,
+                        city: place.city || place.subregion || prev.city,
+                        province: place.region || prev.province
+                      }));
+                    }
+                  } catch (error) {
+                    console.log('Reverse geocode error:', error);
+                  }
+                }
+              }}
             >
               <Marker coordinate={location} />
             </MapView>
@@ -280,53 +309,48 @@ export function AddLocationScreen({ navigation }) {
                 onPress={() => setIsMapExpanded(true)}
               >
                 <View style={styles.mapOverlay}>
-                  {isSearchingLocation ? (
-                    <ActivityIndicator size="large" color={theme.primary} />
-                  ) : (
-                    <MapPin color={theme.primary} size={30} />
-                  )}
-                  <Text style={styles.mapHint}>
-                    {isSearchingLocation ? 'Buscando ubicación...' : 'Toca para ampliar y ajustar'}
-                  </Text>
-                </View>
-                <View style={[styles.expandBtn, { backgroundColor: theme.surface }]}>
-                  <Maximize2 color={theme.primary} size={20} />
+                  <MapPin color={theme.primary} size={30} />
+                  <Text style={styles.mapHint}>Ajustar ubicación</Text>
                 </View>
               </TouchableOpacity>
             )}
 
             {isMapExpanded && (
-              <>
-                <View style={styles.expandedOverlay}>
-                  <MapPin color={theme.primary} size={40} />
-                </View>
-                <TouchableOpacity 
-                  style={[styles.confirmLocationBtn, { backgroundColor: theme.primary }]}
-                  onPress={() => setIsMapExpanded(false)}
-                >
-                  <Check color="#FFF" size={24} />
-                  <Text style={styles.confirmLocationText}>Confirmar Ubicación</Text>
-                </TouchableOpacity>
-              </>
+              <TouchableOpacity 
+                style={[styles.confirmLocationBtn, { backgroundColor: theme.primary }]}
+                onPress={() => setIsMapExpanded(false)}
+              >
+                <Check color="#FFF" size={24} />
+                <Text style={styles.confirmLocationText}>Confirmar</Text>
+              </TouchableOpacity>
             )}
           </View>
 
-          {/* Basic Info */}
           <View style={styles.section}>
             <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Información General</Text>
             <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
               <Building2 color={theme.primary} size={20} />
               <TextInput
                 style={[styles.input, { color: theme.text }]}
-                placeholder="Nombre (ej: Museo Naval Cartagena)"
+                placeholder="Nombre del Lugar"
                 placeholderTextColor={theme.textSecondary}
                 value={formData.name}
                 onChangeText={(text) => setFormData({...formData, name: text})}
                 onBlur={searchPlaceByName}
               />
             </View>
+
+            <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 10 }]}>
+              <MapPin color={theme.primary} size={20} />
+              <TextInput
+                style={[styles.input, { color: theme.text }]}
+                placeholder="Ciudad"
+                placeholderTextColor={theme.textSecondary}
+                value={formData.city}
+                onChangeText={(text) => setFormData({...formData, city: text})}
+              />
+            </View>
             
-            {/* Category Selector */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
               {CATEGORIES.map(cat => (
                 <TouchableOpacity 
@@ -344,7 +368,6 @@ export function AddLocationScreen({ navigation }) {
             </ScrollView>
           </View>
 
-          {/* Tariffs Section */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Tarifas y Precios (€)</Text>
@@ -358,7 +381,7 @@ export function AddLocationScreen({ navigation }) {
                 <View style={[styles.tariffInput, { backgroundColor: theme.surface, borderColor: theme.border, flex: 2 }]}>
                   <TextInput
                     style={[styles.input, { color: theme.text }]}
-                    placeholder="Tipo (ej: Adulto)"
+                    placeholder="Tipo"
                     placeholderTextColor={theme.textSecondary}
                     value={tariff.label}
                     onChangeText={(v) => updateTariff(tariff.id, 'label', v)}
@@ -381,25 +404,8 @@ export function AddLocationScreen({ navigation }) {
             ))}
           </View>
 
-          {/* Schedule Section */}
           <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Datos del Lugar</Text>
-              <TouchableOpacity 
-                style={[styles.aiIdentifyBtn, { backgroundColor: theme.primary + '15' }]}
-                onPress={handleAIRecognition}
-                disabled={isRecognizing}
-              >
-                {isRecognizing ? (
-                  <ActivityIndicator size="small" color={theme.primary} />
-                ) : (
-                  <>
-                    <Sparkles color={theme.primary} size={16} />
-                    <Text style={[styles.aiIdentifyText, { color: theme.primary }]}>Identificar con IA</Text>
-                  </>
-                )}
-              </TouchableOpacity>
-            </View>
+            <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Días de Apertura</Text>
             <View style={styles.daysRow}>
               {DAYS.map(day => (
                 <TouchableOpacity 
@@ -420,7 +426,7 @@ export function AddLocationScreen({ navigation }) {
               <Info color={theme.primary} size={20} />
               <TextInput
                 style={[styles.input, { color: theme.text }]}
-                placeholder="Info entrada gratuita (ej: Domingos gratis)"
+                placeholder="Beneficios PCD / Otros datos"
                 placeholderTextColor={theme.textSecondary}
                 value={formData.freeInfo}
                 onChangeText={(text) => setFormData({...formData, freeInfo: text})}
@@ -428,10 +434,8 @@ export function AddLocationScreen({ navigation }) {
             </View>
           </View>
 
-          {/* New Advanced Schedule Section */}
           <View style={styles.section}>
             <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Horas de Apertura</Text>
-            
             <TouchableOpacity 
               style={styles.toggleRow}
               onPress={() => setFormData({...formData, isSplitSchedule: !formData.isSplitSchedule})}
@@ -517,7 +521,50 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 15 },
   headerTitle: { fontSize: 20 },
-  scrollContent: { paddingHorizontal: 20, paddingTop: 10 },
+  scrollContent: { padding: 20 },
+  imageSection: {
+    marginBottom: 25,
+  },
+  imagePlaceholder: {
+    height: 180,
+    borderRadius: 24,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+    marginBottom: 12,
+  },
+  previewImage: {
+    width: '100%',
+    height: '100%',
+  },
+  placeholderContent: {
+    alignItems: 'center',
+  },
+  placeholderText: {
+    marginTop: 10,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  aiScanBtn: {
+    flexDirection: 'row',
+    height: 50,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  aiScanText: {
+    color: '#FFF',
+    fontSize: 15,
+    fontWeight: '700',
+    marginLeft: 10,
+  },
   mapWrapper: { height: 180, borderRadius: 20, overflow: 'hidden', borderWidth: 1, marginBottom: 20, position: 'relative' },
   mapExpanded: {
     position: 'absolute',

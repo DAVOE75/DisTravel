@@ -148,6 +148,14 @@ export function CityDetailScreen({ route, navigation }) {
     Alert.alert("¡Validado!", "El lugar ahora es visible para todos los usuarios.");
   };
 
+  const handleUnvalidate = async (placeId) => {
+    const updatedContributions = userData.contributions.map(p => 
+      p.id === placeId ? { ...p, verified: false } : p
+    );
+    await updateUserData({ contributions: updatedContributions });
+    Alert.alert("Des-verificado", "El lugar ha vuelto a estado pendiente.");
+  };
+
   const openInfo = (title, content, icon) => {
     setModalData({ title, content, icon });
     setModalVisible(true);
@@ -225,7 +233,7 @@ export function CityDetailScreen({ route, navigation }) {
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
       
       <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
-        {/* HERO SECTION - REFINED FOR TOURISM LOOK */}
+        {/* HERO SECTION */}
         <View style={styles.heroSection}>
           <Image 
             source={{ uri: tempCityData.image || 'https://images.unsplash.com/photo-1543731068-7e0f5beff43a' }} 
@@ -249,7 +257,7 @@ export function CityDetailScreen({ route, navigation }) {
               <View style={styles.titleUnderline} />
             </View>
             
-            {/* Stylized Map Indicator (Decorative) */}
+            {/* Stylized Map Indicator */}
             <View style={styles.mapIndicatorBox}>
               <View style={styles.mapBoxOuter}>
                 <Globe color="rgba(255,255,255,0.8)" size={40} strokeWidth={1} />
@@ -268,7 +276,6 @@ export function CityDetailScreen({ route, navigation }) {
           )}
         </View>
 
-        {/* LOCATION BAR - AMBER (Official Look) */}
         <View style={[styles.locationBar, { backgroundColor: '#FFD700' }]}>
           <MapPin color="#0A192F" size={18} />
           <Text style={styles.locationBarText}>
@@ -277,7 +284,7 @@ export function CityDetailScreen({ route, navigation }) {
         </View>
 
         <View style={styles.mainContent}>
-          {/* Main Description with "Read More" feel */}
+          {/* Main Description */}
           <View style={styles.introSection}>
             <Text style={[styles.description, { color: theme.textSecondary }]}>
               {tempCityData.description || 'Explora los lugares accesibles de este municipio.'}
@@ -287,7 +294,7 @@ export function CityDetailScreen({ route, navigation }) {
             </TouchableOpacity>
           </View>
 
-          {/* Stats Section */}
+          {/* Stats Row */}
           <View style={styles.statsRow}>
             <View style={[styles.statCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
               <Accessibility color={theme.primary} size={22} />
@@ -306,7 +313,7 @@ export function CityDetailScreen({ route, navigation }) {
             </View>
           </View>
 
-          {/* Info Grid */}
+          {/* Grid Cards */}
           <View style={styles.grid}>
             <TouchableOpacity 
               style={[styles.infoCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
@@ -349,15 +356,25 @@ export function CityDetailScreen({ route, navigation }) {
             </TouchableOpacity>
           </View>
 
-          <Text style={[styles.sectionTitle, { color: theme.text }, typography.h2]}>
-            Lugares Recomendados
-          </Text>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={[styles.sectionTitle, { color: theme.text }, typography.h2]}>
+              Lugares Recomendados
+            </Text>
+            {isAdmin && (
+              <TouchableOpacity 
+                style={[styles.adminAddBtn, { backgroundColor: theme.primary }]}
+                onPress={() => navigation.navigate('AddLocation', { defaultCity: tempCityData.name })}
+              >
+                <Plus color="#FFF" size={20} />
+              </TouchableOpacity>
+            )}
+          </View>
 
           {allPlaces.map((place) => (
             <TouchableOpacity 
               key={place.id} 
               style={[styles.placeItem, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => !place.isUserAdded && navigation.navigate('PlaceDetail', { place })}
+              onPress={() => navigation.navigate('PlaceDetail', { place })}
             >
               <View style={styles.placeHeader}>
                 <View style={styles.placeInfo}>
@@ -373,17 +390,18 @@ export function CityDetailScreen({ route, navigation }) {
                     )}
                   </View>
                 </View>
-                {isAdmin && place.isUserAdded && !place.verified ? (
-                  <TouchableOpacity 
-                    style={[styles.validateBtn, { backgroundColor: '#2ECC71' }]}
-                    onPress={() => handleValidate(place.id)}
-                  >
-                    <CheckCircle color="#FFF" size={18} />
-                    <Text style={styles.validateBtnText}>Validar</Text>
-                  </TouchableOpacity>
-                ) : (
+                
+                <View style={styles.placeActions}>
+                  {isAdmin && place.isUserAdded && (
+                    <TouchableOpacity 
+                      style={[styles.actionBtn, { backgroundColor: place.verified ? '#E74C3C' : '#2ECC71' }]}
+                      onPress={() => place.verified ? handleUnvalidate(place.id) : handleValidate(place.id)}
+                    >
+                      {place.verified ? <X color="#FFF" size={16} /> : <CheckCircle color="#FFF" size={16} />}
+                    </TouchableOpacity>
+                  )}
                   <ChevronRight color={theme.textSecondary} size={20} />
-                )}
+                </View>
               </View>
             </TouchableOpacity>
           ))}
@@ -525,10 +543,33 @@ const styles = StyleSheet.create({
   infoCard: { width: '48%', padding: 22, borderRadius: 24, alignItems: 'center', marginBottom: 15, borderWidth: 1, position: 'relative' },
   infoCardTitle: { marginTop: 12, fontSize: 15, fontWeight: '700' },
   adminDot: { position: 'absolute', top: 12, right: 12, width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFD700' },
-  sectionTitle: { fontSize: 20, marginBottom: 20, fontWeight: '900' },
+  sectionTitle: { fontSize: 20, fontWeight: '900' },
+  sectionHeaderRow: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    marginBottom: 20 
+  },
+  adminAddBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 2,
+  },
   placeItem: { padding: 20, borderRadius: 24, marginBottom: 15, borderWidth: 1 },
   placeHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   placeInfo: { flex: 1 },
+  placeActions: { flexDirection: 'row', alignItems: 'center' },
+  actionBtn: { 
+    width: 34, 
+    height: 34, 
+    borderRadius: 10, 
+    justifyContent: 'center', 
+    alignItems: 'center',
+    marginRight: 10 
+  },
   placeName: { fontSize: 17, fontWeight: '800', marginBottom: 4 },
   placeMeta: { flexDirection: 'row', alignItems: 'center' },
   placeCategory: { fontSize: 12, fontWeight: '700', textTransform: 'uppercase' },
