@@ -47,6 +47,12 @@ export function AddLocationScreen({ navigation }) {
     name: '',
     category: 'Museo',
     freeInfo: '',
+    isSplitSchedule: false,
+    morningOpen: '10:00',
+    morningClose: '14:00',
+    afternoonOpen: '16:00',
+    afternoonClose: '20:00',
+    closedHolidays: true,
   });
 
   const [tariffs, setTariffs] = useState([
@@ -319,6 +325,76 @@ export function AddLocationScreen({ navigation }) {
             </View>
           </View>
 
+          {/* New Advanced Schedule Section */}
+          <View style={styles.section}>
+            <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Horas de Apertura</Text>
+            
+            <TouchableOpacity 
+              style={styles.toggleRow}
+              onPress={() => setFormData({...formData, isSplitSchedule: !formData.isSplitSchedule})}
+            >
+              <Text style={[styles.toggleLabel, { color: theme.text }]}>Horario Partido (Mañana y Tarde)</Text>
+              <View style={[styles.toggleSwitch, { backgroundColor: formData.isSplitSchedule ? theme.success : theme.border }]}>
+                <View style={[styles.toggleCircle, formData.isSplitSchedule && { alignSelf: 'flex-end' }]} />
+              </View>
+            </TouchableOpacity>
+
+            <View style={styles.timeInputsRow}>
+              <View style={styles.timeBlock}>
+                <Text style={[styles.timeLabel, { color: theme.textSecondary }]}>Mañana / Continuo</Text>
+                <View style={styles.timeRow}>
+                  <TextInput 
+                    style={[styles.timeInput, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
+                    value={formData.morningOpen}
+                    onChangeText={(v) => setFormData({...formData, morningOpen: v})}
+                    placeholder="09:00"
+                  />
+                  <Text style={{ color: theme.textSecondary }}>-</Text>
+                  <TextInput 
+                    style={[styles.timeInput, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
+                    value={formData.morningClose}
+                    onChangeText={(v) => setFormData({...formData, morningClose: v})}
+                    placeholder="14:00"
+                  />
+                </View>
+              </View>
+
+              {formData.isSplitSchedule && (
+                <View style={styles.timeBlock}>
+                  <Text style={[styles.timeLabel, { color: theme.textSecondary }]}>Tarde</Text>
+                  <View style={styles.timeRow}>
+                    <TextInput 
+                      style={[styles.timeInput, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
+                      value={formData.afternoonOpen}
+                      onChangeText={(v) => setFormData({...formData, afternoonOpen: v})}
+                      placeholder="16:00"
+                    />
+                    <Text style={{ color: theme.textSecondary }}>-</Text>
+                    <TextInput 
+                      style={[styles.timeInput, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
+                      value={formData.afternoonClose}
+                      onChangeText={(v) => setFormData({...formData, afternoonClose: v})}
+                      placeholder="20:00"
+                    />
+                  </View>
+                </View>
+              )}
+            </View>
+
+            <TouchableOpacity 
+              style={[styles.toggleRow, { marginTop: 15 }]}
+              onPress={() => setFormData({...formData, closedHolidays: !formData.closedHolidays})}
+            >
+              <View style={styles.toggleRowLeft}>
+                <Calendar color={theme.primary} size={20} />
+                <Text style={[styles.toggleLabel, { color: theme.text, marginLeft: 10 }]}>Cerrado en Festivos Nacionales</Text>
+              </View>
+              <View style={[styles.toggleSwitch, { backgroundColor: formData.closedHolidays ? theme.primary : theme.border }]}>
+                <View style={[styles.toggleCircle, formData.closedHolidays && { alignSelf: 'flex-end' }]} />
+              </View>
+            </TouchableOpacity>
+          </View>
+
           <TouchableOpacity 
             style={[styles.saveButton, { backgroundColor: theme.primary }]}
             onPress={handleSave}
@@ -387,5 +463,15 @@ const styles = StyleSheet.create({
   dayCircle: { width: 42, height: 42, borderRadius: 21, borderWidth: 1, justifyContent: 'center', alignItems: 'center' },
   dayText: { fontSize: 12, fontWeight: '700' },
   saveButton: { flexDirection: 'row', height: 60, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginTop: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 5, elevation: 5 },
-  saveButtonText: { color: '#FFFFFF', fontSize: 18, fontWeight: '800', marginLeft: 12 }
+  saveButtonText: { color: '#FFFFFF', fontSize: 18, fontWeight: '800', marginLeft: 12 },
+  toggleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12 },
+  toggleRowLeft: { flexDirection: 'row', alignItems: 'center' },
+  toggleLabel: { fontSize: 15, fontWeight: '600' },
+  toggleSwitch: { width: 44, height: 24, borderRadius: 12, padding: 2, justifyContent: 'center' },
+  toggleCircle: { width: 20, height: 20, borderRadius: 10, backgroundColor: '#FFF' },
+  timeInputsRow: { marginTop: 10 },
+  timeBlock: { marginBottom: 15 },
+  timeLabel: { fontSize: 12, fontWeight: '600', marginBottom: 8 },
+  timeRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  timeInput: { width: 100, height: 45, borderRadius: 10, borderWidth: 1, textAlign: 'center', fontSize: 16, fontWeight: '600' }
 });
