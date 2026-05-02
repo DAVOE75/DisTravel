@@ -31,6 +31,7 @@ import {
 } from 'lucide-react-native';
 import { MONUMENTOS } from '../data/monumentos';
 import { typography } from '../theme/typography';
+import * as ImagePicker from 'expo-image-picker';
 
 const { width, height } = Dimensions.get('window');
 
@@ -111,15 +112,71 @@ export function CityDetailScreen({ route, navigation }) {
     setModalVisible(true);
   };
 
-  const handleAdminEdit = (section) => {
-    Alert.alert(
-      "Modo Administrador",
-      `¿Deseas editar la sección de ${section}?`,
+  const pickHeaderImage = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permissionResult.granted === false) {
+      Alert.alert("Permiso denegado", "Necesitamos acceso a tu galería para cambiar la foto.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [16, 9],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      setTempCityData({ ...tempCityData, image: result.assets[0].uri });
+      Alert.alert("¡Imagen actualizada!", "La foto de cabecera se ha cambiado correctamente.");
+    }
+  };
+
+  const handleEditContent = (section, currentText) => {
+    Alert.prompt(
+      `Editar ${section}`,
+      "Introduce el nuevo contenido oficial:",
       [
         { text: "Cancelar", style: "cancel" },
-        { text: "Editar", onPress: () => console.log("Editar", section) }
-      ]
+        { 
+          text: "Guardar", 
+          onPress: (newText) => {
+            const fieldMap = {
+              'Historia': 'history',
+              'Geografía': 'geography',
+              'Clima': 'climate',
+              'Paisaje': 'landscape'
+            };
+            setTempCityData({ ...tempCityData, [fieldMap[section]]: newText });
+            Alert.alert("Éxito", "Contenido actualizado correctamente.");
+          }
+        }
+      ],
+      'plain-text',
+      currentText
     );
+  };
+
+  const handleAdminEdit = (section, currentText) => {
+    if (section === 'Cabecera') {
+      Alert.alert(
+        "Modo Administrador",
+        "¿Deseas cambiar la foto de cabecera?",
+        [
+          { text: "Cancelar", style: "cancel" },
+          { text: "Abrir Galería", onPress: pickHeaderImage }
+        ]
+      );
+    } else {
+      Alert.alert(
+        "Modo Administrador",
+        `¿Deseas editar la sección de ${section}?`,
+        [
+          { text: "Cancelar", style: "cancel" },
+          { text: "Editar Texto", onPress: () => handleEditContent(section, currentText) }
+        ]
+      );
+    }
   };
 
   return (
@@ -187,8 +244,8 @@ export function CityDetailScreen({ route, navigation }) {
           <View style={styles.grid}>
             <TouchableOpacity 
               style={[styles.infoCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => openInfo('Nuestra Historia', city.history || 'Ciudad con gran riqueza cultural por descubrir.', HistoryIcon)}
-              onLongPress={() => isAdmin && handleAdminEdit('Historia')}
+              onPress={() => openInfo('Nuestra Historia', tempCityData.history || 'Ciudad con gran riqueza cultural.', HistoryIcon)}
+              onLongPress={() => isAdmin && handleAdminEdit('Historia', tempCityData.history)}
             >
               <HistoryIcon color={theme.primary} size={24} />
               <Text style={[styles.infoCardTitle, { color: theme.text }]}>Historia</Text>
@@ -197,8 +254,8 @@ export function CityDetailScreen({ route, navigation }) {
 
             <TouchableOpacity 
               style={[styles.infoCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => openInfo('Geografía Local', city.geography || 'Ubicación estratégica en el mapa nacional.', Globe)}
-              onLongPress={() => isAdmin && handleAdminEdit('Geografía')}
+              onPress={() => openInfo('Geografía Local', tempCityData.geography || 'Ubicación estratégica.', Globe)}
+              onLongPress={() => isAdmin && handleAdminEdit('Geografía', tempCityData.geography)}
             >
               <Globe color={theme.primary} size={24} />
               <Text style={[styles.infoCardTitle, { color: theme.text }]}>Geografía</Text>
@@ -207,8 +264,8 @@ export function CityDetailScreen({ route, navigation }) {
 
             <TouchableOpacity 
               style={[styles.infoCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => openInfo('Climatología', city.climate || 'Clima mediterráneo variable según la estación.', Cloud)}
-              onLongPress={() => isAdmin && handleAdminEdit('Clima')}
+              onPress={() => openInfo('Climatología', tempCityData.climate || 'Clima mediterráneo.', Cloud)}
+              onLongPress={() => isAdmin && handleAdminEdit('Clima', tempCityData.climate)}
             >
               <Cloud color={theme.primary} size={24} />
               <Text style={[styles.infoCardTitle, { color: theme.text }]}>Clima</Text>
@@ -217,8 +274,8 @@ export function CityDetailScreen({ route, navigation }) {
 
             <TouchableOpacity 
               style={[styles.infoCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => openInfo('Entorno y Paisaje', city.landscape || 'Entorno natural privilegiado con rutas accesibles.', Mountain)}
-              onLongPress={() => isAdmin && handleAdminEdit('Paisaje')}
+              onPress={() => openInfo('Entorno y Paisaje', tempCityData.landscape || 'Entorno natural privilegiado.', Mountain)}
+              onLongPress={() => isAdmin && handleAdminEdit('Paisaje', tempCityData.landscape)}
             >
               <Mountain color={theme.primary} size={24} />
               <Text style={[styles.infoCardTitle, { color: theme.text }]}>Paisaje</Text>
