@@ -137,8 +137,8 @@ export function HomeScreen({ navigation }) {
         <View style={styles.header}>
           <View>
             <View style={styles.brandContainer}>
-              <Image 
-                source={require('../../assets/logo_icon.png')} 
+               <Image 
+                source={require('../../assets/logo_official.jpg')} 
                 style={styles.headerLogo} 
                 resizeMode="contain"
               />

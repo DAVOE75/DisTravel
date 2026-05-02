@@ -4,11 +4,11 @@
     "slug": "distravel",
     "version": "1.1.0",
     "orientation": "portrait",
-    "icon": "./assets/logo_icon.png",
+    "icon": "./assets/logo_official.jpg",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/logo_icon.png",
+      "image": "./assets/logo_official.jpg",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -17,7 +17,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/logo_icon.png",
+        "foregroundImage": "./assets/logo_official.jpg",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true
