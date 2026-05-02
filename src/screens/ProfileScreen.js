@@ -16,6 +16,7 @@ import { useUser } from '../context/UserContext';
 import * as ImagePicker from 'expo-image-picker';
 import { 
   User, 
+  Trophy,
   ChevronRight, 
   ShieldCheck, 
   HelpCircle, 
@@ -189,8 +190,8 @@ export function ProfileScreen({ navigation }) {
         <View style={styles.statsContainer}>
           <View style={[styles.statCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             <Star color="#F1C40F" size={24} />
-            <Text style={[styles.statValue, { color: theme.text }]}>{userData?.points || '150'}</Text>
-            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Puntos</Text>
+            <Text style={[styles.statValue, { color: theme.text }]}>{userData?.experience || '0'}</Text>
+            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>XP</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             <TrendingDown color="#2ECC71" size={24} />
@@ -199,9 +200,38 @@ export function ProfileScreen({ navigation }) {
           </View>
           <View style={[styles.statCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             <ShieldCheck color={theme.success} size={24} />
-            <Text style={[styles.statValue, { color: theme.text }]}>Oro</Text>
+            <Text style={[styles.statValue, { color: theme.text }]}>{userData?.level || 1}</Text>
             <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Nivel</Text>
           </View>
+        </View>
+
+        {/* Achievements Section - New for v3.0 */}
+        <View style={styles.menuSection}>
+           <View style={styles.sectionHeader}>
+             <Text style={[styles.sectionTitle, { color: theme.textSecondary, marginBottom: 0 }]}>Logros y Medallas</Text>
+             <TouchableOpacity onPress={() => navigation.navigate('Medals')}>
+                <Text style={{ color: theme.primary, fontSize: 12, fontWeight: '700' }}>Ver todo</Text>
+             </TouchableOpacity>
+           </View>
+           <TouchableOpacity 
+             style={[styles.badgesPreview, { backgroundColor: theme.surface, borderColor: theme.border }]}
+             onPress={() => navigation.navigate('Medals')}
+           >
+              {userData.badges?.length > 0 ? (
+                <View style={styles.badgesRow}>
+                  {userData.badges.slice(0, 4).map((badgeId) => (
+                    <View key={badgeId} style={[styles.badgeIconSmall, { backgroundColor: theme.primary + '15' }]}>
+                       <Trophy color={theme.primary} size={16} />
+                    </View>
+                  ))}
+                  <Text style={[styles.moreBadges, { color: theme.textSecondary }]}>
+                    +{userData.badges.length > 4 ? userData.badges.length - 4 : ''}
+                  </Text>
+                </View>
+              ) : (
+                <Text style={[styles.noBadgesText, { color: theme.textSecondary }]}>Aún no has ganado medallas. ¡Empieza a explorar!</Text>
+              )}
+           </TouchableOpacity>
         </View>
 
         {/* Mi Impacto Económico */}
@@ -616,4 +646,32 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     marginTop: 8,
   },
+  badgesPreview: {
+    padding: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginTop: 4,
+  },
+  badgesRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  badgeIconSmall: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  moreBadges: {
+    fontSize: 12,
+    fontWeight: '700',
+    marginLeft: 5,
+  },
+  noBadgesText: {
+    fontSize: 12,
+    textAlign: 'center',
+    fontStyle: 'italic',
+  }
 });

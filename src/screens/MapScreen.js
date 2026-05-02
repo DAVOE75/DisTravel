@@ -8,7 +8,7 @@ import {
   SafeAreaView,
   StatusBar
 } from 'react-native';
-import MapView, { Marker, Callout } from 'react-native-maps';
+import MapView, { Marker, Callout, Polyline } from 'react-native-maps';
 import { colors } from '../theme/colors';
 import { MONUMENTOS } from '../data/monumentos';
 import { ChevronLeft, Info, Sun, Moon, MapPin } from 'lucide-react-native';
@@ -21,6 +21,22 @@ export function MapScreen({ route, navigation }) {
   const { theme } = useTheme();
   const { userData } = useUser();
   const [mapTheme, setMapTheme] = useState('dark');
+  const [selectedMonument, setSelectedMonument] = useState(null);
+  const [showRoutes, setShowRoutes] = useState(true);
+
+  // Mock de "Pasillos Seguros" (Rutas verificadas accesibles)
+  const safeCorridors = [
+    {
+      id: 'alicante-port-castle',
+      coordinates: [
+        { latitude: 38.3444, longitude: -0.4789 }, // Puerto
+        { latitude: 38.3456, longitude: -0.4805 }, // Explanada
+        { latitude: 38.3472, longitude: -0.4815 }, // Plaza Ayuntamiento
+        { latitude: 38.3488, longitude: -0.4795 }, // Subida Castillo
+      ],
+      title: 'Pasillo Esmeralda: Puerto-Castillo'
+    }
+  ];
   
   // Obtener monumentos: FUSIONAR estáticos con contribuciones (semillas de Alicante, etc)
   const officialMonuments = city ? (MONUMENTOS[city.name] || []) : Object.values(MONUMENTOS).flat();
@@ -99,6 +115,17 @@ export function MapScreen({ route, navigation }) {
         initialRegion={initialRegion}
         customMapStyle={mapTheme === 'dark' ? mapStyles.dark : mapStyles.light}
       >
+        {/* Safe Corridors Layer */}
+        {showRoutes && safeCorridors.map(route => (
+          <Polyline
+            key={route.id}
+            coordinates={route.coordinates}
+            strokeColor="#2ECC71"
+            strokeWidth={4}
+            lineDashPattern={[0]}
+            geodesic={true}
+          />
+        ))}
         {displayMonuments.map((monument) => (
           <Marker
             key={monument.id}
@@ -172,6 +199,14 @@ export function MapScreen({ route, navigation }) {
             <View style={styles.legendTextContainer}>
               <Text style={[styles.legendLabel, { color: colors.primary }]}>TARIFA GENERAL</Text>
               <Text style={[styles.legendSub, { color: mapTheme === 'dark' ? colors.textSecondary : '#64748b' }]}>Precio estándar sin beneficios</Text>
+            </View>
+          </View>
+
+          <View style={[styles.legendRow, { marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)' }]}>
+            <View style={{ width: 20, height: 4, backgroundColor: '#2ECC71', borderRadius: 2, marginTop: 8 }} />
+            <View style={styles.legendTextContainer}>
+              <Text style={[styles.legendLabel, { color: '#2ECC71' }]}>PASILLO SEGURO (v3.0)</Text>
+              <Text style={[styles.legendSub, { color: mapTheme === 'dark' ? colors.textSecondary : '#64748b' }]}>Ruta 100% accesible verificada</Text>
             </View>
           </View>
         </View>

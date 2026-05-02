@@ -366,6 +366,10 @@ const INITIAL_USER_DATA = {
   visitedPlaces: [], // Para calcular ahorro real
   totalSavings: 0,   // Ahorro acumulado
   verifiedPlaces: [], // Lugares validados por el usuario
+  experience: 0,      // Puntos de experiencia (XP)
+  level: 1,           // Nivel actual
+  badges: [],         // Insignias ganadas
+  unlockedTitles: ['Viajero Novel'], // Títulos ganados
 };
 
 export const UserProvider = ({ children }) => {
@@ -433,22 +437,59 @@ export const UserProvider = ({ children }) => {
     loadData();
   }, []);
 
-  const updateUserData = async (keyOrData, value) => {
-    try {
-      setUserData(prev => {
-        let updatedData;
-        if (typeof keyOrData === 'string') {
-          const newValue = typeof value === 'function' ? value(prev[keyOrData]) : value;
-          updatedData = { ...prev, [keyOrData]: newValue };
-        } else {
-          updatedData = { ...prev, ...keyOrData };
-        }
-        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
-        return updatedData;
-      });
-    } catch (e) {
-      console.error('Error guardando los datos del usuario:', e);
-    }
+  const saveData = async (data) => {
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  };
+
+  const updateUserData = (newData) => {
+    setUserData(prev => {
+      const updated = { ...prev, ...newData };
+      saveData(updated);
+      return updated;
+    });
+  };
+
+  const awardExperience = (amount, reason) => {
+    setUserData(prev => {
+      const newXP = prev.experience + amount;
+      const newLevel = Math.floor(Math.sqrt(newXP / 100)) + 1;
+      const levelledUp = newLevel > prev.level;
+      
+      let newBadges = [...(prev.badges || [])];
+      let newTitles = [...(prev.unlockedTitles || [])];
+
+      // Lógica de Insignias Automáticas
+      if (prev.verifiedPlaces?.length >= 5 && !newBadges.includes('accessibility-hero')) {
+        newBadges.push('accessibility-hero');
+        newTitles.push('Héroe de la Accesibilidad');
+      }
+      
+      const alicanteVisits = prev.visitedPlaces?.filter(id => id.includes('alicante'))?.length || 0;
+      if (alicanteVisits >= 3 && !newBadges.includes('alicante-ambassador')) {
+        newBadges.push('alicante-ambassador');
+        newTitles.push('Embajador de Alicante');
+      }
+
+      if (prev.totalSavings >= 50 && !newBadges.includes('master-saver')) {
+        newBadges.push('master-saver');
+        newTitles.push('Maestro del Ahorro');
+      }
+
+      const updated = { 
+        ...prev, 
+        experience: newXP, 
+        level: newLevel,
+        badges: newBadges,
+        unlockedTitles: newTitles
+      };
+      
+      if (levelledUp) {
+        Alert.alert('¡NIVEL UP!', `¡Has alcanzado el Nivel ${newLevel}! Sigue explorando para desbloquear más ventajas.`);
+      }
+
+      saveData(updated);
+      return updated;
+    });
   };
 
   const logout = async () => {
@@ -462,7 +503,13 @@ export const UserProvider = ({ children }) => {
   };
 
   return (
-    <UserContext.Provider value={{ userData, updateUserData, logout, isLoading }}>
+    <UserContext.Provider value={{ 
+      userData, 
+      updateUserData, 
+      awardExperience,
+      logout, 
+      isLoading 
+    }}>
       {children}
     </UserContext.Provider>
   );

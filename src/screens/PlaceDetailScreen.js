@@ -77,7 +77,8 @@ const DAYS_MAP = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 export function PlaceDetailScreen({ route, navigation }) {
   const { place: navigationPlace } = route.params;
   const { theme, isDarkMode } = useTheme();
-  const { userData, updateUserData } = useUser();
+  const { userData, updateUserData, awardExperience } = useUser();
+  const insets = useSafeAreaInsets();
   const isAdmin = userData?.role === 'admin' || userData?.isAdmin;
 
   // Buscar la versión más fresca del lugar en las contribuciones (por ID o nombre+ciudad)
@@ -138,6 +139,10 @@ export function PlaceDetailScreen({ route, navigation }) {
       visitedPlaces: updatedVisited,
       totalSavings: Math.max(0, (userData.totalSavings || 0) + savingsChange)
     });
+
+    if (!isVisited) {
+      awardExperience(100, 'Visita registrada');
+    }
   };
 
   const handleVerifyAccessibility = () => {
@@ -153,6 +158,7 @@ export function PlaceDetailScreen({ route, navigation }) {
       updateUserData({
         verifiedPlaces: [...(userData.verifiedPlaces || []), place.id]
       });
+      awardExperience(50, 'Accesibilidad verificada');
     }
 
     Alert.alert('¡Gracias!', 'Has validado la accesibilidad de este lugar para la comunidad.');

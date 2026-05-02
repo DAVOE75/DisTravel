@@ -31,7 +31,10 @@ import {
   Edit,
   Trash2,
   ChevronRight,
-  Plus
+  Plus,
+  Bus,
+  Zap,
+  Car
 } from 'lucide-react-native';
 import { MONUMENTOS } from '../data/monumentos';
 import { typography } from '../theme/typography';
@@ -418,6 +421,39 @@ export function CityDetailScreen({ route, navigation }) {
             </TouchableOpacity>
           </View>
 
+          {/* Transporte Conectado v3.0 */}
+          <View style={{ marginBottom: 35 }}>
+            <Text style={[styles.sectionTitle, { color: theme.text, marginBottom: 15 }]}>
+              Transporte Conectado
+            </Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
+              <View style={[styles.transportCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                 <Bus color={theme.primary} size={24} />
+                 <Text style={[styles.transportTitle, { color: theme.text }]}>Autobuses</Text>
+                 <View style={styles.transportStatus}>
+                    <View style={[styles.statusDot, { backgroundColor: '#2ECC71' }]} />
+                    <Text style={[styles.statusText, { color: theme.textSecondary }]}>100% Accesible</Text>
+                 </View>
+              </View>
+              <View style={[styles.transportCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                 <Zap color="#F1C40F" size={24} />
+                 <Text style={[styles.transportTitle, { color: theme.text }]}>TRAM / Metro</Text>
+                 <View style={styles.transportStatus}>
+                    <View style={[styles.statusDot, { backgroundColor: '#2ECC71' }]} />
+                    <Text style={[styles.statusText, { color: theme.textSecondary }]}>Rampa Auto</Text>
+                 </View>
+              </View>
+              <View style={[styles.transportCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                 <Car color="#3498DB" size={24} />
+                 <Text style={[styles.transportTitle, { color: theme.text }]}>EuroTaxi</Text>
+                 <View style={styles.transportStatus}>
+                    <View style={[styles.statusDot, { backgroundColor: '#2ECC71' }]} />
+                    <Text style={[styles.statusText, { color: theme.textSecondary }]}>Disponible</Text>
+                 </View>
+              </View>
+            </ScrollView>
+          </View>
+
           <View style={styles.sectionHeaderRow}>
             <Text style={[styles.sectionTitle, { color: theme.text }, typography.h2]}>
               Lugares Recomendados
@@ -626,5 +662,32 @@ const styles = StyleSheet.create({
   modalTitle: { marginLeft: 15, flex: 1 },
   modalBody: { flex: 1 },
   modalText: { fontSize: 17, lineHeight: 28 },
-  closeButton: { padding: 8, borderRadius: 12, backgroundColor: 'rgba(0,0,0,0.05)' }
+  closeButton: { padding: 8, borderRadius: 12, backgroundColor: 'rgba(0,0,0,0.05)' },
+  transportCard: {
+    width: 140,
+    padding: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  transportTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  transportStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  statusText: {
+    fontSize: 10,
+    fontWeight: '600',
+  }
 });

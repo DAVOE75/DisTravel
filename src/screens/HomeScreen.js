@@ -41,6 +41,8 @@ import * as Location from 'expo-location';
 import { typography } from '../theme/typography';
 import { CIUDADES_PREMIUM } from '../data/ciudades';
 import municipiosData from '../data/municipios.json';
+import { ProximityService } from '../services/ProximityService';
+import { MONUMENTOS } from '../data/monumentos';
 
 const { width } = Dimensions.get('window');
 
@@ -92,6 +94,16 @@ export function HomeScreen({ navigation }) {
 
       let location = await Location.getCurrentPositionAsync({});
       setLocation(location);
+
+      // Iniciar el servicio de proximidad v3.0
+      const allPlaces = Object.values(MONUMENTOS).flat();
+      const userPlaces = userData.contributions || [];
+      const combinedPlaces = [...allPlaces, ...userPlaces];
+
+      ProximityService.startWatching(combinedPlaces, (place) => {
+        console.log(`Cerca de: ${place.name}`);
+        // Aquí podríamos lanzar una notificación local real en el futuro
+      });
     })();
   }, []);
 
@@ -188,7 +200,12 @@ export function HomeScreen({ navigation }) {
                   source={require('../../assets/logo_official.png')} 
                   style={styles.proHeroLogo} 
                 />
-                <Text style={styles.proBrandText}>Distravel</Text>
+                <View>
+                  <Text style={styles.proBrandText}>Distravel</Text>
+                  <View style={styles.levelBadge}>
+                    <Text style={styles.levelBadgeText}>NIVEL {userData.level || 1}</Text>
+                  </View>
+                </View>
              </View>
              
              <View style={{ flexDirection: 'row', gap: 10 }}>
@@ -244,6 +261,20 @@ export function HomeScreen({ navigation }) {
           showsHorizontalScrollIndicator={false} 
           contentContainerStyle={styles.missionScroll}
         >
+          <TouchableOpacity 
+            style={[styles.missionCard, { backgroundColor: theme.primary, borderColor: theme.primary }]}
+            onPress={() => navigation.navigate('Map')}
+          >
+            <View style={[styles.missionIcon, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
+              <Sparkles color="#FFFFFF" size={24} />
+            </View>
+            <Text style={[styles.missionTitle, { color: '#FFFFFF' }]}>Misión del Día 🏆</Text>
+            <Text style={[styles.missionDesc, { color: 'rgba(255,255,255,0.9)' }]}>Verifica la accesibilidad de un lugar cercano para ganar +200 XP.</Text>
+            <View style={styles.missionXP}>
+               <Text style={styles.missionXPText}>+200 XP</Text>
+            </View>
+          </TouchableOpacity>
+
           <View style={[styles.missionCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             <View style={[styles.missionIcon, { backgroundColor: '#3498DB15' }]}>
               <Info color="#3498DB" size={24} />
@@ -566,6 +597,19 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 0.5,
   },
+  levelBadge: {
+    backgroundColor: '#FFD700',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginTop: 2,
+    alignSelf: 'flex-start',
+  },
+  levelBadgeText: {
+    color: '#000',
+    fontSize: 8,
+    fontWeight: '900',
+  },
   proCircleBtn: {
     width: 40,
     height: 40,
@@ -687,6 +731,20 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     fontWeight: '500',
+  },
+  missionXP: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  missionXPText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: '800',
   },
   searchLabel: {
     fontSize: 18,

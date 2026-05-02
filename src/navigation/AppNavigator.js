@@ -18,6 +18,7 @@ import { DistravelAIScreen } from '../screens/DistravelAIScreen';
 import { DigitalWalletScreen } from '../screens/DigitalWalletScreen';
 import { HowToUseScreen } from '../screens/HowToUseScreen';
 import { SplashScreen } from '../screens/SplashScreen';
+import { MedalsScreen } from '../screens/MedalsScreen';
 import { colors } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
@@ -57,6 +58,7 @@ export function AppNavigator() {
           <Stack.Screen name="DistravelAI" component={DistravelAIScreen} />
           <Stack.Screen name="DigitalWallet" component={DigitalWalletScreen} />
           <Stack.Screen name="HowToUse" component={HowToUseScreen} />
+          <Stack.Screen name="Medals" component={MedalsScreen} />
         </>
       )}
     </Stack.Navigator>
