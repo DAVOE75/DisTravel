@@ -14,6 +14,7 @@ import { ToiletsScreen } from '../screens/ToiletsScreen';
 import { SavingsSimulatorScreen } from '../screens/SavingsSimulatorScreen';
 import { AddLocationScreen } from '../screens/AddLocationScreen';
 import { LoginScreen } from '../screens/LoginScreen';
+import { DistravelAIScreen } from '../screens/DistravelAIScreen';
 import { colors } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
@@ -50,6 +51,7 @@ export function AppNavigator() {
           <Stack.Screen name="Toilets" component={ToiletsScreen} />
           <Stack.Screen name="SavingsSimulator" component={SavingsSimulatorScreen} />
           <Stack.Screen name="AddLocation" component={AddLocationScreen} />
+          <Stack.Screen name="DistravelAI" component={DistravelAIScreen} />
         </>
       )}
     </Stack.Navigator>

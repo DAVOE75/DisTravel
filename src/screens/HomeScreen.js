@@ -27,7 +27,8 @@ import {
   Bus,
   Accessibility,
   User,
-  Plus
+  Plus,
+  Sparkles
 } from 'lucide-react-native';
 import * as Location from 'expo-location';
 import { typography } from '../theme/typography';
@@ -129,16 +130,24 @@ export function HomeScreen({ navigation }) {
             <Text style={[styles.greeting, { color: theme.textSecondary }]}>{getGreeting()},</Text>
             <Text style={[styles.userName, { color: theme.text }, typography.h1]}>{(userData?.name || 'Viajero').split(' ')[0]} 👋</Text>
           </View>
-          <TouchableOpacity 
-            style={[styles.profileButton, { backgroundColor: theme.surface, borderColor: theme.border }]}
-            onPress={() => navigation.navigate('Profile')}
-          >
-            {userData?.profileImage ? (
-              <Image source={{ uri: userData.profileImage }} style={styles.headerAvatar} />
-            ) : (
-              <User color={theme.primary} size={24} />
-            )}
-          </TouchableOpacity>
+          <View style={styles.headerRight}>
+            <TouchableOpacity 
+              style={[styles.aiButton, { backgroundColor: theme.primary + '15', borderColor: theme.primary + '30' }]}
+              onPress={() => navigation.navigate('DistravelAI')}
+            >
+              <Sparkles color={theme.primary} size={22} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.profileButton, { backgroundColor: theme.surface, borderColor: theme.border }]}
+              onPress={() => navigation.navigate('Profile')}
+            >
+              {userData?.profileImage ? (
+                <Image source={{ uri: userData.profileImage }} style={styles.headerAvatar} />
+              ) : (
+                <Users color={theme.primary} size={24} />
+              )}
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Search Bar - AHORA FUNCIONAL */}
@@ -332,6 +341,19 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     borderRadius: 22,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  aiButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+    borderWidth: 1,
   },
   searchSection: {
     paddingHorizontal: 20,
