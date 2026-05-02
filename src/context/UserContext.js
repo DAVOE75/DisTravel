@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const UserContext = createContext();
@@ -378,43 +379,29 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     const loadData = async () => {
+      console.log('Distravel v3.0: Iniciando carga de datos...');
       try {
         const jsonValue = await AsyncStorage.getItem(STORAGE_KEY);
         let parsed = jsonValue != null ? JSON.parse(jsonValue) : { contributions: [] };
+        console.log('Distravel v3.0: Datos recuperados de almacenamiento.');
         
         // Unificar contributions y asegurar que no hay duplicados por ID
         let currentContributions = parsed.contributions || [];
         
-        // Añadir semillas si no existen o actualizar si han cambiado campos clave (imagen, coordenadas)
+        // Añadir semillas si no existen o actualizar si han cambiado campos clave
         SEED_DATA.forEach(seed => {
           const idx = currentContributions.findIndex(p => p.id === seed.id);
           if (idx === -1) {
             currentContributions.push(seed);
           } else {
-            // FORZAR actualización de datos oficiales (Wikipedia, Coordenadas, Logística)
             const existing = currentContributions[idx];
-            
-            // Actualizar siempre la imagen si es de Wikipedia (oficial)
-            if (seed.image && seed.image.includes('wikipedia')) {
-              existing.image = seed.image;
-            }
-            
-            // Actualizar coordenadas si son diferentes o faltan
-            if (seed.location && (!existing.location || seed.location.latitude !== existing.location.latitude)) {
-              existing.location = seed.location;
-            }
-
-            // Actualizar otros campos críticos
-            existing.phone = seed.phone || existing.phone;
-            existing.website = seed.website || existing.website;
-            existing.tariffs = seed.tariffs || existing.tariffs;
-            existing.importantNotices = seed.importantNotices || existing.importantNotices;
-            
-            currentContributions[idx] = { ...existing };
+            if (seed.image && seed.image.includes('wikipedia')) existing.image = seed.image;
+            if (seed.location) existing.location = seed.location;
+            currentContributions[idx] = { ...existing, ...seed, id: seed.id }; // Forzar actualización de datos oficiales
           }
         });
 
-        // LIMPIEZA DE DUPLICADOS (por si acaso quedaron duplicados por nombre+ciudad)
+        // Limpieza de duplicados
         const uniqueContributions = [];
         const seen = new Set();
         currentContributions.forEach(p => {
@@ -427,11 +414,13 @@ export const UserProvider = ({ children }) => {
 
         parsed.contributions = uniqueContributions;
         setUserData({ ...INITIAL_USER_DATA, ...parsed, isAdmin: true });
+        console.log('Distravel v3.0: Estado de usuario inicializado.');
       } catch (e) {
-        console.error('Error cargando los datos del usuario:', e);
+        console.error('Distravel v3.0 Error:', e);
         setUserData(INITIAL_USER_DATA);
       } finally {
-        setTimeout(() => setIsLoading(false), 500);
+        setIsLoading(false);
+        console.log('Distravel v3.0: Carga finalizada.');
       }
     };
     loadData();
