@@ -518,5 +518,15 @@ export const CIUDADES_PREMIUM = {
     landscape: 'Muralla romana Patrimonio de la Humanidad.',
     image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
     tags: ['Muralla', 'Romana', 'Historia']
+  },
+  'Belmonte': {
+    name: 'Belmonte', province: 'Cuenca', region: 'Castilla-La Mancha',
+    description: 'Villa histórica coronada por uno de los castillos más bellos de España.',
+    history: 'Lugar de nacimiento del poeta Fray Luis de León. Su castillo fue construido por el Marqués de Villena en el siglo XV.',
+    climate: 'Mediterráneo continentalizado.',
+    geography: 'Serranía Baja de Cuenca.',
+    landscape: 'Castillo de Belmonte y casco antiguo medieval.',
+    image: 'https://images.unsplash.com/photo-1599423300746-b62533397364?auto=format&fit=crop&w=800&q=80',
+    tags: ['Castillo', 'Poesía', 'Historia']
   }
 };

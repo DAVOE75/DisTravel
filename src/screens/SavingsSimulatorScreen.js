@@ -99,17 +99,23 @@ export function SavingsSimulatorScreen({ navigation }) {
         <View style={[styles.resultCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <TrendingDown color={theme.primary} size={40} />
           <Text style={[styles.resultTitle, { color: theme.text }]}>¡Tu Ahorro Estimado!</Text>
-          <Text style={[styles.savingsValue, { color: theme.primary }]}>{results.saved}€</Text>
-          <Text style={[styles.resultSub, { color: theme.textSecondary }]}>En las entradas principales de {selectedCity}</Text>
+          <Text style={[styles.savingsValue, { color: theme.primary }]}>{results.saved.toFixed(0)}€</Text>
+          <Text style={[styles.resultSub, { color: theme.textSecondary }]}>Basado en tu grado del {userData.disabilityDegree}%</Text>
           
           <View style={styles.breakdown}>
             <View style={styles.breakdownRow}>
-              <Text style={[styles.breakdownLabel, { color: theme.textSecondary }]}>Precio Turista Estándar</Text>
-              <Text style={[styles.breakdownValue, { color: theme.text }]}>{results.general}€</Text>
+              <View style={styles.breakdownLabelContainer}>
+                <Building2 color={theme.textSecondary} size={14} />
+                <Text style={[styles.breakdownLabel, { color: theme.textSecondary }]}>Precio Estándar</Text>
+              </View>
+              <Text style={[styles.breakdownValue, { color: theme.text }]}>{results.general.toFixed(2)}€</Text>
             </View>
             <View style={styles.breakdownRow}>
-              <Text style={[styles.breakdownLabel, { color: theme.textSecondary }]}>Precio con DisTravel</Text>
-              <Text style={[styles.breakdownValue, { color: '#2ECC71' }]}>{results.disability}€</Text>
+              <View style={styles.breakdownLabelContainer}>
+                <Wallet color="#2ECC71" size={14} />
+                <Text style={[styles.breakdownLabel, { color: theme.textSecondary }]}>Tu Precio Reducido</Text>
+              </View>
+              <Text style={[styles.breakdownValue, { color: '#2ECC71' }]}>{results.disability.toFixed(2)}€</Text>
             </View>
           </View>
         </View>
@@ -241,7 +247,13 @@ const styles = StyleSheet.create({
   breakdownRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  breakdownLabelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   breakdownLabel: {
     fontSize: 13,

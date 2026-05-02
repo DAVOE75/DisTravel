@@ -20,15 +20,21 @@ import {
   Star, 
   ChevronRight,
   ShieldCheck,
-  Building2,
-  MapPin,
+  User, 
+  MapPin, 
+  Building2, 
+  Sparkles,
+  Accessibility,
+  CreditCard,
   TrendingDown,
+  Users,
+  Eye,
+  Ear,
+  Brain,
   Ticket,
   Bus,
-  Accessibility,
-  User,
   Plus,
-  Sparkles
+  Info
 } from 'lucide-react-native';
 import * as Location from 'expo-location';
 import { typography } from '../theme/typography';
@@ -69,7 +75,7 @@ const CityCard = ({ city, onPress, theme }) => (
 
 export function HomeScreen({ navigation }) {
   const { theme, isDarkMode } = useTheme();
-  const { userData } = useUser();
+  const { userData, updateUserData } = useUser();
   const insets = useSafeAreaInsets();
   const [searchQuery, setSearchQuery] = useState('');
   const [location, setLocation] = useState(null);
@@ -93,24 +99,37 @@ export function HomeScreen({ navigation }) {
       .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Quitar acentos
       .replace(/y/g, 'i') || ''; // Normalizar i/y para casos como Alcoy/Alcoi
 
-  // 3. Fusionar Ciudades Premium con las añadidas por el usuario
-  const userAddedPlaces = userData?.contributions || [];
-  const userCities = [...new Set(userAddedPlaces.map(p => p.city))].map(cityName => ({
-    name: cityName,
-    province: userAddedPlaces.find(p => p.city === cityName)?.province || 'Contribución',
-    image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
-    description: `Ciudad con lugares añadidos por la comunidad.`,
-    tags: ['Comunidad'],
-    isUserAdded: true
+  // 3. Obtener lista única de ciudades (Premium + Contribuciones de usuarios)
+  const userCities = (userData?.contributions || []).map(p => ({
+    name: p.city,
+    province: p.province || p.city,
+    image: 'https://images.unsplash.com/photo-1543731068-7e0f5beff43a', // Placeholder
+    description: `Explora los lugares de ${p.city}`,
+    tags: ['Comunidad']
   }));
 
-  const allCities = [...Object.values(CIUDADES_PREMIUM), ...userCities];
+  // Crear un mapa para evitar duplicados por nombre de ciudad
+  const uniqueCitiesMap = new Map();
+  
+  // Añadir ciudades premium primero (tienen prioridad en info e imágenes)
+  Object.values(CIUDADES_PREMIUM).forEach(city => {
+    uniqueCitiesMap.set(normalize(city.name), city);
+  });
 
-  const filteredCities = allCities.filter(city => {
+  // Añadir ciudades de usuarios si no existen ya
+  userCities.forEach(city => {
+    const key = normalize(city.name);
+    if (!uniqueCitiesMap.has(key)) {
+      uniqueCitiesMap.set(key, city);
+    }
+  });
+
+  const allCitiesList = Array.from(uniqueCitiesMap.values());
+
+  const filteredCities = allCitiesList.filter(city => {
     const query = normalize(searchQuery);
     return normalize(city.name).includes(query) || 
-           (city.province && normalize(city.province).includes(query)) ||
-           (city.tags && city.tags.some(tag => normalize(tag).includes(query)));
+           (city.province && normalize(city.province).includes(query));
   });
 
   const PROVINCES = {
@@ -133,6 +152,7 @@ export function HomeScreen({ navigation }) {
     ? municipiosData
         .filter(m => normalize(m.label).includes(normalize(searchQuery)))
         .map(m => ({ ...m, province: getProvince(m.parent_code) }))
+        .filter(m => !uniqueCitiesMap.has(normalize(m.label))) // No duplicar si ya está en Premium o Contribuciones
         .slice(0, 10)
     : [];
 
@@ -152,130 +172,225 @@ export function HomeScreen({ navigation }) {
       />
       
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Top Header */}
-        <View style={styles.header}>
-          <View>
-            <View style={styles.brandContainer}>
-               <Image 
-                source={require('../../assets/logo_official.png')} 
-                style={styles.headerLogo} 
-                resizeMode="contain"
+        {/* PRO HERO SECTION */}
+        <View style={styles.proHero}>
+          <Image 
+            source={{ uri: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1200&q=80' }} 
+            style={styles.proHeroImage} 
+          />
+          <View style={styles.proHeroOverlay} />
+
+          {/* Floating Header Actions */}
+          <View style={styles.proHeaderActions}>
+             <View style={styles.proBrandRow}>
+                <Image 
+                  source={require('../../assets/logo_official.png')} 
+                  style={styles.proHeroLogo} 
+                />
+                <Text style={styles.proBrandText}>Distravel</Text>
+             </View>
+             
+             <View style={{ flexDirection: 'row', gap: 10 }}>
+               <TouchableOpacity 
+                  style={styles.proCircleBtn}
+                  onPress={() => navigation.navigate('DistravelAI')}
+                >
+                  <Sparkles color="#FFF" size={20} />
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  style={[styles.proCircleBtn, { backgroundColor: theme.primary }]}
+                  onPress={() => navigation.navigate('Profile')}
+                >
+                  {userData?.profileImage ? (
+                    <Image source={{ uri: userData.profileImage }} style={styles.proAvatar} />
+                  ) : (
+                    <User color="#FFF" size={20} />
+                  )}
+                </TouchableOpacity>
+             </View>
+          </View>
+          
+          <View style={styles.proHeroContent}>
+            <View style={styles.proBrandBadge}>
+              <Accessibility color="#FFF" size={14} />
+              <Text style={styles.proBrandBadgeText}>TURISMO SIN BARRERAS</Text>
+            </View>
+            <Text style={styles.proHeroTitle}>Explora el mundo a tu medida</Text>
+            <Text style={styles.proHeroSub}>Distravel es la plataforma líder en turismo accesible. Encuentra destinos, monumentos y rutas validadas para todas las capacidades.</Text>
+            
+            <View style={styles.proHeroStats}>
+              <View style={styles.proStat}>
+                <Text style={styles.proStatValue}>+500</Text>
+                <Text style={styles.proStatLabel}>Destinos</Text>
+              </View>
+              <View style={styles.proStatDivider} />
+              <View style={styles.proStat}>
+                <Text style={styles.proStatValue}>100%</Text>
+                <Text style={styles.proStatLabel}>Accesible</Text>
+              </View>
+              <View style={styles.proStatDivider} />
+              <View style={styles.proStat}>
+                <Text style={styles.proStatValue}>IA</Text>
+                <Text style={styles.proStatLabel}>Asistida</Text>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* MISSION CARDS */}
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          contentContainerStyle={styles.missionScroll}
+        >
+          <View style={[styles.missionCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+            <View style={[styles.missionIcon, { backgroundColor: '#3498DB15' }]}>
+              <Info color="#3498DB" size={24} />
+            </View>
+            <Text style={[styles.missionTitle, { color: theme.text }]}>¿Qué es Distravel?</Text>
+            <Text style={[styles.missionDesc, { color: theme.textSecondary }]}>Tu guía inteligente para viajar con total confianza y accesibilidad garantizada.</Text>
+          </View>
+
+          <View style={[styles.missionCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+            <View style={[styles.missionIcon, { backgroundColor: '#2ECC7115' }]}>
+              <Map color="#2ECC71" size={24} />
+            </View>
+            <Text style={[styles.missionTitle, { color: theme.text }]}>¿Cómo usarla?</Text>
+            <Text style={[styles.missionDesc, { color: theme.textSecondary }]}>Filtra por tu tipo de discapacidad y descubre lugares adaptados a tus necesidades.</Text>
+          </View>
+
+          <TouchableOpacity 
+            style={[styles.missionCard, { backgroundColor: theme.primary + '15', borderColor: theme.primary }]}
+            onPress={() => navigation.navigate('AddLocation')}
+          >
+            <View style={[styles.missionIcon, { backgroundColor: theme.primary }]}>
+              <Plus color="#FFF" size={24} />
+            </View>
+            <Text style={[styles.missionTitle, { color: theme.text }]}>¡Contribuye!</Text>
+            <Text style={[styles.missionDesc, { color: theme.textSecondary }]}>Ayúdanos a crecer añadiendo nuevos lugares y validando su accesibilidad real.</Text>
+          </TouchableOpacity>
+        </ScrollView>
+
+        {/* Search Bar - INTEGRADA CON EL FLOW */}
+        <View style={styles.searchSection}>
+          <Text style={[styles.searchLabel, { color: theme.text }]}>¿A dónde quieres ir hoy?</Text>
+          
+          {/* Contenedor relativo para anclar el dropdown */}
+          <View style={{ position: 'relative', zIndex: 9999 }}>
+            <View style={[styles.searchBar, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+              <Search color={theme.textSecondary} size={20} />
+              <TextInput 
+                placeholder="Busca una ciudad..."
+                placeholderTextColor={theme.textSecondary}
+                style={[styles.searchInput, { color: theme.text }]}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
               />
             </View>
-            <Text style={[styles.greeting, { color: theme.textSecondary }]}>{getGreeting()},</Text>
-            <Text style={[styles.userName, { color: theme.text }, typography.h1]}>{(userData?.name || 'Viajero').split(' ')[0]} 👋</Text>
-          </View>
-          <View style={styles.headerRight}>
-            <TouchableOpacity 
-              style={[styles.aiButton, { backgroundColor: theme.primary + '15', borderColor: theme.primary + '30' }]}
-              onPress={() => navigation.navigate('DistravelAI')}
-            >
-              <Sparkles color={theme.primary} size={22} />
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.profileButton, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => navigation.navigate('Profile')}
-            >
-              {userData?.profileImage ? (
-                <Image source={{ uri: userData.profileImage }} style={styles.headerAvatar} />
-              ) : (
-                <User color={theme.primary} size={24} />
-              )}
-            </TouchableOpacity>
+
+            {/* Resultados de búsqueda UNIFICADOS (Ahora pegados al buscador) */}
+            {searchQuery.length > 0 && (
+              <View style={[styles.searchResultsDropdown, { backgroundColor: theme.surface, borderColor: theme.border, top: 60, left: 0, right: 0 }]}>
+                <ScrollView style={{ maxHeight: 300 }} keyboardShouldPersistTaps="handled">
+                  {/* Sección de Ciudades Premium / Propias */}
+                  {filteredCities.length > 0 && (
+                    <View>
+                      <Text style={[styles.dropdownSectionTitle, { color: theme.primary }]}>CIUDADES DESTACADAS</Text>
+                      {filteredCities.map((city, index) => (
+                        <TouchableOpacity 
+                          key={`city-${index}`} 
+                          style={[styles.searchResultItem, { borderBottomColor: theme.border }]}
+                          onPress={() => {
+                            setSearchQuery('');
+                            navigation.navigate('CityDetail', { city });
+                          }}
+                        >
+                          <View style={styles.searchResultLeft}>
+                            <View style={[styles.resultIcon, { backgroundColor: theme.primary + '15' }]}>
+                              <Building2 color={theme.primary} size={16} />
+                            </View>
+                            <View style={{ marginLeft: 12 }}>
+                              <Text style={[styles.searchResultName, { color: theme.text }]}>{city.name}</Text>
+                              <Text style={[styles.searchResultProvince, { color: theme.textSecondary }]}>{city.province}</Text>
+                            </View>
+                          </View>
+                          <ChevronRight color={theme.textSecondary} size={16} />
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
+
+                  {/* Sección de Pueblos (Base de datos general) */}
+                  {matchedTowns.length > 0 && (
+                    <View>
+                      <Text style={[styles.dropdownSectionTitle, { color: theme.textSecondary, marginTop: 10 }]}>PUEBLOS Y MUNICIPIOS</Text>
+                      {matchedTowns.map((town, index) => (
+                        <TouchableOpacity 
+                          key={`town-${index}`}
+                          style={[styles.searchResultItem, { borderBottomColor: theme.border }]}
+                          onPress={() => {
+                            setSearchQuery('');
+                            navigation.navigate('CityDetail', { 
+                              city: { 
+                                name: town.label, 
+                                province: town.province || 'España',
+                                image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
+                                description: 'Explora los lugares accesibles de este municipio.',
+                                history: 'Información histórica en proceso de verificación.',
+                                tags: ['Pueblo']
+                              } 
+                            });
+                          }}
+                        >
+                          <View style={styles.searchResultLeft}>
+                            <View style={[styles.resultIcon, { backgroundColor: theme.textSecondary + '15' }]}>
+                              <MapPin color={theme.textSecondary} size={16} />
+                            </View>
+                            <View style={{ marginLeft: 12 }}>
+                              <Text style={[styles.searchResultName, { color: theme.text }]}>{town.label}</Text>
+                              <Text style={[styles.searchResultProvince, { color: theme.textSecondary }]}>{town.province || 'España'}</Text>
+                            </View>
+                          </View>
+                          <ChevronRight color={theme.textSecondary} size={16} />
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
+
+                  {filteredCities.length === 0 && matchedTowns.length === 0 && (
+                    <View style={styles.noResultsContainer}>
+                      <Text style={{ color: theme.textSecondary }}>No se encontraron resultados</Text>
+                    </View>
+                  )}
+                </ScrollView>
+              </View>
+            )}
           </View>
         </View>
 
-        {/* Search Bar - AHORA FUNCIONAL */}
-        <View style={styles.searchSection}>
-          <View style={[styles.searchBar, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-            <Search color={theme.textSecondary} size={20} />
-            <TextInput 
-              placeholder="Busca pueblos, ciudades o rutas..."
-              placeholderTextColor={theme.textSecondary}
-              style={[styles.searchInput, { color: theme.text }]}
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-          </View>
+        {/* Disability Filter Tabs (Restaurados tras la sección de búsqueda) */}
+        <View style={styles.filterTabsContainer}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterTabs}>
+            {[
+              { id: 'MOTOR', label: 'Física', icon: Accessibility },
+              { id: 'VISUAL', label: 'Visual', icon: Eye },
+              { id: 'AUDITORY', label: 'Auditiva', icon: Ear },
+              { id: 'COGNITIVE', label: 'Cognitiva', icon: Brain }
+            ].map(type => (
+              <TouchableOpacity 
+                key={type.id}
+                style={[
+                  styles.filterTab, 
+                  { backgroundColor: userData.disabilityType === type.id ? theme.primary : theme.surface, borderColor: theme.border }
+                ]}
+                onPress={() => updateUserData({ disabilityType: type.id })}
+              >
+                <type.icon color={userData.disabilityType === type.id ? '#FFFFFF' : theme.primary} size={16} />
+                <Text style={[styles.filterTabText, { color: userData.disabilityType === type.id ? '#FFFFFF' : theme.text }]}>{type.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
         </View>
-
-        {/* Resultados de búsqueda UNIFICADOS */}
-        {searchQuery.length > 0 && (
-          <View style={[styles.searchResultsDropdown, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-            <ScrollView style={{ maxHeight: 300 }} keyboardShouldPersistTaps="handled">
-              {/* Sección de Ciudades Premium / Propias */}
-              {filteredCities.length > 0 && (
-                <View>
-                  <Text style={[styles.dropdownSectionTitle, { color: theme.primary }]}>CIUDADES DESTACADAS</Text>
-                  {filteredCities.map((city, index) => (
-                    <TouchableOpacity 
-                      key={`city-${index}`} 
-                      style={[styles.searchResultItem, { borderBottomColor: theme.border }]}
-                      onPress={() => {
-                        setSearchQuery('');
-                        navigation.navigate('CityDetail', { city });
-                      }}
-                    >
-                      <View style={styles.searchResultLeft}>
-                        <View style={[styles.resultIcon, { backgroundColor: theme.primary + '15' }]}>
-                          <Building2 color={theme.primary} size={16} />
-                        </View>
-                        <View style={{ marginLeft: 12 }}>
-                          <Text style={[styles.searchResultName, { color: theme.text }]}>{city.name}</Text>
-                          <Text style={[styles.searchResultProvince, { color: theme.textSecondary }]}>{city.province}</Text>
-                        </View>
-                      </View>
-                      <ChevronRight color={theme.textSecondary} size={16} />
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-
-              {/* Sección de Pueblos (Base de datos general) */}
-              {matchedTowns.length > 0 && (
-                <View>
-                  <Text style={[styles.dropdownSectionTitle, { color: theme.textSecondary, marginTop: 10 }]}>PUEBLOS Y MUNICIPIOS</Text>
-                  {matchedTowns.map((town, index) => (
-                    <TouchableOpacity 
-                      key={`town-${index}`}
-                      style={[styles.searchResultItem, { borderBottomColor: theme.border }]}
-                      onPress={() => {
-                        setSearchQuery('');
-                        navigation.navigate('CityDetail', { 
-                          city: { 
-                            name: town.label, 
-                            province: town.province || 'España',
-                            image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
-                            description: 'Explora los lugares accesibles de este municipio.',
-                            history: 'Información histórica en proceso de verificación.',
-                            tags: ['Pueblo']
-                          } 
-                        });
-                      }}
-                    >
-                      <View style={styles.searchResultLeft}>
-                        <View style={[styles.resultIcon, { backgroundColor: theme.textSecondary + '15' }]}>
-                          <MapPin color={theme.textSecondary} size={16} />
-                        </View>
-                        <View style={{ marginLeft: 12 }}>
-                          <Text style={[styles.searchResultName, { color: theme.text }]}>{town.label}</Text>
-                          <Text style={[styles.searchResultProvince, { color: theme.textSecondary }]}>{town.province || 'España'}</Text>
-                        </View>
-                      </View>
-                      <ChevronRight color={theme.textSecondary} size={16} />
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              )}
-
-              {filteredCities.length === 0 && matchedTowns.length === 0 && (
-                <View style={styles.noResultsContainer}>
-                  <Text style={{ color: theme.textSecondary }}>No se encontraron resultados</Text>
-                </View>
-              )}
-            </ScrollView>
-          </View>
-        )}
 
         <View style={styles.sectionContainer}>
           <Text style={[styles.sectionTitle, { color: theme.text }, typography.h2]}>Herramientas de Élite 🌟</Text>
@@ -347,17 +462,68 @@ export function HomeScreen({ navigation }) {
         </View>
 
         {/* Mission-Critical Banner: Digital ID */}
+        {/* Explore Features - TOP 10 STRATEGY */}
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>HERRAMIENTAS ELITE</Text>
+        </View>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false} 
+          contentContainerStyle={styles.featuresScroll}
+        >
+          <TouchableOpacity 
+            style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
+            onPress={() => navigation.navigate('SavingsSimulator')}
+          >
+            <View style={[styles.featureIcon, { backgroundColor: '#F1C40F15' }]}>
+              <TrendingDown color="#F1C40F" size={20} />
+            </View>
+            <Text style={[styles.featureName, { color: theme.text }]}>Simulador Ahorro</Text>
+            <Text style={[styles.featureStatus, { color: theme.success }]}>ACTIVO</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
+            onPress={() => navigation.navigate('DigitalWallet')}
+          >
+            <View style={[styles.featureIcon, { backgroundColor: theme.primary + '15' }]}>
+              <CreditCard color={theme.primary} size={20} />
+            </View>
+            <Text style={[styles.featureName, { color: theme.text }]}>Billetera EU</Text>
+            <Text style={[styles.featureStatus, { color: theme.success }]}>ACTIVO</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
+            onPress={() => navigation.navigate('DistravelAI')}
+          >
+            <View style={[styles.featureIcon, { backgroundColor: '#9B59B615' }]}>
+              <Sparkles color="#9B59B6" size={20} />
+            </View>
+            <Text style={[styles.featureName, { color: theme.text }]}>Explorar IA</Text>
+            <Text style={[styles.featureStatus, { color: theme.success }]}>ACTIVO</Text>
+          </TouchableOpacity>
+
+          <View style={[styles.featureCard, { backgroundColor: theme.surface, borderColor: theme.border, opacity: 0.6 }]}>
+            <View style={[styles.featureIcon, { backgroundColor: theme.textSecondary + '15' }]}>
+              <Users color={theme.textSecondary} size={20} />
+            </View>
+            <Text style={[styles.featureName, { color: theme.text }]}>Comunidad</Text>
+            <Text style={[styles.featureStatus, { color: theme.textSecondary }]}>PRÓXIMAMENTE</Text>
+          </View>
+        </ScrollView>
+
         <TouchableOpacity 
           style={[styles.credentialBanner, { backgroundColor: theme.primary }]}
-          onPress={() => navigation.navigate('DisabilityDetail')}
+          onPress={() => navigation.navigate('DigitalWallet')}
         >
           <View style={styles.bannerContent}>
             <View style={styles.bannerIconContainer}>
-              <ShieldCheck color="#FFFFFF" size={24} />
+              <CreditCard color="#FFFFFF" size={24} />
             </View>
             <View style={styles.bannerTextContainer}>
-              <Text style={styles.bannerTitle}>Acreditación Verificada</Text>
-              <Text style={styles.bannerSub}>Úsala para obtener descuentos directos</Text>
+              <Text style={styles.bannerTitle}>Billetera Digital Activa</Text>
+              <Text style={styles.bannerSub}>Acceso rápido a tu tarjeta europea</Text>
             </View>
           </View>
           <ChevronRight color="#FFFFFF" size={24} />
@@ -372,6 +538,159 @@ export function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  proHeaderActions: {
+    position: 'absolute',
+    top: 20,
+    left: 20,
+    right: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    zIndex: 999,
+    elevation: 10,
+  },
+  proBrandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  proHeroLogo: {
+    width: 28,
+    height: 28,
+  },
+  proBrandText: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+  proCircleBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  proAvatar: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 20,
+  },
+  proHero: {
+    height: 400,
+    width: '100%',
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  proHeroImage: {
+    width: '100%',
+    height: '100%',
+  },
+  proHeroOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+  },
+  proHeroContent: {
+    position: 'absolute',
+    bottom: 40,
+    left: 20,
+    right: 20,
+  },
+  proBrandBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  proBrandBadgeText: {
+    color: '#FFF',
+    fontSize: 10,
+    fontWeight: '900',
+    marginLeft: 6,
+    letterSpacing: 1,
+  },
+  proHeroTitle: {
+    color: '#FFF',
+    fontSize: 34,
+    fontWeight: '900',
+    marginBottom: 12,
+    lineHeight: 40,
+  },
+  proHeroSub: {
+    color: 'rgba(255, 255, 255, 0.8)',
+    fontSize: 15,
+    lineHeight: 22,
+    marginBottom: 25,
+  },
+  proHeroStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  proStat: {
+    alignItems: 'center',
+  },
+  proStatValue: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: '900',
+  },
+  proStatLabel: {
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    marginTop: 2,
+  },
+  proStatDivider: {
+    width: 1,
+    height: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    marginHorizontal: 25,
+  },
+  missionScroll: {
+    paddingHorizontal: 20,
+    paddingTop: 25,
+    paddingBottom: 5,
+  },
+  missionCard: {
+    width: 220,
+    padding: 20,
+    borderRadius: 24,
+    borderWidth: 1,
+    marginRight: 15,
+  },
+  missionIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  missionTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    marginBottom: 8,
+  },
+  missionDesc: {
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: '500',
+  },
+  searchLabel: {
+    fontSize: 18,
+    fontWeight: '800',
+    marginBottom: 15,
   },
   header: {
     flexDirection: 'row',
@@ -418,8 +737,10 @@ const styles = StyleSheet.create({
   },
   searchSection: {
     paddingHorizontal: 20,
-    marginTop: 15,
-    zIndex: 100, // IMPORTANTE para el desplegable
+    marginTop: 30,
+    marginBottom: 10,
+    zIndex: 100, 
+    position: 'relative', // Para posicionar el dropdown correctamente
   },
   searchBar: {
     flexDirection: 'row',
@@ -431,7 +752,7 @@ const styles = StyleSheet.create({
   },
   searchResultsDropdown: {
     position: 'absolute',
-    top: 60,
+    top: 90, // Ajustado para quedar bajo la barra (Label + Margin + Bar)
     left: 20,
     right: 20,
     borderRadius: 15,
@@ -467,9 +788,34 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    marginLeft: 15,
+    marginLeft: 10,
     fontSize: 16,
-    fontWeight: '500',
+  },
+  filterTabsContainer: {
+    marginTop: 15,
+  },
+  filterTabs: {
+    paddingHorizontal: 20,
+    paddingBottom: 5,
+  },
+  filterTab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    marginRight: 10,
+    borderWidth: 1,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  filterTabText: {
+    fontSize: 13,
+    fontWeight: '700',
+    marginLeft: 8,
   },
   sectionContainer: {
     marginBottom: 30,
@@ -622,16 +968,49 @@ const styles = StyleSheet.create({
   },
   credentialBanner: {
     marginHorizontal: 20,
+    marginTop: 10,
     borderRadius: 24,
     padding: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    elevation: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
-    shadowRadius: 15,
-    elevation: 8,
+    shadowRadius: 8,
+  },
+  featuresScroll: {
+    paddingHorizontal: 20,
+    paddingBottom: 25,
+    paddingTop: 5,
+  },
+  featureCard: {
+    width: 140,
+    padding: 15,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginRight: 12,
+    alignItems: 'center',
+  },
+  featureIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  featureName: {
+    fontSize: 13,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  featureStatus: {
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
   bannerContent: {
     flexDirection: 'row',

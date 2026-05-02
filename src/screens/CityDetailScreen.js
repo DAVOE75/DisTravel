@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   StyleSheet, 
   Text, 
@@ -29,11 +29,17 @@ import {
   CheckCircle,
   X,
   Edit,
-  ChevronRight
+  Trash2,
+  ChevronRight,
+  Plus
 } from 'lucide-react-native';
 import { MONUMENTOS } from '../data/monumentos';
 import { typography } from '../theme/typography';
 import * as ImagePicker from 'expo-image-picker';
+
+import * as Location from 'expo-location';
+import { AutonomousCommunityMap } from '../components/AutonomousCommunityMap';
+import { PROVINCE_TO_REGION } from '../data/provinces';
 
 const { width, height } = Dimensions.get('window');
 
@@ -73,6 +79,7 @@ export function CityDetailScreen({ route, navigation }) {
   
   const [modalVisible, setModalVisible] = useState(false);
   const [modalData, setModalData] = useState({ title: '', content: '', icon: Info });
+  const [cityCoords, setCityCoords] = useState(null);
 
   const normalize = (text) => 
     text?.toLowerCase()
@@ -87,6 +94,31 @@ export function CityDetailScreen({ route, navigation }) {
     ...city,
     ...customData
   });
+
+  // Determinar la región si falta
+  const effectiveRegion = useMemo(() => {
+    if (tempCityData.region) return tempCityData.region;
+    if (tempCityData.province) return PROVINCE_TO_REGION[tempCityData.province] || tempCityData.province;
+    return 'Alicante'; // Fallback
+  }, [tempCityData.region, tempCityData.province]);
+
+  // Geocodificar la ciudad para el mapa
+  useEffect(() => {
+    const getCoords = async () => {
+      try {
+        const result = await Location.geocodeAsync(`${city.name}, Spain`);
+        if (result && result.length > 0) {
+          setCityCoords({
+            latitude: result[0].latitude,
+            longitude: result[0].longitude
+          });
+        }
+      } catch (e) {
+        console.log("Error geocoding city:", e);
+      }
+    };
+    getCoords();
+  }, [city.name]);
 
   // Sincronizar tempCityData con userData cuando cambie
   useEffect(() => {
@@ -154,6 +186,28 @@ export function CityDetailScreen({ route, navigation }) {
     );
     await updateUserData({ contributions: updatedContributions });
     Alert.alert("Des-verificado", "El lugar ha vuelto a estado pendiente.");
+  };
+
+  const handleDeleteContribution = async () => {
+    Alert.alert(
+      "Eliminar Ciudad",
+      "¿Estás seguro de que quieres eliminar esta ciudad de las contribuciones?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        { 
+          text: "Eliminar", 
+          style: "destructive",
+          onPress: async () => {
+            const updatedContributions = userData.contributions.filter(p => 
+              normalize(p.city) !== cityKey
+            );
+            await updateUserData({ contributions: updatedContributions });
+            navigation.goBack();
+            Alert.alert("Eliminado", "La ciudad ha sido eliminada de las contribuciones.");
+          }
+        }
+      ]
+    );
   };
 
   const openInfo = (title, content, icon) => {
@@ -249,30 +303,38 @@ export function CityDetailScreen({ route, navigation }) {
           </TouchableOpacity>
 
           <View style={styles.heroContent}>
-            {/* Elegant Title */}
-            <View style={styles.titleWrapper}>
-              <Text style={styles.heroCityName}>
-                {tempCityData.name}
-              </Text>
-              <View style={styles.titleUnderline} />
-            </View>
+            {/* Map Component */}
+            <AutonomousCommunityMap 
+              regionName={effectiveRegion} 
+              cityCoords={cityCoords}
+              width={140}
+              height={140}
+            />
             
-            {/* Stylized Map Indicator */}
-            <View style={styles.mapIndicatorBox}>
-              <View style={styles.mapBoxOuter}>
-                <Globe color="rgba(255,255,255,0.8)" size={40} strokeWidth={1} />
-                <View style={styles.mapDot} />
-              </View>
-            </View>
+            {/* City Name inside Hero */}
+            <Text style={styles.heroCityNameInside}>
+              {tempCityData.name}
+            </Text>
           </View>
 
           {isAdmin && (
-            <TouchableOpacity 
-              style={styles.adminEditHeader}
-              onPress={() => handleAdminEdit('Cabecera')}
-            >
-              <Edit color="#FFF" size={20} />
-            </TouchableOpacity>
+            <View style={styles.adminHeaderActions}>
+              <TouchableOpacity 
+                style={[styles.adminActionBtn, { backgroundColor: 'rgba(0,0,0,0.4)' }]}
+                onPress={() => handleAdminEdit('Cabecera')}
+              >
+                <Edit color="#FFF" size={20} />
+              </TouchableOpacity>
+              
+              {city.isUserAdded && (
+                <TouchableOpacity 
+                  style={[styles.adminActionBtn, { backgroundColor: 'rgba(231, 76, 60, 0.6)' }]}
+                  onPress={handleDeleteContribution}
+                >
+                  <Trash2 color="#FFF" size={20} />
+                </TouchableOpacity>
+              )}
+            </View>
           )}
         </View>
 
@@ -440,83 +502,62 @@ const styles = StyleSheet.create({
   },
   heroContent: { 
     position: 'absolute', 
-    bottom: 40, 
+    top: 40,
     left: 0, 
     right: 0, 
+    bottom: 0,
     alignItems: 'center',
-    justifyContent: 'center'
-  },
-  titleWrapper: {
-    alignItems: 'center',
-  },
-  heroCityName: { 
-    fontSize: 48, 
-    color: '#FFFFFF',
-    fontWeight: '300',
-    fontStyle: 'italic',
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 0, height: 2 },
-    textShadowRadius: 4,
-    fontFamily: Platform.OS === 'ios' ? 'Snell Roundhand' : 'serif', // Intentamos cursiva
-  },
-  titleUnderline: {
-    width: 80,
-    height: 2,
-    backgroundColor: '#FFFFFF',
-    marginTop: 5,
-    borderRadius: 1,
-  },
-  mapIndicatorBox: {
-    marginTop: 20,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.4)',
-    borderRadius: 10,
-  },
-  mapBoxOuter: {
-    position: 'relative',
-    width: 80,
-    height: 60,
     justifyContent: 'center',
-    alignItems: 'center',
+    paddingTop: 20
   },
-  mapDot: {
-    position: 'absolute',
-    top: '40%',
-    right: '30%',
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#FFD700',
-    borderWidth: 1,
-    borderColor: '#FFFFFF',
+  heroSeparator: {
+    width: 60,
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.6)',
+    marginVertical: 15
+  },
+  heroCityNameInside: {
+    fontSize: 40,
+    fontWeight: '900',
+    color: '#FFFFFF',
+    letterSpacing: 1,
+    textTransform: 'uppercase',
+    textShadowColor: 'rgba(0,0,0,0.8)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 10,
+    marginTop: 10
   },
   locationBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
-    elevation: 4,
+    paddingVertical: 14,
+    elevation: 2,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   locationBarText: {
     color: '#0A192F',
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '700',
     marginLeft: 8,
-    letterSpacing: 0.5,
+    letterSpacing: 1,
+    textTransform: 'uppercase'
   },
-  adminEditHeader: { 
+  adminHeaderActions: {
     position: 'absolute', 
     top: 50, 
     right: 20, 
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10
+  },
+  adminActionBtn: {
     width: 44, 
     height: 44, 
     borderRadius: 22, 
-    backgroundColor: 'rgba(0,0,0,0.4)', 
     justifyContent: 'center', 
     alignItems: 'center' 
   },

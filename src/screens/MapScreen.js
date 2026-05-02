@@ -22,36 +22,73 @@ export function MapScreen({ route, navigation }) {
   const { userData } = useUser();
   const [mapTheme, setMapTheme] = useState('dark');
   
-  // Obtener monumentos de la ciudad seleccionada o todos
-  const displayMonuments = city ? (MONUMENTOS[city.name] || []) : Object.values(MONUMENTOS).flat();
+  // Obtener monumentos: FUSIONAR estáticos con contribuciones (semillas de Alicante, etc)
+  const officialMonuments = city ? (MONUMENTOS[city.name] || []) : Object.values(MONUMENTOS).flat();
+  const userContributions = (userData?.contributions || []).filter(p => {
+    if (!city) return true;
+    return p.city.toLowerCase() === city.name.toLowerCase();
+  });
 
-  // Calcular color del marcador basado en beneficios reales
+  // Evitar duplicados si un monumento está en ambas listas (usando nombre + ciudad como clave)
+  const mergedMonumentsMap = new Map();
+  officialMonuments.forEach(m => mergedMonumentsMap.set(`${m.name}-${m.city || city?.name}`, m));
+  userContributions.forEach(m => mergedMonumentsMap.set(`${m.name}-${m.city}`, m));
+
+  const displayMonuments = Array.from(mergedMonumentsMap.values());
+
+  // Calcular color del marcador basado en beneficios reales (Gratis, Descuento o General)
   const getMarkerColor = (monument) => {
-    const isFree = monument.disabilityBenefit.toLowerCase().includes('gratis') || 
-                   monument.disabilityBenefit.toLowerCase().includes('gratuita');
-    
-    if (isFree) return '#2ECC71'; // Verde: Gratis
-    if (monument.disabilityBenefit.toLowerCase().includes('reducida') || 
-        monument.disabilityBenefit.toLowerCase().includes('descuento')) return '#3498db'; // Azul: Descuento
-    return '#E67E22'; // Naranja: General
+    try {
+      const benefit = (monument.disabilityBenefit || monument.freeInfo || '').toLowerCase();
+      let isFree = benefit.includes('gratis') || benefit.includes('gratuita');
+      
+      // Si no es gratis por descripción, mirar en la tabla de tarifas
+      if (!isFree && monument.tariffs && Array.isArray(monument.tariffs)) {
+        isFree = monument.tariffs.some(t => 
+          (t.label?.toLowerCase().includes('pcd') || t.label?.toLowerCase().includes('reducida')) && 
+          t.price?.toLowerCase().includes('gratis')
+        );
+      }
+
+      const isDiscounted = benefit.includes('reducida') || benefit.includes('descuento') || 
+                          (monument.tariffs && Array.isArray(monument.tariffs) && monument.tariffs.some(t => t.label?.toLowerCase().includes('pcd')));
+
+      if (isFree) return '#2ECC71'; // Verde: Gratis
+      if (isDiscounted) return '#3498db'; // Azul: Beneficio/Descuento
+      return '#E67E22'; // Naranja: General
+    } catch (e) {
+      return '#E67E22';
+    }
   };
 
   const toggleTheme = () => {
     setMapTheme(mapTheme === 'dark' ? 'light' : 'dark');
   };
 
-  // Región inicial: Centrar en el primer monumento si hay ciudad
-  const initialRegion = displayMonuments.length > 0 ? {
-    latitude: displayMonuments[0].location.latitude,
-    longitude: displayMonuments[0].location.longitude,
-    latitudeDelta: 0.05,
-    longitudeDelta: 0.05,
-  } : {
-    latitude: 40.4168, // Madrid por defecto
-    longitude: -3.7038,
-    latitudeDelta: 10,
-    longitudeDelta: 10,
-  };
+  // Región inicial: Centrar en la ciudad seleccionada, en el primer monumento o en Madrid
+  const initialRegion = React.useMemo(() => {
+    if (city && city.location) {
+      return {
+        ...city.location,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      };
+    }
+    if (displayMonuments.length > 0) {
+      return {
+        latitude: displayMonuments[0].location?.latitude || 40.4168,
+        longitude: displayMonuments[0].location?.longitude || -3.7038,
+        latitudeDelta: 0.1,
+        longitudeDelta: 0.1,
+      };
+    }
+    return {
+      latitude: 40.4168,
+      longitude: -3.7038,
+      latitudeDelta: 10,
+      longitudeDelta: 10,
+    };
+  }, [city, displayMonuments]);
 
   return (
     <View style={styles.container}>
@@ -65,16 +102,12 @@ export function MapScreen({ route, navigation }) {
         {displayMonuments.map((monument) => (
           <Marker
             key={monument.id}
-            coordinate={monument.location}
+            coordinate={{
+              latitude: Number(monument.location?.latitude || 40.4168),
+              longitude: Number(monument.location?.longitude || -3.7038)
+            }}
+            pinColor={getMarkerColor(monument)}
           >
-            <View style={styles.customMarker}>
-              <MapPin 
-                size={34} 
-                color={getMarkerColor(monument)} 
-                fill={getMarkerColor(monument) + '30'}
-              />
-            </View>
-
             <Callout 
               tooltip
               onPress={() => navigation.navigate('PlaceDetail', { place: monument })}

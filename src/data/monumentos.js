@@ -18,6 +18,7 @@ export const MONUMENTOS = {
         adaptedAudio: 'Audioguías con audiodescripción',
         adaptedToilet: 'Sí, 4 puntos en Planta 0 y 1'
       },
+      suitability: ['MOTOR', 'VISUAL', 'AUDITORY', 'COGNITIVE'],
       verifiedByCommunity: {
         status: 'Alta Confianza',
         lastCheck: 'Hace 2 días',
@@ -42,6 +43,7 @@ export const MONUMENTOS = {
         adaptedAudio: 'Disponible',
         adaptedToilet: 'Sí, en el Patio de Armas'
       },
+      suitability: ['MOTOR', 'AUDITORY'],
       verifiedByCommunity: {
         status: 'Verificado',
         lastCheck: 'Hace 1 semana',
@@ -68,6 +70,7 @@ export const MONUMENTOS = {
         adaptedAudio: 'Sí, audioguía especial',
         adaptedToilet: 'Sí, en zonas de descanso'
       },
+      suitability: ['VISUAL', 'AUDITORY', 'COGNITIVE'],
       verifiedByCommunity: {
         status: 'Requiere Atención (Rutas empedradas)',
         lastCheck: 'Hace 3 días',
@@ -94,6 +97,7 @@ export const MONUMENTOS = {
         adaptedAudio: 'App oficial accesible',
         adaptedToilet: 'Sí, accesible'
       },
+      suitability: ['MOTOR', 'VISUAL', 'AUDITORY', 'COGNITIVE'],
       verifiedByCommunity: {
         status: 'Alta Confianza (Ascensor adaptado)',
         lastCheck: 'Hace 1 día',

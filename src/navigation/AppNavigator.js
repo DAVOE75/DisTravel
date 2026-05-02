@@ -15,6 +15,8 @@ import { SavingsSimulatorScreen } from '../screens/SavingsSimulatorScreen';
 import { AddLocationScreen } from '../screens/AddLocationScreen';
 import { LoginScreen } from '../screens/LoginScreen';
 import { DistravelAIScreen } from '../screens/DistravelAIScreen';
+import { DigitalWalletScreen } from '../screens/DigitalWalletScreen';
+import { HowToUseScreen } from '../screens/HowToUseScreen';
 import { SplashScreen } from '../screens/SplashScreen';
 import { colors } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
@@ -53,6 +55,8 @@ export function AppNavigator() {
           <Stack.Screen name="SavingsSimulator" component={SavingsSimulatorScreen} />
           <Stack.Screen name="AddLocation" component={AddLocationScreen} />
           <Stack.Screen name="DistravelAI" component={DistravelAIScreen} />
+          <Stack.Screen name="DigitalWallet" component={DigitalWalletScreen} />
+          <Stack.Screen name="HowToUse" component={HowToUseScreen} />
         </>
       )}
     </Stack.Navigator>

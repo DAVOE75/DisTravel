@@ -32,7 +32,8 @@ import {
   Edit,
   ChevronLeft,
   Star,
-  Users
+  Users,
+  CreditCard
 } from 'lucide-react-native';
 import { typography } from '../theme/typography';
 
@@ -169,7 +170,7 @@ export function ProfileScreen({ navigation }) {
           
           <TouchableOpacity 
             style={[styles.idCardContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}
-            onPress={() => navigation.navigate('DisabilityDetail')}
+            onPress={() => navigation.navigate('DigitalWallet')}
           >
             <Image 
               source={{ uri: userData?.idCardImage }} 
@@ -177,8 +178,8 @@ export function ProfileScreen({ navigation }) {
               blurRadius={1}
             />
             <View style={styles.cardOverlay}>
-              <FileText color="#FFFFFF" size={32} />
-              <Text style={styles.cardOverlayText}>Toca para gestionar credencial</Text>
+              <CreditCard color="#FFFFFF" size={32} />
+              <Text style={styles.cardOverlayText}>Ver Billetera Digital</Text>
             </View>
           </TouchableOpacity>
         </View>

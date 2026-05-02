@@ -4,29 +4,41 @@ import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import { MapPin, Star } from 'lucide-react-native';
 
-export const CityCard = ({ name, country, rating, image }) => {
+import { Sparkles } from 'lucide-react-native';
+
+export const CityCard = ({ city, name, country, rating, image, onPress, theme }) => {
+  // Soporte para objeto city o props individuales
+  const displayCity = city || { name, province: country, rating: rating || 5.0, image };
+  const { name: cityName, province, image: cityImage, rating: cityRating, isUserAdded } = displayCity;
+
   return (
-    <TouchableOpacity style={styles.container}>
+    <TouchableOpacity style={styles.container} onPress={onPress}>
       <ImageBackground
-        source={{ uri: image }}
+        source={{ uri: cityImage || image }}
         style={styles.image}
         imageStyle={{ borderRadius: 24 }}
       >
         <View style={styles.overlay}>
           <View style={styles.header}>
+            {isUserAdded && (
+              <View style={styles.newBadge}>
+                <Sparkles color="#FFF" size={12} />
+                <Text style={styles.newBadgeText}>NUEVO</Text>
+              </View>
+            )}
             <View style={styles.pinContainer}>
               <MapPin color={colors.primary} size={16} />
             </View>
           </View>
           
           <View style={styles.footer}>
-            <View>
-              <Text style={[styles.name, typography.h3]}>{name}</Text>
-              <Text style={[styles.country, typography.caption]}>{country}</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.name, typography.h3]} numberOfLines={1}>{cityName}</Text>
+              <Text style={[styles.country, typography.caption]} numberOfLines={1}>{province || country}</Text>
             </View>
             <View style={styles.ratingContainer}>
               <Star color={colors.accent} size={14} fill={colors.accent} />
-              <Text style={styles.ratingText}>{rating}</Text>
+              <Text style={styles.ratingText}>{cityRating || rating || '5.0'}</Text>
             </View>
           </View>
         </View>
@@ -54,6 +66,25 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.2)',
     padding: 16,
     justifyContent: 'space-between',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  newBadge: {
+    backgroundColor: '#E67E22',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
+    gap: 4,
+  },
+  newBadgeText: {
+    color: '#FFF',
+    fontSize: 10,
+    fontWeight: '900',
   },
   pinContainer: {
     backgroundColor: 'rgba(15, 23, 42, 0.6)',
