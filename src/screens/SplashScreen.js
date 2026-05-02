@@ -6,7 +6,7 @@ export function SplashScreen() {
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
       <Image 
-        source={require('../../assets/logo_official.jpg')} 
+        source={require('../../assets/logo_icon.png')} 
         style={styles.logo} 
         resizeMode="contain"
       />
