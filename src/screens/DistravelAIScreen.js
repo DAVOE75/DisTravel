@@ -10,10 +10,12 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  Dimensions
+  Dimensions,
+  Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
+import * as ImagePicker from 'expo-image-picker';
 import { 
   ChevronLeft, 
   Bot, 
@@ -40,6 +42,8 @@ export function DistravelAIScreen({ navigation }) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
 
+  const [capturedImage, setCapturedImage] = useState(null);
+
   const handleSend = () => {
     if (!inputText.trim()) return;
 
@@ -60,23 +64,39 @@ export function DistravelAIScreen({ navigation }) {
     }, 1500);
   };
 
-  const startAnalysis = () => {
-    setIsAnalyzing(true);
-    setAnalysisResult(null);
+  const startAnalysis = async () => {
+    // 1. Pedir permisos y abrir cámara
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
     
-    // Simulación de análisis de imagen
-    setTimeout(() => {
-      setAnalysisResult({
-        score: 8.5,
-        status: 'Accessible',
-        details: [
-          { type: 'success', text: 'Ancho de puerta adecuado (90cm)' },
-          { type: 'success', text: 'Suelo antideslizante detectado' },
-          { type: 'warning', text: 'Barra de apoyo ligeramente alta' }
-        ]
-      });
-      setIsAnalyzing(false);
-    }, 2500);
+    if (permissionResult.granted === false) {
+      Alert.alert("Permiso necesario", "Necesitamos acceso a la cámara para auditar la accesibilidad.");
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      quality: 0.7,
+    });
+
+    if (!result.canceled) {
+      setCapturedImage(result.assets[0].uri);
+      setIsAnalyzing(true);
+      setAnalysisResult(null);
+      
+      // Simulación de análisis de imagen real
+      setTimeout(() => {
+        setAnalysisResult({
+          score: 8.5,
+          status: 'Accesibilidad Verificada',
+          details: [
+            { type: 'success', text: 'Ancho de puerta adecuado (90cm)' },
+            { type: 'success', text: 'Suelo antideslizante detectado' },
+            { type: 'warning', text: 'Barra de apoyo ligeramente alta' }
+          ]
+        });
+        setIsAnalyzing(false);
+      }, 2000);
+    }
   };
 
   return (
@@ -161,12 +181,14 @@ export function DistravelAIScreen({ navigation }) {
           <View style={[styles.cameraPlaceholder, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             {isAnalyzing ? (
               <View style={styles.analyzingOverlay}>
-                <ActivityIndicator size="large" color={theme.primary} />
-                <Text style={[styles.analyzingText, { color: theme.text }]}>Analizando entorno...</Text>
+                <Image source={{ uri: capturedImage }} style={styles.previewImg} />
+                <View style={styles.scanLine} />
+                <ActivityIndicator size="large" color={theme.primary} style={styles.loader} />
+                <Text style={[styles.analyzingText, { color: '#FFFFFF' }]}>Escaneando barreras...</Text>
               </View>
-            ) : analysisResult ? (
+            ) : capturedImage ? (
               <Image 
-                source={{ uri: 'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?q=80&w=500&auto=format&fit=crop' }} 
+                source={{ uri: capturedImage }} 
                 style={styles.previewImg} 
               />
             ) : (
@@ -336,11 +358,29 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   analyzingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
     alignItems: 'center',
+  },
+  loader: {
+    marginTop: 20,
+  },
+  scanLine: {
+    position: 'absolute',
+    width: '100%',
+    height: 2,
+    backgroundColor: '#00F2FF',
+    top: '50%',
+    shadowColor: '#00F2FF',
+    shadowBlur: 10,
+    shadowOpacity: 0.8,
   },
   analyzingText: {
     marginTop: 15,
-    fontWeight: '700',
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   analyzeBtn: {
     flexDirection: 'row',
