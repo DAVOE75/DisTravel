@@ -144,7 +144,7 @@ export function HomeScreen({ navigation }) {
               {userData?.profileImage ? (
                 <Image source={{ uri: userData.profileImage }} style={styles.headerAvatar} />
               ) : (
-                <Users color={theme.primary} size={24} />
+                <User color={theme.primary} size={24} />
               )}
             </TouchableOpacity>
           </View>
