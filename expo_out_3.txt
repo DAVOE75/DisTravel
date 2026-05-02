@@ -1,0 +1,83 @@
+Starting project at /opt/distravel
+Starting Metro Bundler
+warning: Bundler cache is empty, rebuilding (this may take a minute)
+Tunnel connected.
+Tunnel ready.
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android ./index.js ▓▓▓▓▓▓▓░░░░░░░░░ 48.3% (435/626)
+Android ./index.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 74.9% (2196/2633)
+Android Bundled 9298ms index.js (2913 modules)
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 223ms index.js (1 module)
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ ERROR  SyntaxError: /opt/distravel/src/screens/HomeScreen.js: Expected corresponding JSX closing tag for <View>. (90:10)
+
+  88 |               onChangeText={setSearchQuery}
+  89 |             />
+> 90 |           </TouchableOpacity>
+     |           ^
+  91 |         </View>
+  92 |
+  93 |         {/* Categories Section */}
+    at constructor (/opt/distravel/node_modules/@babel/parser/lib/index.js:365:19)
+    at FlowParserMixin.raise (/opt/distravel/node_modules/@babel/parser/lib/index.js:6616:19)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4739:16)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4710:32)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4710:32)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4710:32)
+    at FlowParserMixin.jsxParseElement (/opt/distravel/node_modules/@babel/parser/lib/index.js:4761:17)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:4771:19)
+    at FlowParserMixin.parseExprSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11098:23)
+    at FlowParserMixin.parseUpdate (/opt/distravel/node_modules/@babel/parser/lib/index.js:11083:21)
+    at FlowParserMixin.parseMaybeUnary (/opt/distravel/node_modules/@babel/parser/lib/index.js:11063:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/opt/distravel/node_modules/@babel/parser/lib/index.js:10916:61)
+    at FlowParserMixin.parseExprOps (/opt/distravel/node_modules/@babel/parser/lib/index.js:10921:23)
+    at FlowParserMixin.parseMaybeConditional (/opt/distravel/node_modules/@babel/parser/lib/index.js:10898:23)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:10848:21)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:3510:39
+    at FlowParserMixin.tryParse (/opt/distravel/node_modules/@babel/parser/lib/index.js:6924:20)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:3510:18)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:10817:39
+    at FlowParserMixin.allowInAnd (/opt/distravel/node_modules/@babel/parser/lib/index.js:12443:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/opt/distravel/node_modules/@babel/parser/lib/index.js:10817:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/opt/distravel/node_modules/@babel/parser/lib/index.js:12510:17)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:11692:28)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:3603:18)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:11348:23)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:4776:20)
+    at FlowParserMixin.parseExprSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11098:23)
+    at FlowParserMixin.parseUpdate (/opt/distravel/node_modules/@babel/parser/lib/index.js:11083:21)
+    at FlowParserMixin.parseMaybeUnary (/opt/distravel/node_modules/@babel/parser/lib/index.js:11063:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/opt/distravel/node_modules/@babel/parser/lib/index.js:10916:61)
+    at FlowParserMixin.parseExprOps (/opt/distravel/node_modules/@babel/parser/lib/index.js:10921:23)
+    at FlowParserMixin.parseMaybeConditional (/opt/distravel/node_modules/@babel/parser/lib/index.js:10898:23)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:10848:21)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:3561:18)
+    at FlowParserMixin.parseExpressionBase (/opt/distravel/node_modules/@babel/parser/lib/index.js:10801:23)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:10797:39
+    at FlowParserMixin.allowInAnd (/opt/distravel/node_modules/@babel/parser/lib/index.js:12438:16)
+    at FlowParserMixin.parseExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:10797:17)
+    at FlowParserMixin.parseReturnStatement (/opt/distravel/node_modules/@babel/parser/lib/index.js:13159:28)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12815:21)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseStatementListItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12764:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:61)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseBlock (/opt/distravel/node_modules/@babel/parser/lib/index.js:13314:10)
+    at FlowParserMixin.parseFunctionBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:12117:24)
+    at FlowParserMixin.parseFunctionBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:2907:11)
+    at FlowParserMixin.parseFunctionBodyAndFinish (/opt/distravel/node_modules/@babel/parser/lib/index.js:12103:10)
+    at FlowParserMixin.parseFunctionBodyAndFinish (/opt/distravel/node_modules/@babel/parser/lib/index.js:2915:18)
+ ERROR  [Error: TransformError SyntaxError: /opt/distravel/src/screens/HomeScreen.js: Expected corresponding JSX closing tag for <View>. (90:10)
+
+[0m [90m 88 |[39m               onChangeText[33m=[39m{setSearchQuery}
+ [90m 89 |[39m             [33m/[39m[33m>[39m
+[31m[1m>[22m[39m[90m 90 |[39m           [33m<[39m[33m/[39m[33mTouchableOpacity[39m[33m>[39m
+ [90m    |[39m           [31m[1m^[22m[39m
+ [90m 91 |[39m         [33m<[39m[33m/[39m[33mView[39m[33m>[39m
+ [90m 92 |[39m
+ [90m 93 |[39m         {[90m/* Categories Section */[39m}[0m]

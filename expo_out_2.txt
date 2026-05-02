@@ -1,0 +1,84 @@
+Starting project at /opt/distravel
+Starting Metro Bundler
+warning: Bundler cache is empty, rebuilding (this may take a minute)
+Tunnel connected.
+Tunnel ready.
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android ./index.js ▓▓▓▓▓▓░░░░░░░░░░ 39.2% (370/598)
+Android ./index.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 72.9% (1584/2631)
+Android Bundled 10178ms index.js (2911 modules)
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 104ms index.js (1 module)
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+Unable to resolve "../screens/EditProfileScreen" from "src/navigation/AppNavigator.js"
+[0m [90m  7 |[39m [36mimport[39m { [33mCityDetailScreen[39m } [36mfrom[39m [32m'../screens/CityDetailScreen'[39m[33m;[39m
+ [90m  8 |[39m [36mimport[39m { [33mSettingsScreen[39m } [36mfrom[39m [32m'../screens/SettingsScreen'[39m[33m;[39m
+[31m[1m>[22m[39m[90m  9 |[39m [36mimport[39m { [33mEditProfileScreen[39m } [36mfrom[39m [32m'../screens/EditProfileScreen'[39m[33m;[39m
+ [90m    |[39m                                    [31m[1m^[22m[39m
+ [90m 10 |[39m [36mimport[39m { [33mDisabilityDetailScreen[39m } [36mfrom[39m [32m'../screens/DisabilityDetailScreen'[39m[33m;[39m
+ [90m 11 |[39m [36mimport[39m { colors } [36mfrom[39m [32m'../theme/colors'[39m[33m;[39m
+ [90m 12 |[39m [36mimport[39m { useTheme } [36mfrom[39m [32m'../theme/ThemeContext'[39m[33m;[39m[0m
+
+Import stack:
+
+ src/navigation/AppNavigator.js
+ | import "../screens/EditProfileScreen"
+
+ App.js
+ | import "./src/navigation/AppNavigator"
+
+ index.js
+ | import "./App"
+
+ 
+ | import "./index"
+
+ ERROR  [Error: UnableToResolveError Unable to resolve module ../screens/EditProfileScreen from /opt/distravel/src/navigation/AppNavigator.js: 
+
+None of these files exist:
+  * src/screens/EditProfileScreen(.android.ts|.native.ts|.ts|.android.tsx|.native.tsx|.tsx|.android.mjs|.native.mjs|.mjs|.android.js|.native.js|.js|.android.jsx|.native.jsx|.jsx|.android.json|.native.json|.json|.android.cjs|.native.cjs|.cjs|.android.scss|.native.scss|.scss|.android.sass|.native.sass|.sass|.android.css|.native.css|.css)
+  * src/screens/EditProfileScreen
+[0m [90m  7 |[39m [36mimport[39m { [33mCityDetailScreen[39m } [36mfrom[39m [32m'../screens/CityDetailScreen'[39m[33m;[39m
+ [90m  8 |[39m [36mimport[39m { [33mSettingsScreen[39m } [36mfrom[39m [32m'../screens/SettingsScreen'[39m[33m;[39m
+[31m[1m>[22m[39m[90m  9 |[39m [36mimport[39m { [33mEditProfileScreen[39m } [36mfrom[39m [32m'../screens/EditProfileScreen'[39m[33m;[39m
+ [90m    |[39m                                    [31m[1m^[22m[39m
+ [90m 10 |[39m [36mimport[39m { [33mDisabilityDetailScreen[39m } [36mfrom[39m [32m'../screens/DisabilityDetailScreen'[39m[33m;[39m
+ [90m 11 |[39m [36mimport[39m { colors } [36mfrom[39m [32m'../theme/colors'[39m[33m;[39m
+ [90m 12 |[39m [36mimport[39m { useTheme } [36mfrom[39m [32m'../theme/ThemeContext'[39m[33m;[39m[0m]
+Unable to resolve "../screens/DisabilityDetailScreen" from "src/navigation/AppNavigator.js"
+[0m [90m  8 |[39m [36mimport[39m { [33mSettingsScreen[39m } [36mfrom[39m [32m'../screens/SettingsScreen'[39m[33m;[39m
+ [90m  9 |[39m [36mimport[39m { [33mEditProfileScreen[39m } [36mfrom[39m [32m'../screens/EditProfileScreen'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 10 |[39m [36mimport[39m { [33mDisabilityDetailScreen[39m } [36mfrom[39m [32m'../screens/DisabilityDetailScreen'[39m[33m;[39m
+ [90m    |[39m                                         [31m[1m^[22m[39m
+ [90m 11 |[39m [36mimport[39m { colors } [36mfrom[39m [32m'../theme/colors'[39m[33m;[39m
+ [90m 12 |[39m [36mimport[39m { useTheme } [36mfrom[39m [32m'../theme/ThemeContext'[39m[33m;[39m
+ [90m 13 |[39m[0m
+
+Import stack:
+
+ src/navigation/AppNavigator.js
+ | import "../screens/DisabilityDetailScreen"
+
+ App.js
+ | import "./src/navigation/AppNavigator"
+
+ index.js
+ | import "./App"
+
+ 
+ | import "./index"
+
+ ERROR  [Error: UnableToResolveError Unable to resolve module ../screens/DisabilityDetailScreen from /opt/distravel/src/navigation/AppNavigator.js: 
+
+None of these files exist:
+  * src/screens/DisabilityDetailScreen(.android.ts|.native.ts|.ts|.android.tsx|.native.tsx|.tsx|.android.mjs|.native.mjs|.mjs|.android.js|.native.js|.js|.android.jsx|.native.jsx|.jsx|.android.json|.native.json|.json|.android.cjs|.native.cjs|.cjs|.android.scss|.native.scss|.scss|.android.sass|.native.sass|.sass|.android.css|.native.css|.css)
+  * src/screens/DisabilityDetailScreen
+[0m [90m  8 |[39m [36mimport[39m { [33mSettingsScreen[39m } [36mfrom[39m [32m'../screens/SettingsScreen'[39m[33m;[39m
+ [90m  9 |[39m [36mimport[39m { [33mEditProfileScreen[39m } [36mfrom[39m [32m'../screens/EditProfileScreen'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 10 |[39m [36mimport[39m { [33mDisabilityDetailScreen[39m } [36mfrom[39m [32m'../screens/DisabilityDetailScreen'[39m[33m;[39m
+ [90m    |[39m                                         [31m[1m^[22m[39m
+ [90m 11 |[39m [36mimport[39m { colors } [36mfrom[39m [32m'../theme/colors'[39m[33m;[39m
+ [90m 12 |[39m [36mimport[39m { useTheme } [36mfrom[39m [32m'../theme/ThemeContext'[39m[33m;[39m
+ [90m 13 |[39m[0m]

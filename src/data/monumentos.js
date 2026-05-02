@@ -1,0 +1,230 @@
+export const MONUMENTOS = [
+  { 
+    id: '1', 
+    name: 'Mezquita de Córdoba', 
+    city: 'Córdoba',
+    category: 'Religioso',
+    coordinates: { latitude: 37.8789, longitude: -4.7794 },
+    location: 'Calle Cardenal Herrero, 1, 14003 Córdoba', 
+    rating: '4.9', 
+    image: 'https://images.unsplash.com/photo-1595121404120-137b0169d27a?auto=format&fit=crop&w=800',
+    description: 'La Mezquita-Catedral de Córdoba es el monumento más importante de todo el Occidente cristiano y uno de los más asombrosos del mundo.',
+    basePrice: 13,
+    discount33: 10,
+    discount65: 0,
+    hasCompanion: true,
+    schedule: {
+      lunes: '10:00 - 19:00',
+      martes: '10:00 - 19:00',
+      miercoles: '10:00 - 19:00',
+      jueves: '10:00 - 19:00',
+      viernes: '10:00 - 19:00',
+      sabado: '10:00 - 19:00',
+      domingo: '08:30 - 11:30, 16:00 - 19:00'
+    },
+    featured: true,
+    accessibility: {
+      wheelchair: true,
+      elevator: true,
+      audioGuide: true,
+      adaptedWC: true,
+      braille: false,
+      parking: true
+    }
+  },
+  { 
+    id: '2', 
+    name: 'Museo del Prado', 
+    city: 'Madrid',
+    category: 'Museo',
+    coordinates: { latitude: 40.4138, longitude: -3.6921 },
+    location: 'Calle de Ruiz de Alarcón, 23, 28014 Madrid', 
+    rating: '4.9', 
+    image: 'https://images.unsplash.com/photo-1544013501-56450514016a?auto=format&fit=crop&w=800',
+    description: 'El Museo Nacional del Prado es uno de los más importantes del mundo, así como uno de los más visitados.',
+    basePrice: 15,
+    discount33: 0,
+    discount65: 0,
+    hasCompanion: true,
+    schedule: {
+      lunes: '10:00 - 20:00',
+      martes: '10:00 - 20:00',
+      miercoles: '10:00 - 20:00',
+      jueves: '10:00 - 20:00',
+      viernes: '10:00 - 20:00',
+      sabado: '10:00 - 20:00',
+      domingo: '10:00 - 19:00'
+    },
+    featured: true,
+    accessibility: {
+      wheelchair: true,
+      elevator: true,
+      audioGuide: true,
+      adaptedWC: true,
+      braille: true,
+      parking: false
+    }
+  },
+  { 
+    id: '6', 
+    name: 'Castillo de Santa Bárbara', 
+    city: 'Alicante',
+    category: 'Fortaleza',
+    coordinates: { latitude: 38.3491, longitude: -0.4777 },
+    location: 'Monte Benacantil, 03002 Alicante', 
+    rating: '4.8', 
+    image: 'https://images.unsplash.com/photo-1544918877-460635b6d13e?auto=format&fit=crop&w=800',
+    description: 'Fortaleza medieval situada sobre el monte Benacantil. Dispone de acceso gratuito y un ascensor directo desde la Playa del Postiguet, además de acceso por carretera con parking adaptado.',
+    basePrice: 0,
+    discount33: 0,
+    discount65: 0,
+    hasCompanion: true,
+    schedule: {
+      lunes: '10:00 - 20:00',
+      martes: '10:00 - 20:00',
+      miercoles: '10:00 - 20:00',
+      jueves: '10:00 - 20:00',
+      viernes: '10:00 - 20:00',
+      sabado: '10:00 - 20:00',
+      domingo: '10:00 - 20:00'
+    },
+    featured: true,
+    accessibility: {
+      wheelchair: true,
+      elevator: true,
+      audioGuide: true,
+      adaptedWC: true,
+      braille: false,
+      parking: true
+    }
+  },
+  { 
+    id: '7', 
+    name: 'MARQ Museo Arqueológico', 
+    city: 'Alicante',
+    category: 'Museo',
+    coordinates: { latitude: 38.3536, longitude: -0.4764 },
+    location: 'Plaza Dr. Gómez Ulla, s/n, 03013 Alicante', 
+    rating: '4.9', 
+    image: 'https://images.unsplash.com/photo-1518998053574-53f0261f5952?auto=format&fit=crop&w=800',
+    description: 'Premiado como Museo Europeo del Año en 2004, el MARQ es pionero en arqueología de vanguardia y accesibilidad universal.',
+    basePrice: 3,
+    discount33: 1.5,
+    discount65: 0,
+    hasCompanion: true,
+    schedule: {
+      lunes: 'Cerrado',
+      martes: '10:00 - 19:00',
+      miercoles: '10:00 - 19:00',
+      jueves: '10:00 - 19:00',
+      viernes: '10:00 - 19:00',
+      sabado: '10:00 - 20:30',
+      domingo: '10:00 - 14:00'
+    },
+    featured: true,
+    accessibility: {
+      wheelchair: true,
+      elevator: true,
+      audioGuide: true,
+      adaptedWC: true,
+      braille: true,
+      parking: true
+    }
+  },
+  { 
+    id: '8', 
+    name: 'MACA Museo de Arte Contemporáneo', 
+    city: 'Alicante',
+    category: 'Museo',
+    coordinates: { latitude: 38.3461, longitude: -0.4806 },
+    location: 'Plaza de Santa María, 3, 03002 Alicante', 
+    rating: '4.7', 
+    image: 'https://images.unsplash.com/photo-1554188248-986adbb73be4?auto=format&fit=crop&w=800',
+    description: 'Ubicado en la Casa de la Asegurada (1685), este museo alberga una impresionante colección de arte del siglo XX. Es totalmente accesible.',
+    basePrice: 0,
+    discount33: 0,
+    discount65: 0,
+    hasCompanion: false,
+    schedule: {
+      lunes: 'Cerrado',
+      martes: '10:00 - 20:00',
+      miercoles: '10:00 - 20:00',
+      jueves: '10:00 - 20:00',
+      viernes: '10:00 - 20:00',
+      sabado: '10:00 - 20:00',
+      domingo: '10:00 - 14:00'
+    },
+    accessibility: {
+      wheelchair: true,
+      elevator: true,
+      audioGuide: true,
+      adaptedWC: true,
+      braille: false,
+      parking: false
+    }
+  },
+  { 
+    id: '9', 
+    name: 'Concatedral de San Nicolás', 
+    city: 'Alicante',
+    category: 'Religioso',
+    coordinates: { latitude: 38.3458, longitude: -0.4828 },
+    location: 'Plaza de San Nicolás, 2, 03002 Alicante', 
+    rating: '4.6', 
+    image: 'https://images.unsplash.com/photo-1590494444539-7104b2b292e8?auto=format&fit=crop&w=800',
+    description: 'Ejemplo notable del estilo herreriano y barroco. Su interior amplio y sin desniveles facilita la visita a personas con movilidad reducida.',
+    basePrice: 0,
+    discount33: 0,
+    discount65: 0,
+    hasCompanion: false,
+    schedule: {
+      lunes: '07:30 - 13:00, 17:30 - 20:00',
+      martes: '07:30 - 13:00, 17:30 - 20:00',
+      miercoles: '07:30 - 13:00, 17:30 - 20:00',
+      jueves: '07:30 - 13:00, 17:30 - 20:00',
+      viernes: '07:30 - 13:00, 17:30 - 20:00',
+      sabado: '08:30 - 13:00, 17:30 - 21:00',
+      domingo: '08:30 - 13:30, 17:30 - 21:00'
+    },
+    accessibility: {
+      wheelchair: true,
+      elevator: false,
+      audioGuide: false,
+      adaptedWC: false,
+      braille: false,
+      parking: false
+    }
+  },
+  { 
+    id: '10', 
+    name: 'Área Accesible Playa del Postiguet', 
+    city: 'Alicante',
+    category: 'Naturaleza',
+    coordinates: { latitude: 38.3456, longitude: -0.4782 },
+    location: 'Calle de Jovellanos, 03002 Alicante', 
+    rating: '4.8', 
+    image: 'https://images.unsplash.com/photo-1534067783941-51c9c330ecd4?auto=format&fit=crop&w=800',
+    description: 'Área de servicios para personas con discapacidad que incluye baño asistido, sillas anfibias y zonas de sombra reservadas.',
+    basePrice: 0,
+    discount33: 0,
+    discount65: 0,
+    hasCompanion: true,
+    schedule: {
+      lunes: '10:00 - 19:00',
+      martes: '10:00 - 19:00',
+      miercoles: '10:00 - 19:00',
+      jueves: '10:00 - 19:00',
+      viernes: '10:00 - 19:00',
+      sabado: '10:00 - 19:00',
+      domingo: '10:00 - 19:00'
+    },
+    accessibility: {
+      wheelchair: true,
+      elevator: false,
+      audioGuide: false,
+      adaptedWC: true,
+      braille: false,
+      parking: true
+    }
+  }
+];
