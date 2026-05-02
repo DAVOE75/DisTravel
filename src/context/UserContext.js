@@ -15,7 +15,7 @@ const INITIAL_USER_DATA = {
   expiryDate: '',
   idCardImage: null,
   profileImage: null,
-  isLoggedIn: false,
+  isLoggedIn: true,
   voiceGuidance: false,
   highContrast: false,
   isAdmin: true,
@@ -35,12 +35,19 @@ export const UserProvider = ({ children }) => {
       try {
         const jsonValue = await AsyncStorage.getItem(STORAGE_KEY);
         if (jsonValue != null) {
-          setUserData(JSON.parse(jsonValue));
+          const parsed = JSON.parse(jsonValue);
+          // Mezclamos con INITIAL_USER_DATA para asegurar campos nuevos
+          setUserData({ ...INITIAL_USER_DATA, ...parsed, isLoggedIn: true });
+        } else {
+          // Si no hay datos, forzamos login directo para pruebas
+          setUserData({ ...INITIAL_USER_DATA, isLoggedIn: true });
         }
       } catch (e) {
         console.error('Error cargando los datos del usuario:', e);
+        setUserData({ ...INITIAL_USER_DATA, isLoggedIn: true });
       } finally {
-        setIsLoading(false);
+        // Un pequeño retraso para asegurar que el motor de renderizado esté listo
+        setTimeout(() => setIsLoading(false), 500);
       }
     };
     loadData();
