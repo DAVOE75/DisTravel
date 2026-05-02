@@ -20,6 +20,8 @@ const INITIAL_USER_DATA = {
   highContrast: false,
   isAdmin: true,
   id: 'admin_1',
+  contributions: [],
+  customCityData: {}, // Guardará { 'alcoy': { image: '...', history: '...' } }
 };
 
 export const UserProvider = ({ children }) => {

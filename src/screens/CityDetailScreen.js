@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   StyleSheet, 
   Text, 
@@ -71,18 +71,57 @@ export function CityDetailScreen({ route, navigation }) {
   
   const [modalVisible, setModalVisible] = useState(false);
   const [modalData, setModalData] = useState({ title: '', content: '', icon: Info });
-  const [tempCityData, setTempCityData] = useState(city);
 
   const normalize = (text) => 
     text?.toLowerCase()
       .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
       .replace(/y/g, 'i') || '';
 
+  // Combinar datos oficiales con persistencia personalizada de Admin
+  const cityKey = normalize(city.name);
+  const customData = userData?.customCityData?.[cityKey] || {};
+  
+  const [tempCityData, setTempCityData] = useState({
+    ...city,
+    ...customData
+  });
+
+  // Sincronizar tempCityData con userData cuando cambie
+  useEffect(() => {
+    if (isAdmin && Object.keys(customData).length === 0 && tempCityData.image === city.image) return;
+    
+    const persistChanges = async () => {
+      const newCustomCityData = {
+        ...userData.customCityData,
+        [cityKey]: {
+          image: tempCityData.image,
+          history: tempCityData.history,
+          climate: tempCityData.climate,
+          geography: tempCityData.geography,
+          landscape: tempCityData.landscape
+        }
+      };
+      await updateUserData({ customCityData: newCustomCityData });
+    };
+    
+    // Solo persistir si hay cambios reales respecto a los datos originales o custom previos
+    const hasChanges = 
+      tempCityData.image !== (customData.image || city.image) ||
+      tempCityData.history !== (customData.history || city.history) ||
+      tempCityData.climate !== (customData.climate || city.climate);
+      
+    if (hasChanges) {
+      persistChanges();
+    }
+  }, [tempCityData]);
+
   const officialPlaces = MONUMENTOS[city.name] || [];
 
-  const userContributions = (userData?.contributions || []).filter(p => 
-    normalize(p.city) === normalize(city.name) || normalize(p.name).includes(normalize(city.name))
-  ).map(p => ({
+  const userContributions = (userData?.contributions || []).filter(p => {
+    const pCity = normalize(p.city);
+    const cName = normalize(city.name);
+    return pCity === cName || p.name.toLowerCase().includes(cName);
+  }).map(p => ({
     ...p,
     description: p.freeInfo || 'Lugar añadido por la comunidad.',
     category: p.category,
@@ -115,7 +154,7 @@ export function CityDetailScreen({ route, navigation }) {
   const pickHeaderImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (permissionResult.granted === false) {
-      Alert.alert("Permiso denegado", "Necesitamos acceso a tu galería para cambiar la foto.");
+      Alert.alert("Permiso denegado", "Necesitamos acceso a tu galería.");
       return;
     }
 
@@ -127,8 +166,8 @@ export function CityDetailScreen({ route, navigation }) {
     });
 
     if (!result.canceled) {
-      setTempCityData({ ...tempCityData, image: result.assets[0].uri });
-      Alert.alert("¡Imagen actualizada!", "La foto de cabecera se ha cambiado correctamente.");
+      setTempCityData(prev => ({ ...prev, image: result.assets[0].uri }));
+      Alert.alert("¡Imagen actualizada!", "La foto se guardará permanentemente.");
     }
   };
 
@@ -147,8 +186,8 @@ export function CityDetailScreen({ route, navigation }) {
               'Clima': 'climate',
               'Paisaje': 'landscape'
             };
-            setTempCityData({ ...tempCityData, [fieldMap[section]]: newText });
-            Alert.alert("Éxito", "Contenido actualizado correctamente.");
+            setTempCityData(prev => ({ ...prev, [fieldMap[section]]: newText }));
+            Alert.alert("Éxito", "Cambios guardados permanentemente.");
           }
         }
       ],
@@ -160,8 +199,8 @@ export function CityDetailScreen({ route, navigation }) {
   const handleAdminEdit = (section, currentText) => {
     if (section === 'Cabecera') {
       Alert.alert(
-        "Modo Administrador",
-        "¿Deseas cambiar la foto de cabecera?",
+        "Administración",
+        "¿Deseas cambiar la foto oficial?",
         [
           { text: "Cancelar", style: "cancel" },
           { text: "Abrir Galería", onPress: pickHeaderImage }
@@ -169,8 +208,8 @@ export function CityDetailScreen({ route, navigation }) {
       );
     } else {
       Alert.alert(
-        "Modo Administrador",
-        `¿Deseas editar la sección de ${section}?`,
+        "Administración",
+        `¿Deseas editar ${section}?`,
         [
           { text: "Cancelar", style: "cancel" },
           { text: "Editar Texto", onPress: () => handleEditContent(section, currentText) }
@@ -220,7 +259,7 @@ export function CityDetailScreen({ route, navigation }) {
 
         <View style={styles.mainContent}>
           <Text style={[styles.description, { color: theme.textSecondary }]}>
-            {tempCityData.description || 'Explora los lugares accesibles de este municipio y descubre su riqueza cultural.'}
+            {tempCityData.description || 'Explora los lugares accesibles de este municipio.'}
           </Text>
 
           <View style={styles.statsRow}>
@@ -244,7 +283,7 @@ export function CityDetailScreen({ route, navigation }) {
           <View style={styles.grid}>
             <TouchableOpacity 
               style={[styles.infoCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => openInfo('Nuestra Historia', tempCityData.history || 'Ciudad con gran riqueza cultural.', HistoryIcon)}
+              onPress={() => openInfo('Nuestra Historia', tempCityData.history || 'Ciudad histórica.', HistoryIcon)}
               onLongPress={() => isAdmin && handleAdminEdit('Historia', tempCityData.history)}
             >
               <HistoryIcon color={theme.primary} size={24} />
@@ -274,7 +313,7 @@ export function CityDetailScreen({ route, navigation }) {
 
             <TouchableOpacity 
               style={[styles.infoCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => openInfo('Entorno y Paisaje', tempCityData.landscape || 'Entorno natural privilegiado.', Mountain)}
+              onPress={() => openInfo('Entorno y Paisaje', tempCityData.landscape || 'Entorno privilegiado.', Mountain)}
               onLongPress={() => isAdmin && handleAdminEdit('Paisaje', tempCityData.landscape)}
             >
               <Mountain color={theme.primary} size={24} />

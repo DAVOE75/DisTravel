@@ -49,6 +49,8 @@ export function AddLocationScreen({ navigation }) {
   const [formData, setFormData] = useState({
     name: '',
     category: 'Museo',
+    city: '',
+    province: '',
     freeInfo: '',
     isSplitSchedule: false,
     morningOpen: '10:00',
@@ -111,6 +113,15 @@ export function AddLocationScreen({ navigation }) {
           longitudeDelta: 0.005,
         };
         setLocation(newRegion);
+        // Detectar ciudad automáticamente
+        const reverse = await Location.reverseGeocodeAsync(results[0]);
+        if (reverse && reverse.length > 0) {
+          setFormData(prev => ({ 
+            ...prev, 
+            city: reverse[0].city || reverse[0].subregion || '',
+            province: reverse[0].region || ''
+          }));
+        }
       }
     } catch (error) {
       console.log('Geocode error:', error);
