@@ -10,11 +10,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   Image,
-  Dimensions
+  Dimensions,
+  ActivityIndicator
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
+import * as Location from 'expo-location';
 import { 
   ChevronLeft, 
   MapPin, 
@@ -60,6 +62,48 @@ export function AddLocationScreen({ navigation }) {
     latitudeDelta: 0.005,
     longitudeDelta: 0.005,
   });
+
+  const [isSearchingLocation, setIsSearchingLocation] = useState(false);
+
+  // 1. Geolocalizar al usuario al entrar
+  React.useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        let currentPos = await Location.getCurrentPositionAsync({});
+        const newRegion = {
+          latitude: currentPos.coords.latitude,
+          longitude: currentPos.coords.longitude,
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.005,
+        };
+        setLocation(newRegion);
+      }
+    })();
+  }, []);
+
+  // 2. Smart Pinning: Buscar por nombre al perder el foco (onBlur)
+  const searchPlaceByName = async () => {
+    if (formData.name.length < 5) return;
+    
+    setIsSearchingLocation(true);
+    try {
+      const results = await Location.geocodeAsync(formData.name);
+      if (results && results.length > 0) {
+        const newRegion = {
+          latitude: results[0].latitude,
+          longitude: results[0].longitude,
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.005,
+        };
+        setLocation(newRegion);
+      }
+    } catch (error) {
+      console.log('Geocode error:', error);
+    } finally {
+      setIsSearchingLocation(false);
+    }
+  };
 
   const addTariff = () => {
     setTariffs([...tariffs, { id: Date.now().toString(), label: '', price: '' }]);
@@ -124,14 +168,20 @@ export function AddLocationScreen({ navigation }) {
           <View style={[styles.mapContainer, { borderColor: theme.border }]}>
             <MapView
               style={styles.map}
-              initialRegion={location}
+              region={location}
               onRegionChangeComplete={(region) => setLocation(region)}
             >
               <Marker coordinate={location} />
             </MapView>
             <View style={styles.mapOverlay}>
-              <MapPin color={theme.primary} size={30} />
-              <Text style={styles.mapHint}>Mueve el mapa para situar el pin</Text>
+              {isSearchingLocation ? (
+                <ActivityIndicator size="large" color={theme.primary} />
+              ) : (
+                <MapPin color={theme.primary} size={30} />
+              )}
+              <Text style={styles.mapHint}>
+                {isSearchingLocation ? 'Buscando ubicación...' : 'Mueve el mapa para situar el pin'}
+              </Text>
             </View>
           </View>
 
@@ -142,10 +192,11 @@ export function AddLocationScreen({ navigation }) {
               <Building2 color={theme.primary} size={20} />
               <TextInput
                 style={[styles.input, { color: theme.text }]}
-                placeholder="Nombre del establecimiento"
+                placeholder="Nombre (ej: Museo Naval Cartagena)"
                 placeholderTextColor={theme.textSecondary}
                 value={formData.name}
                 onChangeText={(text) => setFormData({...formData, name: text})}
+                onBlur={searchPlaceByName}
               />
             </View>
             
