@@ -25,7 +25,9 @@ import {
   ScanSearch,
   ShieldCheck,
   AlertTriangle,
-  MapPin
+  MapPin,
+  Library,
+  Info
 } from 'lucide-react-native';
 import { typography } from '../theme/typography';
 
@@ -33,7 +35,7 @@ const { width } = Dimensions.get('window');
 
 export function DistravelAIScreen({ navigation }) {
   const { theme, isDarkMode } = useTheme();
-  const [activeTab, setActiveTab] = useState('chat'); // 'chat' or 'auditor'
+  const [activeTab, setActiveTab] = useState('chat'); // 'chat', 'auditor', 'explorer'
   const [messages, setMessages] = useState([
     { id: 1, text: "¡Hola! Soy Distravel AI. ¿En qué puedo ayudarte hoy con tu viaje accesible?", sender: 'ai' }
   ]);
@@ -41,6 +43,7 @@ export function DistravelAIScreen({ navigation }) {
   const [isTyping, setIsTyping] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
+  const [explorerResult, setExplorerResult] = useState(null);
 
   const [capturedImage, setCapturedImage] = useState(null);
 
@@ -99,6 +102,33 @@ export function DistravelAIScreen({ navigation }) {
     }
   };
 
+  const startExploration = async () => {
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+    if (permissionResult.granted === false) {
+      Alert.alert("Permiso necesario", "Necesitamos acceso a la cámara para identificar objetos.");
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.7 });
+
+    if (!result.canceled) {
+      setCapturedImage(result.assets[0].uri);
+      setIsAnalyzing(true);
+      setExplorerResult(null);
+      
+      // Simulación de reconocimiento de monumento/objeto
+      setTimeout(() => {
+        setExplorerResult({
+          name: 'Museo de Biodiversidad (Alcoy)',
+          description: 'Antigua fábrica rehabilitada que alberga una colección única sobre fauna y flora mediterránea. Un ejemplo de arquitectura industrial del siglo XX.',
+          history: 'Fundado en 2004 para la investigación y divulgación de la biodiversidad local.',
+          accessInfo: 'Totalmente accesible, cuenta con ascensores panorámicos y maquetas táctiles para personas con discapacidad visual.'
+        });
+        setIsAnalyzing(false);
+      }, 2500);
+    }
+  };
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
@@ -118,15 +148,22 @@ export function DistravelAIScreen({ navigation }) {
           style={[styles.tab, activeTab === 'chat' && { backgroundColor: theme.primary }]}
           onPress={() => setActiveTab('chat')}
         >
-          <Bot color={activeTab === 'chat' ? '#FFFFFF' : theme.textSecondary} size={20} />
-          <Text style={[styles.tabText, { color: activeTab === 'chat' ? '#FFFFFF' : theme.textSecondary }]}>Asistente</Text>
+          <Bot color={activeTab === 'chat' ? '#FFFFFF' : theme.textSecondary} size={18} />
+          <Text style={[styles.tabText, { color: activeTab === 'chat' ? '#FFFFFF' : theme.textSecondary }]}>Chat</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.tab, activeTab === 'auditor' && { backgroundColor: theme.primary }]}
           onPress={() => setActiveTab('auditor')}
         >
-          <ScanSearch color={activeTab === 'auditor' ? '#FFFFFF' : theme.textSecondary} size={20} />
-          <Text style={[styles.tabText, { color: activeTab === 'auditor' ? '#FFFFFF' : theme.textSecondary }]}>Auditor Visual</Text>
+          <ScanSearch color={activeTab === 'auditor' ? '#FFFFFF' : theme.textSecondary} size={18} />
+          <Text style={[styles.tabText, { color: activeTab === 'auditor' ? '#FFFFFF' : theme.textSecondary }]}>Auditor</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.tab, activeTab === 'explorer' && { backgroundColor: theme.primary }]}
+          onPress={() => setActiveTab('explorer')}
+        >
+          <Library color={activeTab === 'explorer' ? '#FFFFFF' : theme.textSecondary} size={18} />
+          <Text style={[styles.tabText, { color: activeTab === 'explorer' ? '#FFFFFF' : theme.textSecondary }]}>Explorar</Text>
         </TouchableOpacity>
       </View>
 
@@ -230,6 +267,52 @@ export function DistravelAIScreen({ navigation }) {
                     <Text style={[styles.detailText, { color: theme.textSecondary }]}>{detail.text}</Text>
                   </View>
                 ))}
+              </View>
+            </View>
+          )}
+        </ScrollView>
+      ) : (
+        <ScrollView contentContainerStyle={styles.auditorContent}>
+          <View style={[styles.cameraPlaceholder, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+            {isAnalyzing ? (
+              <View style={styles.analyzingOverlay}>
+                <Image source={{ uri: capturedImage }} style={styles.previewImg} />
+                <View style={styles.scanLine} />
+                <ActivityIndicator size="large" color={theme.primary} style={styles.loader} />
+                <Text style={[styles.analyzingText, { color: '#FFFFFF' }]}>Identificando...</Text>
+              </View>
+            ) : capturedImage ? (
+              <Image source={{ uri: capturedImage }} style={styles.previewImg} />
+            ) : (
+              <View style={styles.noPreview}>
+                <Library color={theme.textSecondary} size={48} />
+                <Text style={[styles.noPreviewText, { color: theme.textSecondary }]}>Apunta a un edificio u objeto</Text>
+              </View>
+            )}
+          </View>
+
+          <TouchableOpacity 
+            style={[styles.analyzeBtn, { backgroundColor: theme.accent }]}
+            onPress={startExploration}
+            disabled={isAnalyzing}
+          >
+            <Sparkles color="#FFFFFF" size={24} />
+            <Text style={styles.analyzeBtnText}>Identificar con IA</Text>
+          </TouchableOpacity>
+
+          {explorerResult && (
+            <View style={[styles.resultCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+              <Text style={[styles.resultTitle, { color: theme.text, marginBottom: 5 }]}>{explorerResult.name}</Text>
+              <Text style={[styles.explorerDesc, { color: theme.textSecondary }]}>{explorerResult.description}</Text>
+              
+              <View style={[styles.infoBox, { backgroundColor: theme.primary + '10' }]}>
+                <Info color={theme.primary} size={16} />
+                <Text style={[styles.infoBoxText, { color: theme.text }]}>Histora: {explorerResult.history}</Text>
+              </View>
+
+              <View style={[styles.infoBox, { backgroundColor: theme.success + '10' }]}>
+                <Accessibility color={theme.success} size={16} />
+                <Text style={[styles.infoBoxText, { color: theme.text }]}>Accesibilidad: {explorerResult.accessInfo}</Text>
               </View>
             </View>
           )}
@@ -440,5 +523,23 @@ const styles = StyleSheet.create({
   detailText: {
     marginLeft: 10,
     fontSize: 14,
+  },
+  explorerDesc: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 15,
+  },
+  infoBox: {
+    flexDirection: 'row',
+    padding: 12,
+    borderRadius: 12,
+    marginBottom: 10,
+    alignItems: 'flex-start',
+  },
+  infoBoxText: {
+    flex: 1,
+    fontSize: 13,
+    marginLeft: 10,
+    lineHeight: 18,
   },
 });
