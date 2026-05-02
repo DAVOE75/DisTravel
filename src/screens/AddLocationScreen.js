@@ -29,7 +29,9 @@ import {
   AlertCircle,
   Trash2,
   Building2,
-  Calendar
+  Calendar,
+  Maximize2,
+  Check
 } from 'lucide-react-native';
 import { typography } from '../theme/typography';
 import MapView, { Marker } from 'react-native-maps';
@@ -64,6 +66,7 @@ export function AddLocationScreen({ navigation }) {
   });
 
   const [isSearchingLocation, setIsSearchingLocation] = useState(false);
+  const [isMapExpanded, setIsMapExpanded] = useState(false);
 
   // 1. Geolocalizar al usuario al entrar
   React.useEffect(() => {
@@ -165,7 +168,11 @@ export function AddLocationScreen({ navigation }) {
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
           {/* Map Selection */}
-          <View style={[styles.mapContainer, { borderColor: theme.border }]}>
+          <View style={[
+            styles.mapWrapper, 
+            isMapExpanded && styles.mapExpanded,
+            { borderColor: theme.border }
+          ]}>
             <MapView
               style={styles.map}
               region={location}
@@ -173,16 +180,42 @@ export function AddLocationScreen({ navigation }) {
             >
               <Marker coordinate={location} />
             </MapView>
-            <View style={styles.mapOverlay}>
-              {isSearchingLocation ? (
-                <ActivityIndicator size="large" color={theme.primary} />
-              ) : (
-                <MapPin color={theme.primary} size={30} />
-              )}
-              <Text style={styles.mapHint}>
-                {isSearchingLocation ? 'Buscando ubicación...' : 'Mueve el mapa para situar el pin'}
-              </Text>
-            </View>
+            
+            {!isMapExpanded && (
+              <TouchableOpacity 
+                style={styles.expandTrigger} 
+                onPress={() => setIsMapExpanded(true)}
+              >
+                <View style={styles.mapOverlay}>
+                  {isSearchingLocation ? (
+                    <ActivityIndicator size="large" color={theme.primary} />
+                  ) : (
+                    <MapPin color={theme.primary} size={30} />
+                  )}
+                  <Text style={styles.mapHint}>
+                    {isSearchingLocation ? 'Buscando ubicación...' : 'Toca para ampliar y ajustar'}
+                  </Text>
+                </View>
+                <View style={[styles.expandBtn, { backgroundColor: theme.surface }]}>
+                  <Maximize2 color={theme.primary} size={20} />
+                </View>
+              </TouchableOpacity>
+            )}
+
+            {isMapExpanded && (
+              <>
+                <View style={styles.expandedOverlay}>
+                  <MapPin color={theme.primary} size={40} />
+                </View>
+                <TouchableOpacity 
+                  style={[styles.confirmLocationBtn, { backgroundColor: theme.primary }]}
+                  onPress={() => setIsMapExpanded(false)}
+                >
+                  <Check color="#FFF" size={24} />
+                  <Text style={styles.confirmLocationText}>Confirmar Ubicación</Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
 
           {/* Basic Info */}
@@ -306,9 +339,37 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 15 },
   headerTitle: { fontSize: 20 },
   scrollContent: { paddingHorizontal: 20, paddingTop: 10 },
-  mapContainer: { height: 180, borderRadius: 20, overflow: 'hidden', borderWidth: 1, marginBottom: 20 },
+  mapWrapper: { height: 180, borderRadius: 20, overflow: 'hidden', borderWidth: 1, marginBottom: 20, position: 'relative' },
+  mapExpanded: {
+    position: 'absolute',
+    top: -100, // Pull up to cover header area in scroll
+    left: -20,
+    right: -20,
+    height: Dimensions.get('window').height - 100,
+    zIndex: 1000,
+    borderRadius: 0,
+  },
   map: { width: '100%', height: '100%' },
-  mapOverlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center', pointerEvents: 'none' },
+  expandTrigger: { ...StyleSheet.absoluteFillObject },
+  mapOverlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.1)' },
+  expandedOverlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center', pointerEvents: 'none' },
+  expandBtn: { position: 'absolute', top: 10, right: 10, padding: 8, borderRadius: 10, elevation: 3, shadowOpacity: 0.2 },
+  confirmLocationBtn: { 
+    position: 'absolute', 
+    bottom: 30, 
+    left: 20, 
+    right: 20, 
+    height: 60, 
+    borderRadius: 30, 
+    flexDirection: 'row', 
+    justifyContent: 'center', 
+    alignItems: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 10
+  },
+  confirmLocationText: { color: '#FFF', fontSize: 18, fontWeight: '800', marginLeft: 10 },
   mapHint: { backgroundColor: 'rgba(0,0,0,0.6)', color: '#FFF', fontSize: 10, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10, marginTop: 5 },
   section: { marginBottom: 25 },
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
