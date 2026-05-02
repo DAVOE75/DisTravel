@@ -9,7 +9,8 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  Image
+  Image,
+  Dimensions
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
@@ -23,11 +24,16 @@ import {
   Plus, 
   Camera,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Trash2,
+  Building2,
+  Calendar
 } from 'lucide-react-native';
 import { typography } from '../theme/typography';
-
 import MapView, { Marker } from 'react-native-maps';
+
+const CATEGORIES = ['Museo', 'Iglesia', 'Parque', 'Restaurante', 'Hotel', 'Atracción'];
+const DAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
 export function AddLocationScreen({ navigation }) {
   const { theme, isDarkMode } = useTheme();
@@ -35,10 +41,17 @@ export function AddLocationScreen({ navigation }) {
 
   const [formData, setFormData] = useState({
     name: '',
-    city: 'Madrid', // Default o detectado
-    schedule: '',
-    priceGeneral: '',
-    priceDisability: '',
+    category: 'Museo',
+    freeInfo: '',
+  });
+
+  const [tariffs, setTariffs] = useState([
+    { id: '1', label: 'Adulto', price: '' },
+    { id: '2', label: 'Discapacitado', price: '' }
+  ]);
+
+  const [openingDays, setOpeningDays] = useState({
+    'Lun': true, 'Mar': true, 'Mié': true, 'Jue': true, 'Vie': true, 'Sáb': true, 'Dom': true
   });
 
   const [location, setLocation] = useState({
@@ -48,15 +61,33 @@ export function AddLocationScreen({ navigation }) {
     longitudeDelta: 0.005,
   });
 
+  const addTariff = () => {
+    setTariffs([...tariffs, { id: Date.now().toString(), label: '', price: '' }]);
+  };
+
+  const removeTariff = (id) => {
+    setTariffs(tariffs.filter(t => t.id !== id));
+  };
+
+  const updateTariff = (id, field, value) => {
+    setTariffs(tariffs.map(t => t.id === id ? { ...t, [field]: value } : t));
+  };
+
+  const toggleDay = (day) => {
+    setOpeningDays({ ...openingDays, [day]: !openingDays[day] });
+  };
+
   const handleSave = async () => {
-    if (!formData.name || !formData.priceGeneral) {
-      Alert.alert('Faltan datos', 'El nombre y el precio son obligatorios para ayudar a otros usuarios.');
+    if (!formData.name) {
+      Alert.alert('Faltan datos', 'El nombre del lugar es obligatorio.');
       return;
     }
 
     const newPlace = {
       id: Date.now().toString(),
       ...formData,
+      tariffs,
+      openingDays,
       location,
       isUserAdded: true,
       verified: false
@@ -71,18 +102,15 @@ export function AddLocationScreen({ navigation }) {
     });
 
     Alert.alert(
-      '¡Objetivo Logrado! 🏆', 
-      'Has ganado +50 Puntos Distravel por añadir este lugar en tiempo real. ¡Gracias por ayudar a la comunidad!',
+      '¡Lugar Registrado! 🏆', 
+      'Has ganado +50 Puntos Distravel por tu contribución. ¡La comunidad te lo agradece!',
       [{ text: 'OK', onPress: () => navigation.goBack() }]
     );
   };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
-      >
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <ChevronLeft color={theme.text} size={28} />
@@ -92,64 +120,117 @@ export function AddLocationScreen({ navigation }) {
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-          {/* Map Selection Section */}
+          {/* Map Selection */}
           <View style={[styles.mapContainer, { borderColor: theme.border }]}>
             <MapView
               style={styles.map}
               initialRegion={location}
               onRegionChangeComplete={(region) => setLocation(region)}
             >
-              <Marker coordinate={location} pinColor={theme.primary} />
+              <Marker coordinate={location} />
             </MapView>
             <View style={styles.mapOverlay}>
-              <View style={[styles.locationPin, { backgroundColor: theme.primary }]}>
-                <MapPin color="#FFFFFF" size={20} />
-              </View>
-              <Text style={styles.mapHint}>Mueve el mapa para ajustar la posición</Text>
+              <MapPin color={theme.primary} size={30} />
+              <Text style={styles.mapHint}>Mueve el mapa para situar el pin</Text>
             </View>
           </View>
 
-          <View style={styles.formCard}>
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: theme.textSecondary }]}>Nombre del Monumento / Lugar</Text>
+          {/* Basic Info */}
+          <View style={styles.section}>
+            <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Información General</Text>
+            <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+              <Building2 color={theme.primary} size={20} />
               <TextInput
-                style={[styles.input, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
-                placeholder="Ej: Catedral de la Almudena"
-                placeholderTextColor={theme.textSecondary + '80'}
+                style={[styles.input, { color: theme.text }]}
+                placeholder="Nombre del establecimiento"
+                placeholderTextColor={theme.textSecondary}
                 value={formData.name}
                 onChangeText={(text) => setFormData({...formData, name: text})}
               />
             </View>
+            
+            {/* Category Selector */}
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
+              {CATEGORIES.map(cat => (
+                <TouchableOpacity 
+                  key={cat}
+                  style={[
+                    styles.catBadge, 
+                    { borderColor: theme.border, backgroundColor: theme.surface },
+                    formData.category === cat && { backgroundColor: theme.primary, borderColor: theme.primary }
+                  ]}
+                  onPress={() => setFormData({...formData, category: cat})}
+                >
+                  <Text style={[styles.catText, { color: theme.textSecondary }, formData.category === cat && { color: '#FFF' }]}>{cat}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
 
-            <View style={styles.row}>
-              <View style={{ flex: 1, marginRight: 10 }}>
-                <Text style={[styles.label, { color: theme.textSecondary }]}>Precio Gral.</Text>
-                <TextInput
-                  style={[styles.input, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
-                  placeholder="10€"
-                  keyboardType="numeric"
-                  value={formData.priceGeneral}
-                  onChangeText={(text) => setFormData({...formData, priceGeneral: text})}
-                />
-              </View>
-              <View style={{ flex: 1, marginLeft: 10 }}>
-                <Text style={[styles.label, { color: theme.textSecondary }]}>P. Discapacidad</Text>
-                <TextInput
-                  style={[styles.input, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
-                  placeholder="5€ / Gratis"
-                  value={formData.priceDisability}
-                  onChangeText={(text) => setFormData({...formData, priceDisability: text})}
-                />
-              </View>
+          {/* Tariffs Section */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Tarifas y Precios (€)</Text>
+              <TouchableOpacity onPress={addTariff} style={[styles.addButton, { backgroundColor: theme.primary }]}>
+                <Plus color="#FFF" size={16} />
+              </TouchableOpacity>
             </View>
+            
+            {tariffs.map((tariff) => (
+              <View key={tariff.id} style={styles.tariffRow}>
+                <View style={[styles.tariffInput, { backgroundColor: theme.surface, borderColor: theme.border, flex: 2 }]}>
+                  <TextInput
+                    style={[styles.input, { color: theme.text }]}
+                    placeholder="Tipo (ej: Adulto)"
+                    placeholderTextColor={theme.textSecondary}
+                    value={tariff.label}
+                    onChangeText={(v) => updateTariff(tariff.id, 'label', v)}
+                  />
+                </View>
+                <View style={[styles.tariffInput, { backgroundColor: theme.surface, borderColor: theme.border, flex: 1, marginLeft: 10 }]}>
+                  <TextInput
+                    style={[styles.input, { color: theme.text }]}
+                    placeholder="€"
+                    placeholderTextColor={theme.textSecondary}
+                    keyboardType="numeric"
+                    value={tariff.price}
+                    onChangeText={(v) => updateTariff(tariff.id, 'price', v)}
+                  />
+                </View>
+                <TouchableOpacity onPress={() => removeTariff(tariff.id)} style={styles.trashBtn}>
+                  <Trash2 color="#E74C3C" size={20} />
+                </TouchableOpacity>
+              </View>
+            ))}
+          </View>
 
-            <View style={styles.inputContainer}>
-              <Text style={[styles.label, { color: theme.textSecondary }]}>Horario de Visita</Text>
+          {/* Schedule Section */}
+          <View style={styles.section}>
+            <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Días de Apertura</Text>
+            <View style={styles.daysRow}>
+              {DAYS.map(day => (
+                <TouchableOpacity 
+                  key={day}
+                  style={[
+                    styles.dayCircle, 
+                    { borderColor: theme.border, backgroundColor: theme.surface },
+                    openingDays[day] && { backgroundColor: theme.success, borderColor: theme.success }
+                  ]}
+                  onPress={() => toggleDay(day)}
+                >
+                  <Text style={[styles.dayText, { color: theme.textSecondary }, openingDays[day] && { color: '#FFF' }]}>{day}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            
+            <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 15 }]}>
+              <Info color={theme.primary} size={20} />
               <TextInput
-                style={[styles.input, { backgroundColor: theme.surface, borderColor: theme.border, color: theme.text }]}
-                placeholder="Ej: 10:00 - 18:00"
-                value={formData.schedule}
-                onChangeText={(text) => setFormData({...formData, schedule: text})}
+                style={[styles.input, { color: theme.text }]}
+                placeholder="Info entrada gratuita (ej: Domingos gratis)"
+                placeholderTextColor={theme.textSecondary}
+                value={formData.freeInfo}
+                onChangeText={(text) => setFormData({...formData, freeInfo: text})}
               />
             </View>
           </View>
@@ -158,9 +239,10 @@ export function AddLocationScreen({ navigation }) {
             style={[styles.saveButton, { backgroundColor: theme.primary }]}
             onPress={handleSave}
           >
-            <Text style={styles.saveButtonText}>Confirmar y Añadir</Text>
+            <CheckCircle color="#FFFFFF" size={22} />
+            <Text style={styles.saveButtonText}>Publicar Lugar Accesible</Text>
           </TouchableOpacity>
-
+          
           <View style={{ height: 40 }} />
         </ScrollView>
       </KeyboardAvoidingView>
@@ -169,102 +251,29 @@ export function AddLocationScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-  },
-  headerTitle: {
-    fontSize: 20,
-  },
-  backButton: {
-    padding: 5,
-  },
-  scrollContent: {
-    padding: 20,
-  },
-  mapContainer: {
-    height: 200,
-    borderRadius: 24,
-    overflow: 'hidden',
-    borderWidth: 1,
-    marginBottom: 25,
-    position: 'relative',
-  },
-  map: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  mapOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    pointerEvents: 'none',
-  },
-  locationPin: {
-    padding: 10,
-    borderRadius: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 8,
-  },
-  mapHint: {
-    position: 'absolute',
-    bottom: 10,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    color: '#FFFFFF',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 10,
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  formCard: {
-    gap: 20,
-  },
-  inputContainer: {
-    marginBottom: 5,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '700',
-    marginBottom: 8,
-    marginLeft: 4,
-  },
-  input: {
-    borderRadius: 16,
-    paddingHorizontal: 18,
-    height: 55,
-    borderWidth: 1,
-    fontSize: 16,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
-  },
-  saveButton: {
-    height: 60,
-    borderRadius: 18,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 40,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  saveButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '800',
-  }
+  container: { flex: 1 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 15 },
+  headerTitle: { fontSize: 20 },
+  scrollContent: { paddingHorizontal: 20, paddingTop: 10 },
+  mapContainer: { height: 180, borderRadius: 20, overflow: 'hidden', borderWidth: 1, marginBottom: 20 },
+  map: { width: '100%', height: '100%' },
+  mapOverlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center', pointerEvents: 'none' },
+  mapHint: { backgroundColor: 'rgba(0,0,0,0.6)', color: '#FFF', fontSize: 10, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10, marginTop: 5 },
+  section: { marginBottom: 25 },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  sectionLabel: { fontSize: 13, fontWeight: '700', textTransform: 'uppercase', marginBottom: 10 },
+  inputContainer: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 15, height: 55, borderRadius: 15, borderWidth: 1 },
+  input: { flex: 1, marginLeft: 12, fontSize: 15 },
+  categoryScroll: { marginTop: 12 },
+  catBadge: { paddingHorizontal: 15, paddingVertical: 8, borderRadius: 20, borderWidth: 1, marginRight: 8 },
+  catText: { fontSize: 13, fontWeight: '600' },
+  tariffRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+  tariffInput: { height: 50, borderRadius: 12, borderWidth: 1, paddingHorizontal: 12, justifyContent: 'center' },
+  addButton: { width: 30, height: 30, borderRadius: 15, justifyContent: 'center', alignItems: 'center' },
+  trashBtn: { marginLeft: 10, padding: 5 },
+  daysRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  dayCircle: { width: 42, height: 42, borderRadius: 21, borderWidth: 1, justifyContent: 'center', alignItems: 'center' },
+  dayText: { fontSize: 12, fontWeight: '700' },
+  saveButton: { flexDirection: 'row', height: 60, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginTop: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 5, elevation: 5 },
+  saveButtonText: { color: '#FFFFFF', fontSize: 18, fontWeight: '800', marginLeft: 12 }
 });
