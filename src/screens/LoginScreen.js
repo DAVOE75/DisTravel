@@ -69,7 +69,7 @@ export function LoginScreen({ navigation }) {
           <View style={styles.header}>
             <View style={styles.logoContainer}>
               <Image 
-                source={isDarkMode ? require('../../assets/logo_dark.png') : require('../../assets/logo_light.png')} 
+                source={require('../../assets/logo_official.jpg')} 
                 style={styles.logo} 
                 resizeMode="contain"
               />

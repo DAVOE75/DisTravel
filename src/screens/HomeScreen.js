@@ -138,7 +138,7 @@ export function HomeScreen({ navigation }) {
           <View>
             <View style={styles.brandContainer}>
               <Image 
-                source={isDarkMode ? require('../../assets/logo_dark.png') : require('../../assets/logo_light.png')} 
+                source={require('../../assets/logo_official.jpg')} 
                 style={styles.headerLogo} 
                 resizeMode="contain"
               />
