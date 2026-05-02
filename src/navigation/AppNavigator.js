@@ -15,6 +15,7 @@ import { SavingsSimulatorScreen } from '../screens/SavingsSimulatorScreen';
 import { AddLocationScreen } from '../screens/AddLocationScreen';
 import { LoginScreen } from '../screens/LoginScreen';
 import { DistravelAIScreen } from '../screens/DistravelAIScreen';
+import { SplashScreen } from '../screens/SplashScreen';
 import { colors } from '../theme/colors';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
@@ -25,7 +26,7 @@ export function AppNavigator() {
   const { theme } = useTheme();
   const { userData, isLoading } = useUser();
   
-  if (isLoading) return null; // O una pantalla de splash
+  if (isLoading) return <SplashScreen />;
   
   return (
     <Stack.Navigator
