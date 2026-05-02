@@ -89,9 +89,9 @@ export function HomeScreen({ navigation }) {
   }, []);
 
   const normalize = (text) => 
-    text.toLowerCase()
+    text?.toLowerCase()
       .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Quitar acentos
-      .replace(/y/g, 'i'); // Normalizar i/y para casos como Alcoy/Alcoi
+      .replace(/y/g, 'i') || ''; // Normalizar i/y para casos como Alcoy/Alcoi
 
   // 3. Fusionar Ciudades Premium con las añadidas por el usuario
   const userAddedPlaces = userData?.contributions || [];

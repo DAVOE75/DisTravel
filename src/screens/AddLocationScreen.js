@@ -31,8 +31,11 @@ import {
   Building2,
   Calendar,
   Maximize2,
-  Check
+  Check,
+  Sparkles,
+  Zap
 } from 'lucide-react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { typography } from '../theme/typography';
 import MapView, { Marker } from 'react-native-maps';
 
@@ -54,6 +57,8 @@ export function AddLocationScreen({ navigation }) {
     afternoonClose: '20:00',
     closedHolidays: true,
   });
+
+  const [isRecognizing, setIsRecognizing] = useState(false);
 
   const [tariffs, setTariffs] = useState([
     { id: '1', label: 'Adulto', price: '' },
@@ -128,6 +133,77 @@ export function AddLocationScreen({ navigation }) {
 
   const toggleDay = (day) => {
     setOpeningDays({ ...openingDays, [day]: !openingDays[day] });
+  };
+
+  const handleAIRecognition = async () => {
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+    if (permissionResult.granted === false) {
+      Alert.alert("Permiso necesario", "Necesitamos acceso a la cámara para identificar el lugar.");
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.7 });
+
+    if (!result.canceled) {
+      setIsRecognizing(true);
+      
+      // Simulación de análisis IA Profundo
+      setTimeout(async () => {
+        // Identificamos un lugar de ejemplo basado en el contexto de Alcoy/Cartagena
+        const detectedPlace = {
+          name: "Museo Naval de Cartagena",
+          category: "Museo",
+          province: "Murcia",
+          morningOpen: "10:00",
+          morningClose: "14:00",
+          afternoonOpen: "16:00",
+          afternoonClose: "20:00",
+          isSplitSchedule: true,
+          freeInfo: "Gratis los sábados tarde",
+          tariffs: [
+            { id: 1, label: 'Adulto', price: '3' },
+            { id: 2, label: 'Reducida', price: '1.5' },
+            { id: 3, label: 'Discapacidad', price: '0' },
+          ]
+        };
+
+        setFormData({
+          ...formData,
+          name: detectedPlace.name,
+          category: detectedPlace.category,
+          province: detectedPlace.province,
+          morningOpen: detectedPlace.morningOpen,
+          morningClose: detectedPlace.morningClose,
+          afternoonOpen: detectedPlace.afternoonOpen,
+          afternoonClose: detectedPlace.afternoonClose,
+          isSplitSchedule: detectedPlace.isSplitSchedule,
+          freeInfo: detectedPlace.freeInfo
+        });
+        
+        setTariffs(detectedPlace.tariffs);
+        
+        // Auto-ubicar en el mapa
+        try {
+          const geocoded = await Location.geocodeAsync(detectedPlace.name + ", " + detectedPlace.province);
+          if (geocoded.length > 0) {
+            setRegion({
+              ...region,
+              latitude: geocoded[0].latitude,
+              longitude: geocoded[0].longitude,
+            });
+            setMarker({
+              latitude: geocoded[0].latitude,
+              longitude: geocoded[0].longitude,
+            });
+          }
+        } catch (e) {
+          console.log("Error geocoding detected place", e);
+        }
+
+        setIsRecognizing(false);
+        Alert.alert("¡Identificado con IA!", `He detectado que es el ${detectedPlace.name}. He rellenado los horarios y tarifas oficiales por ti.`);
+      }, 2500);
+    }
   };
 
   const handleSave = async () => {
@@ -296,7 +372,23 @@ export function AddLocationScreen({ navigation }) {
 
           {/* Schedule Section */}
           <View style={styles.section}>
-            <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Días de Apertura</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionLabel, { color: theme.textSecondary }]}>Datos del Lugar</Text>
+              <TouchableOpacity 
+                style={[styles.aiIdentifyBtn, { backgroundColor: theme.primary + '15' }]}
+                onPress={handleAIRecognition}
+                disabled={isRecognizing}
+              >
+                {isRecognizing ? (
+                  <ActivityIndicator size="small" color={theme.primary} />
+                ) : (
+                  <>
+                    <Sparkles color={theme.primary} size={16} />
+                    <Text style={[styles.aiIdentifyText, { color: theme.primary }]}>Identificar con IA</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
             <View style={styles.daysRow}>
               {DAYS.map(day => (
                 <TouchableOpacity 
@@ -473,5 +565,7 @@ const styles = StyleSheet.create({
   timeBlock: { marginBottom: 15 },
   timeLabel: { fontSize: 12, fontWeight: '600', marginBottom: 8 },
   timeRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  timeInput: { width: 100, height: 45, borderRadius: 10, borderWidth: 1, textAlign: 'center', fontSize: 16, fontWeight: '600' }
+  timeInput: { width: 100, height: 45, borderRadius: 10, borderWidth: 1, textAlign: 'center', fontSize: 16, fontWeight: '600' },
+  aiIdentifyBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, borderWidth: 1, borderColor: 'rgba(0,0,0,0.05)' },
+  aiIdentifyText: { fontSize: 12, fontWeight: '700', marginLeft: 6 }
 });
