@@ -19,22 +19,23 @@ import {
   Map, 
   Star, 
   ChevronRight,
-  ShieldCheck,
-  User, 
   MapPin, 
-  Building2, 
+  Filter, 
+  User, 
   Sparkles,
   Accessibility,
-  CreditCard,
+  Info,
   TrendingDown,
-  Users,
-  Eye,
+  Building2,
   Ear,
   Brain,
   Ticket,
   Bus,
   Plus,
-  Info
+  Eye,
+  ShieldCheck,
+  ChevronRight,
+  Clock
 } from 'lucide-react-native';
 import * as Location from 'expo-location';
 import { typography } from '../theme/typography';
@@ -220,13 +221,13 @@ export function HomeScreen({ navigation }) {
             
             <View style={styles.proHeroStats}>
               <View style={styles.proStat}>
-                <Text style={styles.proStatValue}>+500</Text>
-                <Text style={styles.proStatLabel}>Destinos</Text>
+                <Text style={styles.proStatValue}>{Math.round(userData.totalSavings || 0)}€</Text>
+                <Text style={styles.proStatLabel}>Ahorrados</Text>
               </View>
               <View style={styles.proStatDivider} />
               <View style={styles.proStat}>
-                <Text style={styles.proStatValue}>100%</Text>
-                <Text style={styles.proStatLabel}>Accesible</Text>
+                <Text style={styles.proStatValue}>{userData.visitedPlaces?.length || 0}</Text>
+                <Text style={styles.proStatLabel}>Visitados</Text>
               </View>
               <View style={styles.proStatDivider} />
               <View style={styles.proStat}>
@@ -252,11 +253,11 @@ export function HomeScreen({ navigation }) {
           </View>
 
           <View style={[styles.missionCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-            <View style={[styles.missionIcon, { backgroundColor: '#2ECC7115' }]}>
-              <Map color="#2ECC71" size={24} />
+            <View style={[styles.missionIcon, { backgroundColor: '#F1C40F15' }]}>
+              <TrendingDown color="#F1C40F" size={24} />
             </View>
-            <Text style={[styles.missionTitle, { color: theme.text }]}>¿Cómo usarla?</Text>
-            <Text style={[styles.missionDesc, { color: theme.textSecondary }]}>Filtra por tu tipo de discapacidad y descubre lugares adaptados a tus necesidades.</Text>
+            <Text style={[styles.missionTitle, { color: theme.text }]}>Maximiza tu Ahorro</Text>
+            <Text style={[styles.missionDesc, { color: theme.textSecondary }]}>Calculamos automáticamente tus descuentos en cada monumento y museo.</Text>
           </View>
 
           <TouchableOpacity 

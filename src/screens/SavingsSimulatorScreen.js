@@ -26,23 +26,22 @@ const { width } = Dimensions.get('window');
 export function SavingsSimulatorScreen({ navigation }) {
   const { theme } = useTheme();
   const { userData } = useUser();
-  const [selectedCity, setSelectedCity] = useState('Madrid');
+  const [selectedCity, setSelectedCity] = useState('Alicante');
 
   const calculateSavings = () => {
-    const monuments = MONUMENTOS[selectedCity] || [];
+    // Buscar monumentos en la ciudad seleccionada (Premium + Usuario)
+    const monuments = (userData.contributions || []).filter(p => p.city.toLowerCase() === selectedCity.toLowerCase());
+    
     let totalGeneral = 0;
     let totalDisability = 0;
 
     monuments.forEach(m => {
-      // Extraemos el primer número que aparezca en el precio general
-      const generalPriceMatch = m.price.match(/\d+/);
-      const generalPrice = generalPriceMatch ? parseInt(generalPriceMatch[0]) : 0;
-      totalGeneral += generalPrice;
-
-      // Lógica de ahorro simplificada para el simulador
-      const isFree = m.disabilityBenefit.toLowerCase().includes('gratis');
-      if (!isFree) {
-        totalDisability += generalPrice * 0.5; // Supongamos 50% si no es gratis
+      if (m.tariffs && Array.isArray(m.tariffs)) {
+        const general = m.tariffs.find(t => t.label.toLowerCase().includes('general'))?.value || 10;
+        const pcd = m.tariffs.find(t => t.label.toLowerCase().includes('pcd') || t.label.toLowerCase().includes('reducida'))?.value || 0;
+        
+        totalGeneral += general;
+        totalDisability += pcd;
       }
     });
 
@@ -61,27 +60,27 @@ export function SavingsSimulatorScreen({ navigation }) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <ChevronLeft color={theme.text} size={28} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.text }, typography.h2]}>Calculadora de Ahorro</Text>
+        <Text style={[styles.headerTitle, { color: theme.text }, typography.h2]}>Simulador de Ahorro</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
         {/* User Context Card */}
         <View style={[styles.profileCard, { backgroundColor: theme.primary }]}>
           <View style={styles.profileInfo}>
-            <Text style={styles.profileLabel}>Tu Grado de Discapacidad</Text>
-            <Text style={styles.profileValue}>{userData.disabilityDegree}%</Text>
+            <Text style={styles.profileLabel}>Tu Grado</Text>
+            <Text style={styles.profileValue}>{userData.disabilityDegree || '33'}%</Text>
           </View>
           <View style={styles.divider} />
           <View style={styles.profileInfo}>
-            <Text style={styles.profileLabel}>Acompañante</Text>
-            <Text style={styles.profileValue}>Incluido</Text>
+            <Text style={styles.profileLabel}>Tu Ahorro Real</Text>
+            <Text style={styles.profileValue}>{Math.round(userData.totalSavings || 0)}€</Text>
           </View>
         </View>
 
-        {/* City Selector (Simplified) */}
-        <Text style={[styles.label, { color: theme.textSecondary }]}>Selecciona tu destino</Text>
-        <View style={styles.citySelector}>
-          {['Madrid', 'Barcelona', 'Granada'].map(city => (
+        {/* City Selector */}
+        <Text style={[styles.label, { color: theme.textSecondary }]}>Simular viaje a...</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.citySelector}>
+          {['Alicante', 'Madrid', 'Barcelona', 'Granada', 'Medina del Campo'].map(city => (
             <TouchableOpacity 
               key={city}
               style={[
@@ -93,27 +92,29 @@ export function SavingsSimulatorScreen({ navigation }) {
               <Text style={[styles.cityBtnText, { color: selectedCity === city ? '#FFFFFF' : theme.text }]}>{city}</Text>
             </TouchableOpacity>
           ))}
-        </View>
+        </ScrollView>
 
         {/* Result Card */}
         <View style={[styles.resultCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-          <TrendingDown color={theme.primary} size={40} />
-          <Text style={[styles.resultTitle, { color: theme.text }]}>¡Tu Ahorro Estimado!</Text>
+          <View style={styles.savingsIconContainer}>
+             <TrendingDown color="#FFF" size={30} />
+          </View>
+          <Text style={[styles.resultTitle, { color: theme.text }]}>¡Ahorrarías en {selectedCity}!</Text>
           <Text style={[styles.savingsValue, { color: theme.primary }]}>{results.saved.toFixed(0)}€</Text>
-          <Text style={[styles.resultSub, { color: theme.textSecondary }]}>Basado en tu grado del {userData.disabilityDegree}%</Text>
+          <Text style={[styles.resultSub, { color: theme.textSecondary }]}>En un recorrido de {userData.contributions?.filter(p => p.city === selectedCity).length || 0} puntos de interés</Text>
           
           <View style={styles.breakdown}>
             <View style={styles.breakdownRow}>
               <View style={styles.breakdownLabelContainer}>
                 <Building2 color={theme.textSecondary} size={14} />
-                <Text style={[styles.breakdownLabel, { color: theme.textSecondary }]}>Precio Estándar</Text>
+                <Text style={[styles.breakdownLabel, { color: theme.textSecondary }]}>Precio Entradas Estándar</Text>
               </View>
               <Text style={[styles.breakdownValue, { color: theme.text }]}>{results.general.toFixed(2)}€</Text>
             </View>
             <View style={styles.breakdownRow}>
               <View style={styles.breakdownLabelContainer}>
                 <Wallet color="#2ECC71" size={14} />
-                <Text style={[styles.breakdownLabel, { color: theme.textSecondary }]}>Tu Precio Reducido</Text>
+                <Text style={[styles.breakdownLabel, { color: theme.textSecondary }]}>Tu Precio con Descuento</Text>
               </View>
               <Text style={[styles.breakdownValue, { color: '#2ECC71' }]}>{results.disability.toFixed(2)}€</Text>
             </View>
@@ -210,6 +211,20 @@ const styles = StyleSheet.create({
   },
   cityBtnText: {
     fontWeight: '700',
+  },
+  savingsIconContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#2ECC71',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+    shadowColor: '#2ECC71',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   resultCard: {
     padding: 30,

@@ -33,7 +33,8 @@ import {
   ChevronLeft,
   Star,
   Users,
-  CreditCard
+  CreditCard,
+  TrendingDown
 } from 'lucide-react-native';
 import { typography } from '../theme/typography';
 
@@ -192,14 +193,38 @@ export function ProfileScreen({ navigation }) {
             <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Puntos</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-            <Users color={theme.accent} size={24} />
-            <Text style={[styles.statValue, { color: theme.text }]}>{userData?.impact || '24'}</Text>
-            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Ayudados</Text>
+            <TrendingDown color="#2ECC71" size={24} />
+            <Text style={[styles.statValue, { color: theme.text }]}>{Math.round(userData?.totalSavings || 0)}€</Text>
+            <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Ahorro</Text>
           </View>
           <View style={[styles.statCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             <ShieldCheck color={theme.success} size={24} />
             <Text style={[styles.statValue, { color: theme.text }]}>Oro</Text>
             <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Nivel</Text>
+          </View>
+        </View>
+
+        {/* Mi Impacto Económico */}
+        <View style={styles.menuSection}>
+          <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>Mi Impacto Económico</Text>
+          <View style={[styles.menuList, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+            <ProfileItem 
+              icon={TrendingDown} 
+              title="Ahorro Total" 
+              value={`${(userData.totalSavings || 0).toFixed(2)}€ ahorrados en tus viajes`}
+              color="#2ECC71"
+              theme={theme}
+              onPress={() => navigation.navigate('SavingsSimulator')}
+            />
+            <ProfileItem 
+              icon={CheckCircle} 
+              title="Lugares Visitados" 
+              value={`${userData.visitedPlaces?.length || 0} monumentos validados`}
+              color={theme.primary}
+              isLast={true}
+              theme={theme}
+              onPress={() => {}} // Futura pantalla de Historial
+            />
           </View>
         </View>
 

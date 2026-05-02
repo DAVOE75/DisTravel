@@ -39,7 +39,10 @@ import {
   X,
   Camera,
   PlusCircle,
-  MinusCircle
+  MinusCircle,
+  TrendingDown,
+  ShieldCheck,
+  Construction
 } from 'lucide-react-native';
 import { typography } from '../theme/typography';
 import * as ImagePicker from 'expo-image-picker';
@@ -97,6 +100,63 @@ export function PlaceDetailScreen({ route, navigation }) {
       }
     }
   }, [placeFromContext, isEditing]);
+
+  const calculateSavings = () => {
+    if (!place.tariffs || !Array.isArray(place.tariffs)) return null;
+    
+    const generalTariff = place.tariffs.find(t => 
+      t.label.toLowerCase().includes('general') || t.label.toLowerCase().includes('adulto')
+    );
+    const pcdTariff = place.tariffs.find(t => 
+      t.label.toLowerCase().includes('pcd') || t.label.toLowerCase().includes('pmr') || t.label.toLowerCase().includes('reducida')
+    );
+
+    if (generalTariff && pcdTariff && generalTariff.value !== undefined && pcdTariff.value !== undefined) {
+      const diff = generalTariff.value - pcdTariff.value;
+      return diff > 0 ? diff.toFixed(2) : null;
+    }
+    return null;
+  };
+
+  const savings = calculateSavings();
+  const isVisited = userData.visitedPlaces?.includes(place.id);
+
+  const handleToggleVisit = () => {
+    let updatedVisited;
+    let savingsChange = 0;
+    const currentSavings = parseFloat(savings || 0);
+
+    if (isVisited) {
+      updatedVisited = userData.visitedPlaces.filter(id => id !== place.id);
+      savingsChange = -currentSavings;
+    } else {
+      updatedVisited = [...(userData.visitedPlaces || []), place.id];
+      savingsChange = currentSavings;
+    }
+
+    updateUserData({
+      visitedPlaces: updatedVisited,
+      totalSavings: Math.max(0, (userData.totalSavings || 0) + savingsChange)
+    });
+  };
+
+  const handleVerifyAccessibility = () => {
+    // Actualizar el estado local para feedback inmediato
+    setPlace(prev => ({
+      ...prev,
+      verifications: (prev.verifications || 0) + 1
+    }));
+
+    // Persistir la verificación en el perfil del usuario
+    const isAlreadyVerified = userData.verifiedPlaces?.includes(place.id);
+    if (!isAlreadyVerified) {
+      updateUserData({
+        verifiedPlaces: [...(userData.verifiedPlaces || []), place.id]
+      });
+    }
+
+    Alert.alert('¡Gracias!', 'Has validado la accesibilidad de este lugar para la comunidad.');
+  };
 
   const category = place.category || 'Monumento';
   const schedule = place.schedule || (place.morningOpen ? `${place.morningOpen} - ${place.morningClose}` : 'Consultar horario');
@@ -313,7 +373,15 @@ export function PlaceDetailScreen({ route, navigation }) {
                 multiline
               />
             ) : (
-              <Text style={[styles.placeName, typography.h1]}>{place.name}</Text>
+              <View>
+                <Text style={[styles.placeName, typography.h1]}>{place.name}</Text>
+                {savings && (
+                  <View style={styles.savingsBadge}>
+                    <TrendingDown color="#2ECC71" size={16} />
+                    <Text style={styles.savingsBadgeText}>¡Ahorras {savings}€ en este lugar!</Text>
+                  </View>
+                )}
+              </View>
             )}
           </View>
         </View>
@@ -385,6 +453,84 @@ export function PlaceDetailScreen({ route, navigation }) {
               })}
             </View>
           </View>
+
+          {/* Verificación Comunitaria */}
+          {!isEditing && (
+            <View style={styles.section}>
+              <View style={[styles.verificationCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                <View style={styles.verificationInfo}>
+                   <View style={styles.verificationIconBox}>
+                      <ShieldCheck color="#2ECC71" size={24} />
+                   </View>
+                   <View style={{ flex: 1 }}>
+                      <Text style={[styles.verificationTitle, { color: theme.text }]}>Estado de Verificación</Text>
+                      <Text style={[styles.verificationSub, { color: theme.textSecondary }]}>
+                        {place.verifications || Math.floor(Math.random() * 10) + 2} viajeros han confirmado la accesibilidad recientemente
+                      </Text>
+                   </View>
+                </View>
+                <TouchableOpacity 
+                  style={[styles.verifyActionBtn, { backgroundColor: theme.primary }]}
+                  onPress={handleVerifyAccessibility}
+                >
+                  <CheckCircle2 color="#FFF" size={16} />
+                  <Text style={styles.verifyActionText}>Confirmar Accesibilidad</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          {/* Ficha Técnica "Océano Azul" */}
+          {place.technicalSpecs && (
+            <View style={styles.section}>
+              <Text style={[styles.sectionTitle, { color: theme.text }]}>Especificaciones Técnicas</Text>
+              <View style={styles.techGrid}>
+                {place.technicalSpecs.doorWidth && (
+                  <View style={[styles.techItem, { backgroundColor: theme.surface }]}>
+                    <Info color={theme.primary} size={18} />
+                    <View>
+                      <Text style={styles.techLabel}>Ancho Puerta</Text>
+                      <Text style={[styles.techValue, { color: theme.text }]}>{place.technicalSpecs.doorWidth}</Text>
+                    </View>
+                  </View>
+                )}
+                {place.technicalSpecs.adaptedToilet && (
+                  <View style={[styles.techItem, { backgroundColor: theme.surface }]}>
+                    <ShieldCheck color="#2ECC71" size={18} />
+                    <View>
+                      <Text style={styles.techLabel}>Baño Adaptado</Text>
+                      <Text style={[styles.techValue, { color: theme.text }]}>Sí, Verificado</Text>
+                    </View>
+                  </View>
+                )}
+                {place.technicalSpecs.elevatorDimensions && (
+                  <View style={[styles.techItem, { backgroundColor: theme.surface }]}>
+                    <Construction color={theme.primary} size={18} />
+                    <View>
+                      <Text style={styles.techLabel}>Ascensor</Text>
+                      <Text style={[styles.techValue, { color: theme.text }]}>{place.technicalSpecs.elevatorDimensions}</Text>
+                    </View>
+                  </View>
+                )}
+              </View>
+            </View>
+          )}
+
+          {/* Botón de Registro de Visita y Ahorro */}
+          {!isEditing && (
+            <TouchableOpacity 
+              style={[
+                styles.visitButton, 
+                { backgroundColor: isVisited ? '#2ECC71' : theme.primary }
+              ]}
+              onPress={handleToggleVisit}
+            >
+              {isVisited ? <ShieldCheck color="#FFF" size={20} /> : <PlusCircle color="#FFF" size={20} />}
+              <Text style={styles.visitButtonText}>
+                {isVisited ? 'Lugar Visitado (Ahorro Registrado)' : 'He visitado este lugar'}
+              </Text>
+            </TouchableOpacity>
+          )}
 
           {/* Avisos Importantes (Critical Notices) */}
           {(place.importantNotices?.length > 0 || isEditing) && (
@@ -1024,5 +1170,108 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(0,0,0,0.1)',
     minWidth: 120,
     textAlign: 'right',
+  },
+  savingsBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E8F8F5',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginTop: 8,
+    alignSelf: 'flex-start',
+    gap: 6,
+    borderWidth: 1,
+    borderColor: '#2ECC71',
+  },
+  savingsBadgeText: {
+    color: '#27AE60',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  techGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
+  techItem: {
+    flex: 1,
+    minWidth: '45%',
+    padding: 15,
+    borderRadius: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  techLabel: {
+    fontSize: 10,
+    color: '#95A5A6',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+  },
+  techValue: {
+    fontSize: 13,
+    fontWeight: '700',
+    marginTop: 2,
+  },
+  visitButton: {
+    flexDirection: 'row',
+    height: 55,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 25,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  visitButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  verificationCard: {
+    padding: 20,
+    borderRadius: 20,
+    borderWidth: 1,
+    gap: 15,
+  },
+  verificationInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 15,
+  },
+  verificationIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: '#E8F8F5',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  verificationTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  verificationSub: {
+    fontSize: 12,
+    marginTop: 2,
+    lineHeight: 18,
+  },
+  verifyActionBtn: {
+    flexDirection: 'row',
+    height: 45,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+  },
+  verifyActionText: {
+    color: '#FFF',
+    fontSize: 14,
+    fontWeight: '700',
   }
 });

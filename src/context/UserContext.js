@@ -120,10 +120,17 @@ const SEED_DATA = [
       { name: 'Verano (17 Jun - 4 Sep)', period: 'Diario: 10:00 a 23:00', weekday: '10:00 a 23:00', weekend: '10:00 a 23:00' }
     ],
     accessibility: { physical: true, visual: true, auditory: true, cognitive: true },
+    technicalSpecs: {
+      doorWidth: '120cm',
+      adaptedToilet: true,
+      elevatorDimensions: '110x140cm',
+      ramps: 'Pendiente < 8%',
+      audioGuides: true
+    },
     tariffs: [
-      { id: 1, label: 'Entrada Recinto', price: 'Gratis' },
-      { id: 2, label: 'Ascensor (Gral)', price: '2,70 €' },
-      { id: 3, label: 'Ascensor (PMR / >65)', price: 'Gratis' }
+      { id: 1, label: 'Entrada Recinto', price: 'Gratis', value: 0 },
+      { id: 2, label: 'Ascensor (Gral)', price: '2,70 €', value: 2.70 },
+      { id: 3, label: 'Ascensor (PMR / >65)', price: 'Gratis', value: 0 }
     ],
     location: { latitude: 38.3491, longitude: -0.4777, latitudeDelta: 0.005, longitudeDelta: 0.005 },
     website: 'castillodesantabarbara.com',
@@ -149,10 +156,17 @@ const SEED_DATA = [
       { name: 'Verano (Jul-Ago)', period: 'Mar-Sáb: 10:00-21:00 | Dom: 10:00-14:00', weekday: '10:00 a 21:00', weekend: '10:00 a 14:00' }
     ],
     accessibility: { physical: true, visual: true, auditory: true, cognitive: true },
+    technicalSpecs: {
+      doorWidth: '100cm',
+      adaptedToilet: true,
+      turningRadius: '150cm',
+      brailleLabels: true,
+      magneticLoop: true
+    },
     tariffs: [
-      { id: 1, label: 'Entrada General', price: '3,00 €' },
-      { id: 2, label: 'Reducida (Est./Jub.)', price: '1,50 €' },
-      { id: 3, label: 'PCD + Acompañante', price: 'Gratis' }
+      { id: 1, label: 'Entrada General', price: '3,00 €', value: 3.00 },
+      { id: 2, label: 'Reducida (Est./Jub.)', price: '1,50 €', value: 1.50 },
+      { id: 3, label: 'PCD + Acompañante', price: 'Gratis', value: 0 }
     ],
     location: { latitude: 38.3534, longitude: -0.4754, latitudeDelta: 0.005, longitudeDelta: 0.005 },
     image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/MARQ_Alacant.JPG/1200px-MARQ_Alacant.JPG'
@@ -349,6 +363,9 @@ const INITIAL_USER_DATA = {
   contributions: SEED_DATA, // Inicializar con semillas
   customCityData: {},
   disabilityType: 'MOTOR',
+  visitedPlaces: [], // Para calcular ahorro real
+  totalSavings: 0,   // Ahorro acumulado
+  verifiedPlaces: [], // Lugares validados por el usuario
 };
 
 export const UserProvider = ({ children }) => {

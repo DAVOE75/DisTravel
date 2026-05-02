@@ -89,11 +89,29 @@ export function DigitalWalletScreen({ navigation }) {
           </View>
         </View>
 
+        {/* Quick Scan QR Section */}
+        <View style={styles.qrSection}>
+           <View style={[styles.qrContainer, { backgroundColor: '#FFF' }]}>
+              <View style={styles.qrPlaceholder}>
+                <View style={[styles.qrPixel, { top: 0, left: 0 }]} />
+                <View style={[styles.qrPixel, { top: 0, right: 0 }]} />
+                <View style={[styles.qrPixel, { bottom: 0, left: 0 }]} />
+                <View style={styles.qrCenter}>
+                   <Image 
+                     source={require('../../assets/logo_official.png')} 
+                     style={{ width: 40, height: 40, tintColor: theme.primary }} 
+                   />
+                </View>
+              </View>
+           </View>
+           <Text style={[styles.qrHint, { color: theme.textSecondary }]}>Muestre este QR en taquilla para validación rápida</Text>
+        </View>
+
         {/* Action Buttons */}
         <View style={styles.actions}>
           <TouchableOpacity style={[styles.actionBtn, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             <Download color={theme.primary} size={22} />
-            <Text style={[styles.actionText, { color: theme.text }]}>Exportar PDF</Text>
+            <Text style={[styles.actionText, { color: theme.text }]}>PDF</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.actionBtn, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             <Share2 color={theme.primary} size={22} />
@@ -110,6 +128,28 @@ export function DigitalWalletScreen({ navigation }) {
           <View style={styles.credInfo}>
             <Text style={[styles.credTitle, { color: theme.text }]}>Certificado Nacional</Text>
             <Text style={[styles.credSub, { color: theme.textSecondary }]}>Emitido por {userData.issuingBody || 'IMSERSO'}</Text>
+          </View>
+          <ChevronLeft color={theme.textSecondary} size={20} style={{ transform: [{ rotate: '180deg' }] }} />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.credItem, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <View style={[styles.credIconContainer, { backgroundColor: '#3498DB15' }]}>
+            <Map color="#3498DB" size={24} />
+          </View>
+          <View style={styles.credInfo}>
+            <Text style={[styles.credTitle, { color: theme.text }]}>Tarjeta de Estacionamiento PMR</Text>
+            <Text style={[styles.credSub, { color: theme.textSecondary }]}>Válida en toda la Unión Europea</Text>
+          </View>
+          <ChevronLeft color={theme.textSecondary} size={20} style={{ transform: [{ rotate: '180deg' }] }} />
+        </TouchableOpacity>
+
+        <TouchableOpacity style={[styles.credItem, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <View style={[styles.credIconContainer, { backgroundColor: '#E67E2215' }]}>
+            <Calendar color="#E67E22" size={24} />
+          </View>
+          <View style={styles.credInfo}>
+            <Text style={[styles.credTitle, { color: theme.text }]}>Permiso de Eurotaxi</Text>
+            <Text style={[styles.credSub, { color: theme.textSecondary }]}>Acreditación para transporte adaptado</Text>
           </View>
           <ChevronLeft color={theme.textSecondary} size={20} style={{ transform: [{ rotate: '180deg' }] }} />
         </TouchableOpacity>
@@ -319,6 +359,51 @@ const styles = StyleSheet.create({
   credSub: {
     fontSize: 12,
     marginTop: 2,
+  },
+  qrSection: {
+    alignItems: 'center',
+    marginTop: 30,
+    marginBottom: 10,
+  },
+  qrContainer: {
+    padding: 15,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  qrPlaceholder: {
+    width: 140,
+    height: 140,
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
+  },
+  qrPixel: {
+    position: 'absolute',
+    width: 40,
+    height: 40,
+    borderWidth: 8,
+    borderColor: '#333',
+  },
+  qrCenter: {
+    width: 60,
+    height: 60,
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  qrHint: {
+    fontSize: 11,
+    fontWeight: '600',
+    marginTop: 15,
+    textAlign: 'center',
+    paddingHorizontal: 40,
   },
   infoBox: {
     flexDirection: 'row',
