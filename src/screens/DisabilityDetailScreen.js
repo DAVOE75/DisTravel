@@ -59,6 +59,7 @@ export function DisabilityDetailScreen({ navigation, route }) {
   const { userData, updateUserData } = useUser();
   const [isEditing, setIsEditing] = useState(route.params?.editMode || false);
   const [localData, setLocalData] = useState({ ...userData });
+  const [rotation, setRotation] = useState(0);
 
   React.useEffect(() => {
     if (route.params?.editMode) {
