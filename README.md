@@ -1,82 +1,52 @@
-# 🌍 Distravel - Turismo Sin Barreras (v1.2.0)
+# 🌍 Distravel - Omni-Accesibilidad (v3.0.0)
 
 ![Distravel Logo](./assets/logo_official.png)
 
-**Distravel** es la plataforma definitiva diseñada para transformar la experiencia de viaje de las personas con discapacidad. Nuestra misión es empoderar a los viajeros proporcionando información crítica sobre **accesibilidad técnica** y **beneficios económicos** (descuentos y gratuidad) en destinos turísticos de toda España.
+**Distravel v3.0** es el salto evolutivo definitivo en turismo inclusivo. Hemos transformado la plataforma en un ecosistema inteligente que no solo informa, sino que motiva y acompaña al viajero con discapacidad mediante gamificación, ahorro inteligente y tecnología predictiva.
 
 ---
 
-## ✨ La Esencia de Distravel
+## ✨ Novedades de la Versión 3.0 "Omni-Accesibilidad"
 
-A diferencia de las guías de viaje convencionales, Distravel nace de una necesidad fundamental: **eliminar la incertidumbre**. 
+### 🏆 Sistema de Gamificación y Reconocimiento
+- **Progreso por Niveles:** Gana XP (Puntos de Experiencia) por cada visita validada y cada lugar nuevo añadido.
+- **Insignias y Medallas:** Desbloquea logros exclusivos como "Explorador de Museos", "Guardián de la Accesibilidad" o "Pionero".
+- **Comunidad Activa:** Tu contribución ahora tiene un rango que te identifica como experto en accesibilidad.
 
-- **¿Puedo entrar?** Información detallada sobre accesibilidad física y sensorial.
-- **¿Cuánto cuesta?** Claridad absoluta sobre descuentos por discapacidad en monumentos, museos y transporte, tanto públicos como privados.
-- **¿Cómo lo demuestro?** Integración de una credencial digital para gestionar y presentar tu tarjeta de discapacidad de forma rápida y segura.
+### 💰 Inteligencia de Ahorro
+- **Simulador de Ahorro:** Calcula en tiempo real cuánto dinero has ahorrado gracias a los beneficios por discapacidad en cada destino.
+- **Dashboard de Beneficios:** Visualiza tu ahorro total acumulado directamente en tu perfil.
+
+### 📡 Servicios de Proximidad v3.0
+- **Alertas Inteligentes:** Notificaciones automáticas cuando te encuentras cerca de un monumento o lugar con alta accesibilidad o beneficios especiales.
+- **Smart Path:** Integración con servicios de ubicación para facilitar la navegación urbana.
+
+### 💳 Billetera Digital Europea (EDC)
+- **European Disability Card:** Gestión segura y visualización de la tarjeta europea de discapacidad.
+- **Acceso Rápido:** Interfaz optimizada para presentar credenciales en taquillas y puntos de control sin demoras.
 
 ---
 
-## 🚀 Funcionalidades Clave (v1.2.0)
-
-### 🤖 Inteligencia Artificial Distravel AI
-- **Chat de Asistencia:** Consulta cualquier duda sobre accesibilidad en tiempo real.
-- **Auditor de Accesibilidad:** Escanea lugares con la cámara para recibir un diagnóstico de barreras arquitectónicas.
-- **Explorador Visual:** Identifica monumentos y objetos mediante IA con sistema de **corrección y verificación colaborativa**.
-
-### 🏙️ Base de Datos Nacional Unificada
-- **Más de 8.000 Municipios:** Integración total de la base de datos de municipios de España con mapeo inteligente de provincias.
-- **Buscador Inteligente:** Búsqueda unificada que diferencia entre ciudades premium y municipios generales.
-- **Georreferenciación Perfecta:** Sistema de geocodificación inversa para una precisión total en la ubicación de nuevos lugares.
-
-### 🛡️ Panel de Administración y Comunidad
-- **Validación de Lugares:** Los administradores pueden validar y verificar las contribuciones de la comunidad.
-- **Gestión de Contenidos:** Herramientas para actualizar fotos y descripciones oficiales en tiempo real.
-
-### 💳 Acreditación Digital Inteligente
-- **Perfil Técnico Completo:** Registro de grado de discapacidad, organismo emisor y contacto de emergencia.
-- **Evidencia Visual:** Almacenamiento seguro de la tarjeta de discapacidad para acceso rápido en taquillas.
-
-### 🎨 Experiencia de Usuario de Alta Gama
-- **Diseño Premium:** Interfaz moderna, minimalista y estética, centrada en la legibilidad y facilidad de uso.
-- **Modo Claro/Oscuro:** Soporte total de temas con transiciones suaves y vibrantes.
-- **Unificación de Branding:** Identidad visual sólida con el nuevo logo oficial integrado en toda la plataforma.
+## 🤖 Distravel AI Evolution
+- **Asistente de Viaje:** Consultas sobre accesibilidad técnica potenciadas por IA.
+- **Auditoría en Tiempo Real:** Diagnóstico visual de barreras mediante la cámara del dispositivo.
 
 ---
 
 ## 🛠️ Stack Tecnológico
-
-- **Framework:** [React Native](https://reactnative.dev/) + [Expo](https://expo.dev/)
-- **Iconografía:** [Lucide-React-Native](https://lucide.dev/)
-- **Mapas:** [React-Native-Maps](https://github.com/react-native-maps/react-native-maps)
-- **Localización:** [Expo-Location](https://docs.expo.dev/versions/latest/sdk/location/)
-- **Gestión de Estado:** Context API (Theme & User)
-- **Almacenamiento:** AsyncStorage para persistencia local.
+- **Core:** React Native + Expo (v54+)
+- **Navegación:** React Navigation v7
+- **Iconografía:** Lucide-React-Native
+- **Mapas y GPS:** React-Native-Maps & Expo-Location
+- **Persistencia:** AsyncStorage robusto con migración automática de datos.
 
 ---
 
-## 📦 Instalación y Uso
-
-1. **Clonar el repositorio:**
-   ```bash
-   git clone https://github.com/DAVOE75/DisTravel.git
-   ```
-2. **Instalar dependencias:**
-   ```bash
-   npm install
-   ```
-3. **Iniciar el proyecto:**
-   ```bash
-   npx expo start
-   ```
-
----
-
-## 🗺️ Roadmap Próximo
-
-- [ ] Sistema de rutas personalizadas basadas en el grado de accesibilidad.
-- [ ] Integración con APIs de transporte público en tiempo real.
-- [ ] Gamificación y sistema de puntos por contribuciones verificadas.
-- [ ] Notificaciones inteligentes basadas en proximidad.
+## 🗺️ Roadmap Futuro (v4.0)
+- [ ] **IA Vision:** Identificación de obstáculos en tiempo real mediante AR.
+- [ ] **Marketplace de Beneficios:** Canje de XP por descuentos reales en establecimientos colaboradores.
+- [ ] **Social Connect:** Red social interna para compartir rutas accesibles verificadas.
+- [ ] **GTFS-Realtime:** Estado de rampas y accesos en transporte público en tiempo vivo.
 
 ---
 
