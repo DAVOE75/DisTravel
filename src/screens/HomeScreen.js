@@ -142,7 +142,6 @@ export function HomeScreen({ navigation }) {
                 style={styles.headerLogo} 
                 resizeMode="contain"
               />
-              <Text style={[styles.brandText, { color: theme.primary }]}>Distravel</Text>
             </View>
             <Text style={[styles.greeting, { color: theme.textSecondary }]}>{getGreeting()},</Text>
             <Text style={[styles.userName, { color: theme.text }, typography.h1]}>{(userData?.name || 'Viajero').split(' ')[0]} 👋</Text>

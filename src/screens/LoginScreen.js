@@ -74,7 +74,6 @@ export function LoginScreen({ navigation }) {
                 resizeMode="contain"
               />
             </View>
-            <Text style={[styles.title, { color: theme.text }, typography.h1]}>Distravel</Text>
             <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
               Tu guía de turismo accesible
             </Text>
