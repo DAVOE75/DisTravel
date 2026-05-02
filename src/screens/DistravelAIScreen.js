@@ -27,7 +27,8 @@ import {
   AlertTriangle,
   MapPin,
   Library,
-  Info
+  Info,
+  Accessibility
 } from 'lucide-react-native';
 import { typography } from '../theme/typography';
 
@@ -44,7 +45,6 @@ export function DistravelAIScreen({ navigation }) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState(null);
   const [explorerResult, setExplorerResult] = useState(null);
-
   const [capturedImage, setCapturedImage] = useState(null);
 
   const handleSend = () => {
@@ -55,7 +55,6 @@ export function DistravelAIScreen({ navigation }) {
     setInputText('');
     setIsTyping(true);
 
-    // Simulación de respuesta de IA
     setTimeout(() => {
       const aiResponse = { 
         id: Date.now() + 1, 
@@ -68,25 +67,19 @@ export function DistravelAIScreen({ navigation }) {
   };
 
   const startAnalysis = async () => {
-    // 1. Pedir permisos y abrir cámara
     const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-    
     if (permissionResult.granted === false) {
       Alert.alert("Permiso necesario", "Necesitamos acceso a la cámara para auditar la accesibilidad.");
       return;
     }
 
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      quality: 0.7,
-    });
+    const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.7 });
 
     if (!result.canceled) {
       setCapturedImage(result.assets[0].uri);
       setIsAnalyzing(true);
       setAnalysisResult(null);
       
-      // Simulación de análisis de imagen real
       setTimeout(() => {
         setAnalysisResult({
           score: 8.5,
@@ -116,7 +109,6 @@ export function DistravelAIScreen({ navigation }) {
       setIsAnalyzing(true);
       setExplorerResult(null);
       
-      // Simulación de reconocimiento de monumento/objeto
       setTimeout(() => {
         setExplorerResult({
           name: 'Museo de Biodiversidad (Alcoy)',
@@ -142,7 +134,6 @@ export function DistravelAIScreen({ navigation }) {
         <View style={{ width: 28 }} />
       </View>
 
-      {/* Tab Switcher */}
       <View style={[styles.tabBar, { backgroundColor: theme.surface }]}>
         <TouchableOpacity 
           style={[styles.tab, activeTab === 'chat' && { backgroundColor: theme.primary }]}
@@ -213,7 +204,7 @@ export function DistravelAIScreen({ navigation }) {
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
-      ) : (
+      ) : activeTab === 'auditor' ? (
         <ScrollView contentContainerStyle={styles.auditorContent}>
           <View style={[styles.cameraPlaceholder, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             {isAnalyzing ? (
@@ -223,11 +214,8 @@ export function DistravelAIScreen({ navigation }) {
                 <ActivityIndicator size="large" color={theme.primary} style={styles.loader} />
                 <Text style={[styles.analyzingText, { color: '#FFFFFF' }]}>Escaneando barreras...</Text>
               </View>
-            ) : capturedImage ? (
-              <Image 
-                source={{ uri: capturedImage }} 
-                style={styles.previewImg} 
-              />
+            ) : capturedImage && !explorerResult ? (
+              <Image source={{ uri: capturedImage }} style={styles.previewImg} />
             ) : (
               <View style={styles.noPreview}>
                 <Camera color={theme.textSecondary} size={48} />
@@ -281,7 +269,7 @@ export function DistravelAIScreen({ navigation }) {
                 <ActivityIndicator size="large" color={theme.primary} style={styles.loader} />
                 <Text style={[styles.analyzingText, { color: '#FFFFFF' }]}>Identificando...</Text>
               </View>
-            ) : capturedImage ? (
+            ) : capturedImage && explorerResult ? (
               <Image source={{ uri: capturedImage }} style={styles.previewImg} />
             ) : (
               <View style={styles.noPreview}>
@@ -292,7 +280,7 @@ export function DistravelAIScreen({ navigation }) {
           </View>
 
           <TouchableOpacity 
-            style={[styles.analyzeBtn, { backgroundColor: theme.accent }]}
+            style={[styles.analyzeBtn, { backgroundColor: theme.primary }]}
             onPress={startExploration}
             disabled={isAnalyzing}
           >
@@ -307,7 +295,7 @@ export function DistravelAIScreen({ navigation }) {
               
               <View style={[styles.infoBox, { backgroundColor: theme.primary + '10' }]}>
                 <Info color={theme.primary} size={16} />
-                <Text style={[styles.infoBoxText, { color: theme.text }]}>Histora: {explorerResult.history}</Text>
+                <Text style={[styles.infoBoxText, { color: theme.text }]}>Historia: {explorerResult.history}</Text>
               </View>
 
               <View style={[styles.infoBox, { backgroundColor: theme.success + '10' }]}>
@@ -323,223 +311,44 @@ export function DistravelAIScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  flex1: {
-    flex: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-  },
-  headerTitleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    marginLeft: 8,
-  },
-  tabBar: {
-    flexDirection: 'row',
-    marginHorizontal: 20,
-    padding: 5,
-    borderRadius: 15,
-    marginBottom: 20,
-  },
-  tab: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 10,
-    borderRadius: 12,
-  },
-  tabText: {
-    fontSize: 14,
-    fontWeight: '700',
-    marginLeft: 8,
-  },
-  chatScroll: {
-    flex: 1,
-  },
-  chatContent: {
-    padding: 20,
-  },
-  messageBubble: {
-    maxWidth: '80%',
-    padding: 15,
-    borderRadius: 20,
-    marginBottom: 15,
-  },
-  userBubble: {
-    alignSelf: 'flex-end',
-    borderBottomRightRadius: 5,
-  },
-  aiBubble: {
-    alignSelf: 'flex-start',
-    borderBottomLeftRadius: 5,
-    borderWidth: 1,
-  },
-  messageText: {
-    fontSize: 15,
-    lineHeight: 22,
-  },
-  inputArea: {
-    flexDirection: 'row',
-    padding: 20,
-    borderTopWidth: 1,
-    alignItems: 'center',
-  },
-  input: {
-    flex: 1,
-    height: 50,
-    borderRadius: 25,
-    paddingHorizontal: 20,
-    fontSize: 16,
-    marginRight: 10,
-  },
-  sendButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 5,
-  },
-  auditorContent: {
-    padding: 20,
-  },
-  cameraPlaceholder: {
-    width: '100%',
-    height: width * 0.8,
-    borderRadius: 25,
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden',
-    marginBottom: 20,
-  },
-  previewImg: {
-    width: '100%',
-    height: '100%',
-  },
-  noPreview: {
-    alignItems: 'center',
-  },
-  noPreviewText: {
-    marginTop: 10,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  analyzingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loader: {
-    marginTop: 20,
-  },
-  scanLine: {
-    position: 'absolute',
-    width: '100%',
-    height: 2,
-    backgroundColor: '#00F2FF',
-    top: '50%',
-    shadowColor: '#00F2FF',
-    shadowBlur: 10,
-    shadowOpacity: 0.8,
-  },
-  analyzingText: {
-    marginTop: 15,
-    fontWeight: '800',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  analyzeBtn: {
-    flexDirection: 'row',
-    height: 60,
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 25,
-  },
-  analyzeBtnText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '800',
-    marginLeft: 12,
-  },
-  resultCard: {
-    padding: 20,
-    borderRadius: 25,
-    borderWidth: 1,
-  },
-  resultHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
-    paddingBottom: 15,
-  },
-  resultTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  resultStatus: {
-    fontSize: 18,
-    fontWeight: '800',
-    marginTop: 2,
-  },
-  scoreBadge: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  scoreText: {
-    fontSize: 20,
-    fontWeight: '900',
-  },
-  detailsList: {
-    gap: 12,
-  },
-  detailItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  detailText: {
-    marginLeft: 10,
-    fontSize: 14,
-  },
-  explorerDesc: {
-    fontSize: 14,
-    lineHeight: 20,
-    marginBottom: 15,
-  },
-  infoBox: {
-    flexDirection: 'row',
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 10,
-    alignItems: 'flex-start',
-  },
-  infoBoxText: {
-    flex: 1,
-    fontSize: 13,
-    marginLeft: 10,
-    lineHeight: 18,
-  },
+  container: { flex: 1 },
+  flex1: { flex: 1 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 15 },
+  headerTitleContainer: { flexDirection: 'row', alignItems: 'center' },
+  headerTitle: { marginLeft: 8 },
+  tabBar: { flexDirection: 'row', marginHorizontal: 20, padding: 5, borderRadius: 15, marginBottom: 20 },
+  tab: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderRadius: 12 },
+  tabText: { fontSize: 14, fontWeight: '700', marginLeft: 8 },
+  chatScroll: { flex: 1 },
+  chatContent: { padding: 20 },
+  messageBubble: { maxWidth: '80%', padding: 15, borderRadius: 20, marginBottom: 15 },
+  userBubble: { alignSelf: 'flex-end', borderBottomRightRadius: 5 },
+  aiBubble: { alignSelf: 'flex-start', borderBottomLeftRadius: 5, borderWidth: 1 },
+  messageText: { fontSize: 15, lineHeight: 22 },
+  inputArea: { flexDirection: 'row', padding: 20, borderTopWidth: 1, alignItems: 'center' },
+  input: { flex: 1, height: 50, borderRadius: 25, paddingHorizontal: 20, fontSize: 16, marginRight: 10 },
+  sendButton: { width: 50, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center', elevation: 4, shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 5 },
+  auditorContent: { padding: 20 },
+  cameraPlaceholder: { width: '100%', height: width * 0.8, borderRadius: 25, borderWidth: 2, borderStyle: 'dashed', justifyContent: 'center', alignItems: 'center', overflow: 'hidden', marginBottom: 20 },
+  previewImg: { width: '100%', height: '100%' },
+  noPreview: { alignItems: 'center' },
+  noPreviewText: { marginTop: 10, fontSize: 14, fontWeight: '500' },
+  analyzingOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center' },
+  loader: { marginTop: 20 },
+  scanLine: { position: 'absolute', width: '100%', height: 2, backgroundColor: '#00F2FF', top: '50%', shadowColor: '#00F2FF', shadowOpacity: 0.8 },
+  analyzingText: { marginTop: 15, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 },
+  analyzeBtn: { flexDirection: 'row', height: 60, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginBottom: 25 },
+  analyzeBtnText: { color: '#FFFFFF', fontSize: 18, fontWeight: '800', marginLeft: 12 },
+  resultCard: { padding: 20, borderRadius: 25, borderWidth: 1 },
+  resultHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, borderBottomWidth: 1, borderBottomColor: 'rgba(255, 255, 255, 0.1)', paddingBottom: 15 },
+  resultTitle: { fontSize: 16, fontWeight: '700' },
+  resultStatus: { fontSize: 18, fontWeight: '800', marginTop: 2 },
+  scoreBadge: { width: 50, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center' },
+  scoreText: { fontSize: 20, fontWeight: '900' },
+  detailsList: { gap: 12 },
+  detailItem: { flexDirection: 'row', alignItems: 'center' },
+  detailText: { marginLeft: 10, fontSize: 14 },
+  explorerDesc: { fontSize: 14, lineHeight: 20, marginBottom: 15 },
+  infoBox: { flexDirection: 'row', padding: 12, borderRadius: 12, marginBottom: 10, alignItems: 'flex-start' },
+  infoBoxText: { flex: 1, fontSize: 13, marginLeft: 10, lineHeight: 18 },
 });
