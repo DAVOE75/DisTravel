@@ -12,6 +12,7 @@ import {
   StatusBar
 } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
+import { useUser } from '../context/UserContext';
 import { 
   ChevronLeft, 
   MapPin, 
@@ -60,11 +61,33 @@ const InfoModal = ({ visible, onClose, title, content, theme, icon: Icon }) => (
 export function CityDetailScreen({ route, navigation }) {
   const { city } = route.params;
   const { theme, isDarkMode } = useTheme();
+  const { userData } = useUser();
   
   const [modalVisible, setModalVisible] = useState(false);
   const [modalData, setModalData] = useState({ title: '', content: '', icon: Info });
 
-  const cityMonuments = MONUMENTOS[city.name] || [];
+  const normalize = (text) => 
+    text?.toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/y/g, 'i') || '';
+
+  // 1. Obtener monumentos oficiales
+  const officialMonuments = MONUMENTOS[city.name] || [];
+
+  // 2. Obtener contribuciones del usuario para ESTA ciudad (Normalizado)
+  const userContributions = (userData?.contributions || []).filter(p => 
+    normalize(p.city) === normalize(city.name) || normalize(p.name).includes(normalize(city.name))
+  ).map(p => ({
+    id: p.id,
+    name: p.name,
+    image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
+    description: p.freeInfo || 'Lugar añadido por la comunidad.',
+    category: p.category,
+    tariffs: p.tariffs,
+    isUserAdded: true
+  }));
+
+  const allPlaces = [...officialMonuments, ...userContributions];
 
   const openInfo = (title, content, icon) => {
     setModalData({ title, content, icon });
@@ -114,7 +137,7 @@ export function CityDetailScreen({ route, navigation }) {
             </View>
             <View style={[styles.statCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
               <CheckCircle color="#2ECC71" size={20} />
-              <Text style={[styles.statValue, { color: theme.text }]}>{cityMonuments.length}</Text>
+              <Text style={[styles.statValue, { color: theme.text }]}>{allPlaces.length}</Text>
               <Text style={[styles.statLabel, { color: theme.textSecondary }]}>Puntos</Text>
             </View>
           </View>
@@ -123,7 +146,7 @@ export function CityDetailScreen({ route, navigation }) {
           <View style={styles.infoGrid}>
             <TouchableOpacity 
               style={[styles.infoCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => openInfo('Nuestra Historia', city.history, HistoryIcon)}
+              onPress={() => openInfo('Nuestra Historia', city.history || 'Ciudad con gran riqueza cultural por descubrir.', HistoryIcon)}
             >
               <HistoryIcon color={theme.primary} size={24} />
               <Text style={[styles.infoCardText, { color: theme.text }]}>Historia</Text>
@@ -131,7 +154,7 @@ export function CityDetailScreen({ route, navigation }) {
 
             <TouchableOpacity 
               style={[styles.infoCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => openInfo('Geografía Local', city.geography, Globe)}
+              onPress={() => openInfo('Geografía Local', city.geography || 'Ubicación estratégica en el mapa nacional.', Globe)}
             >
               <Globe color={theme.primary} size={24} />
               <Text style={[styles.infoCardText, { color: theme.text }]}>Geografía</Text>
@@ -139,7 +162,7 @@ export function CityDetailScreen({ route, navigation }) {
 
             <TouchableOpacity 
               style={[styles.infoCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => openInfo('Climatología', city.climate, Cloud)}
+              onPress={() => openInfo('Climatología', city.climate || 'Clima mediterráneo variable según la estación.', Cloud)}
             >
               <Cloud color={theme.primary} size={24} />
               <Text style={[styles.infoCardText, { color: theme.text }]}>Clima</Text>
@@ -147,7 +170,7 @@ export function CityDetailScreen({ route, navigation }) {
 
             <TouchableOpacity 
               style={[styles.infoCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => openInfo('Entorno y Paisaje', city.landscape, Mountain)}
+              onPress={() => openInfo('Entorno y Paisaje', city.landscape || 'Entorno natural privilegiado con rutas accesibles.', Mountain)}
             >
               <Mountain color={theme.primary} size={24} />
               <Text style={[styles.infoCardText, { color: theme.text }]}>Paisaje</Text>
@@ -156,30 +179,30 @@ export function CityDetailScreen({ route, navigation }) {
 
           {/* ESSENCE: Monuments List with Discount Emphasis */}
           <View style={styles.monumentsSection}>
-            <Text style={[styles.sectionTitle, { color: theme.text }, typography.h2]}>Monumentos con Beneficios</Text>
-            {cityMonuments.map((monument) => (
+            <Text style={[styles.sectionTitle, { color: theme.text }, typography.h2]}>Lugares y Monumentos</Text>
+            {allPlaces.map((place) => (
               <TouchableOpacity 
-                key={monument.id} 
+                key={place.id} 
                 style={[styles.monumentCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-                onPress={() => navigation.navigate('PlaceDetail', { place: monument })}
+                onPress={() => navigation.navigate('PlaceDetail', { place })}
               >
-                <Image source={{ uri: monument.image }} style={styles.monumentImage} />
+                <Image source={{ uri: place.image }} style={styles.monumentImage} />
                 <View style={styles.monumentInfo}>
                   <View style={styles.monumentHeader}>
-                    <Text style={[styles.monumentName, { color: theme.text }]}>{monument.name}</Text>
-                    <View style={[styles.benefitTag, { backgroundColor: theme.primary }]}>
+                    <Text style={[styles.monumentName, { color: theme.text }]}>{place.name}</Text>
+                    <View style={[styles.benefitTag, { backgroundColor: place.isUserAdded ? theme.accent : theme.primary }]}>
                       <Ticket color="#FFFFFF" size={12} />
-                      <Text style={styles.benefitText}>INFO TOTAL</Text>
+                      <Text style={styles.benefitText}>{place.isUserAdded ? 'COMUNIDAD' : 'OFICIAL'}</Text>
                     </View>
                   </View>
                   <View style={styles.accessRow}>
                     <Accessibility color={theme.primary} size={14} />
                     <Text style={[styles.accessText, { color: theme.textSecondary }]}>
-                      {monument.technicalSpecs?.doorWidth ? `Puerta: ${monument.technicalSpecs.doorWidth}` : 'Accesibilidad verificada'}
+                      {place.category || 'Punto de Interés'}
                     </Text>
                   </View>
                   <Text style={[styles.monumentDesc, { color: theme.textSecondary }]} numberOfLines={2}>
-                    {monument.description}
+                    {place.description}
                   </Text>
                 </View>
               </TouchableOpacity>

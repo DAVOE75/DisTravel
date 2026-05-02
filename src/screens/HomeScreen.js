@@ -88,16 +88,33 @@ export function HomeScreen({ navigation }) {
     })();
   }, []);
 
-  // Filtrado inteligente: Busca por nombre, provincia o etiquetas + Pueblos de España
-  const filteredCities = Object.values(CIUDADES_PREMIUM).filter(city => {
-    const query = searchQuery.toLowerCase();
-    return city.name.toLowerCase().includes(query) || 
-           city.province.toLowerCase().includes(query) ||
-           city.tags.some(tag => tag.toLowerCase().includes(query));
+  const normalize = (text) => 
+    text.toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Quitar acentos
+      .replace(/y/g, 'i'); // Normalizar i/y para casos como Alcoy/Alcoi
+
+  // 3. Fusionar Ciudades Premium con las añadidas por el usuario
+  const userAddedPlaces = userData?.contributions || [];
+  const userCities = [...new Set(userAddedPlaces.map(p => p.city))].map(cityName => ({
+    name: cityName,
+    province: userAddedPlaces.find(p => p.city === cityName)?.province || 'Contribución',
+    image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
+    description: `Ciudad con lugares añadidos por la comunidad.`,
+    tags: ['Comunidad'],
+    isUserAdded: true
+  }));
+
+  const allCities = [...Object.values(CIUDADES_PREMIUM), ...userCities];
+
+  const filteredCities = allCities.filter(city => {
+    const query = normalize(searchQuery);
+    return normalize(city.name).includes(query) || 
+           (city.province && normalize(city.province).includes(query)) ||
+           (city.tags && city.tags.some(tag => normalize(tag).includes(query)));
   });
 
   const matchedTowns = searchQuery.length >= 3 
-    ? municipiosData.filter(m => m.label.toLowerCase().includes(searchQuery.toLowerCase())).slice(0, 10)
+    ? municipiosData.filter(m => normalize(m.label).includes(normalize(searchQuery))).slice(0, 10)
     : [];
 
   const getGreeting = () => {
@@ -173,8 +190,17 @@ export function HomeScreen({ navigation }) {
                 key={`${town.code}-${index}`}
                 style={[styles.townItem, { borderBottomColor: theme.border }]}
                 onPress={() => {
-                  setSearchQuery(town.label);
-                  // Aquí se navegaría al detalle del pueblo o se filtraría el mapa
+                  setSearchQuery('');
+                  navigation.navigate('CityDetail', { 
+                    city: { 
+                      name: town.label, 
+                      province: town.province || 'España',
+                      image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
+                      description: 'Explora los lugares accesibles de este municipio.',
+                      history: 'Información histórica en proceso de verificación.',
+                      tags: ['Pueblo']
+                    } 
+                  });
                 }}
               >
                 <MapPin color={theme.primary} size={18} />
