@@ -201,29 +201,49 @@ export const MONUMENTOS = {
       category: 'Deportes',
       image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Camp_Nou_interior.jpg/1200px-Camp_Nou_interior.jpg',
       description: 'El museo del FC Barcelona y la nueva experiencia inmersiva mientras se completa la remodelación del estadio.',
-      schedule: 'Diario: 10:00 - 19:00. (Cerrado en días de partido del primer equipo masculino)',
-      price: 'ENTRADA DE PAGO: General desde 28€. Reducida desde 21€.',
-      disabilityBenefit: 'TARIFA REDUCIDA (No gratuito): Las personas con discapacidad deben adquirir entrada de tarifa reducida. El acompañante puede tener gratuidad o descuento según el grado.',
+      importantNotices: [
+        'La visita incluye una sala inmersiva que no es recomendable para personas con epilepsia y/o fotosensibles.'
+      ],
+      schedule: 'Variable por temporada (ver tabla)',
+      price: 'Desde 28,00 € (General) / 21,00 € (Reducida)',
+      disabilityBenefit: '50% DE DESCUENTO: Las personas con discapacidad <33% y su acompañante disponen de un 50% de descuento. Venta exclusiva en taquillas con acreditación.',
+      tariffs: [
+        { id: 1, label: 'General (11 a 64 años)', price: 'Desde 28,00 €' },
+        { id: 2, label: 'Mayores de 65 años', price: 'Desde 21,00 €' },
+        { id: 3, label: 'Infantil (4 a 10 años)', price: 'Desde 21,00 €' },
+        { id: 4, label: 'Residentes Cataluña', price: 'Desde 16,00 €' },
+        { id: 5, label: 'Discapacidad <33% (incl. acomp.)', price: '50% Dto.' },
+        { id: 6, label: 'Menores de 4 años (0-3 años)', price: 'GRATIS' }
+      ],
+      seasons: [
+        { name: 'Invierno', period: '2 ene al 25 feb', weekday: '10:00 - 18:00', weekend: '10:00 - 18:00', festive: '10:00 - 18:00' },
+        { name: 'Primavera', period: '26 feb al 27 mar', weekday: '10:00 - 19:00', weekend: '10:00 - 19:00', festive: '10:00 - 19:00' },
+        { name: 'Verano/Otoño', period: '28 mar al 18 oct', weekday: '09:30 - 19:00', weekend: '09:30 - 19:00', festive: '09:30 - 19:00' },
+        { name: 'Invierno T2', period: '19 oct al 31 dic', weekday: '10:00 - 19:00', weekend: '10:00 - 19:00', festive: '10:00 - 19:00' },
+        { name: 'Cierres Especiales', period: '25 dic y 1 ene', weekday: 'CERRADO', weekend: 'CERRADO', festive: 'CERRADO' }
+      ],
       technicalSpecs: {
-        doorWidth: '130cm',
-        turningSpace: 'Sí, excelente en el Museo',
-        magneticLoop: 'No disponible',
+        doorWidth: 'Totalmente adaptado',
+        turningSpace: 'Sí, totalmente accesible para sillas de ruedas',
+        magneticLoop: 'Disponible (Bucle Magnético)',
         brailleSignage: 'Limitado',
-        adaptedAudio: 'Audioguía incluida',
-        adaptedToilet: 'Sí, múltiples puntos accesibles'
+        adaptedAudio: 'Audioguía accesible disponible',
+        adaptedToilet: 'Sí, baños adaptados',
+        dogAccess: 'Se permite el acceso de perros de asistencia o perros guía',
+        babyChange: 'Disponible (Cambiador para bebés)'
       },
       audioguide: {
         available: true,
-        price: 'Incluida (Digital)',
+        price: 'Incluida',
         accessible: true,
         languages: ['Español', 'Catalán', 'Inglés', 'Francés', 'Alemán'],
-        note: 'Se entrega audioguía digital con la entrada.'
+        note: 'Audioguía accesible incluida con la entrada.'
       },
-      suitability: ['MOTOR', 'VISUAL', 'COGNITIVE'],
+      suitability: ['MOTOR', 'VISUAL', 'AUDITORY', 'COGNITIVE'],
       verifiedByCommunity: {
-        status: 'Muy Accesible (Nuevo Museo)',
+        status: 'Totalmente Adaptado',
         lastCheck: 'Hoy',
-        userCount: 39
+        userCount: 45
       },
       location: { latitude: 41.3809, longitude: 2.1228 }
     }

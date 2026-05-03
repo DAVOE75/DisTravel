@@ -139,6 +139,25 @@ export function PlaceDetailScreen({ route, navigation }) {
           description: "La Catedral de Santa María la Real de la Almudena es un templo de dimensiones monumentales que refleja la compleja historia de Madrid. Aunque su construcción se proyectó en el siglo XVI, la primera piedra no se puso hasta 1883, bajo el reinado de Alfonso XII. El diseño original neogótico de Francisco de Cubas evolucionó hacia un exterior neoclásico para armonizar con el Palacio Real. En su interior, destaca el contraste entre las vidrieras contemporáneas de colores vibrantes y la solemnidad de la Cripta neorrománica. Es el primer templo consagrado por un Papa fuera de Roma, el Papa Juan Pablo II en 1993.",
           touristTip: "La entrada principal por la Plaza de la Armería es totalmente accesible. Existe un ascensor para subir a la cúpula, desde donde se obtienen las mejores vistas panorámicas accesibles del Madrid de los Austrias."
         };
+      } else if (normalize(placeName).includes('camp nou') || normalize(placeName).includes('spotify')) {
+        aiContent = {
+          description: "El Spotify Camp Nou se encuentra actualmente en un proceso histórico de remodelación integral bajo el proyecto Espai Barça. Durante esta fase, el 'Barça Immersive Tour' ofrece una experiencia vanguardista en el antiguo Palacio de Hielo. El recorrido utiliza tecnología inmersiva de última generación, incluyendo una sala circular 360º (la más grande de Europa) que permite revivir los momentos más épicos del club. A pesar de las obras, el club ha mantenido un compromiso firme con la accesibilidad, adaptando todo el recorrido museístico para sillas de ruedas y proporcionando servicios específicos para diversas discapacidades sensoriales.",
+          touristTip: "Si tienes una discapacidad <33%, acude directamente a las taquillas (no compres online) para obtener el 50% de descuento para ti y tu acompañante. Evita la sala inmersiva si eres sensible a luces intermitentes.",
+          tariffs: [
+            { id: 1, label: 'General (11 a 64 años)', price: '28,00 €' },
+            { id: 2, label: 'Mayores de 65 años', price: '21,00 €' },
+            { id: 3, label: 'Infantil (4 a 10 años)', price: '21,00 €' },
+            { id: 4, label: 'Residentes Cataluña', price: '16,00 €' },
+            { id: 5, label: 'Discapacidad <33% (incl. acomp.)', price: '14,00 €' },
+            { id: 6, label: 'Menores de 4 años', price: 'Gratis' }
+          ],
+          seasons: [
+            { name: 'Invierno', period: '2 ene al 25 feb', weekday: '10:00 - 18:00', weekend: '10:00 - 18:00', festive: '10:00 - 18:00' },
+            { name: 'Primavera', period: '26 feb al 27 mar', weekday: '10:00 - 19:00', weekend: '10:00 - 19:00', festive: '10:00 - 19:00' },
+            { name: 'Temporada Alta', period: '28 mar al 18 oct', weekday: '09:30 - 19:00', weekend: '09:30 - 19:00', festive: '09:30 - 19:00' },
+            { name: 'Otoño / Invierno', period: '19 oct al 31 dic', weekday: '10:00 - 19:00', weekend: '10:00 - 19:00', festive: '10:00 - 19:00' }
+          ]
+        };
       }
 
       setPlace(prev => {
@@ -342,7 +361,7 @@ export function PlaceDetailScreen({ route, navigation }) {
     
     // Buscar el municipio en los datos
     const mData = MUNICIPIOS_DATA.find(m => 
-      m.label.toLowerCase() === place.city.toLowerCase()
+      normalize(m.label) === normalize(place.city)
     );
     
     if (mData) {
@@ -366,6 +385,14 @@ export function PlaceDetailScreen({ route, navigation }) {
         } 
       });
     }
+  };
+
+  const handleGoToMap = () => {
+    navigation.navigate('Map', { 
+      city: { name: place.city }, 
+      monuments: [place],
+      filter: 'place' 
+    });
   };
 
   const handleAiGenerateTariffs = () => {
@@ -617,8 +644,9 @@ export function PlaceDetailScreen({ route, navigation }) {
             <AutonomousCommunityMap 
               regionName={effectiveRegion} 
               cityCoords={place.location}
-              width={140}
-              height={140}
+              width={100}
+              height={100}
+              opacity={0.3}
             />
           </View>
 
@@ -728,6 +756,16 @@ export function PlaceDetailScreen({ route, navigation }) {
             )}
           </View>
         </View>
+
+        <TouchableOpacity 
+          onPress={handleGoToMap}
+          style={[styles.locationBar, { backgroundColor: '#EFBF04' }]}
+        >
+          <MapPin color="#0A192F" size={18} />
+          <Text style={styles.locationBarText}>
+            {(place.province || place.city || 'ALICANTE').toUpperCase()} / <Text style={{ fontWeight: '800' }}>VER EN EL MAPA</Text>
+          </Text>
+        </TouchableOpacity>
 
         <View style={styles.mainContent}>
           {/* Description */}
@@ -955,6 +993,85 @@ export function PlaceDetailScreen({ route, navigation }) {
                   </View>
                 ))}
               </View>
+            </View>
+          )}
+
+          {/* Horarios Dinámicos */}
+          {( (place.schedules && place.schedules.length > 0) || isEditing) && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Clock color={theme.primary} size={22} />
+                <Text style={[styles.sectionTitle, { color: theme.text, marginLeft: 10, marginBottom: 0 }]}>Horarios de Visita</Text>
+                {isEditing && (
+                  <TouchableOpacity 
+                    style={{ marginLeft: 'auto' }}
+                    onPress={() => setPlace({
+                      ...place,
+                      schedules: [...(place.schedules || []), { id: Date.now().toString(), days: 'Días...', hours: 'Horas...' }]
+                    })}
+                  >
+                    <PlusCircle color={theme.primary} size={24} />
+                  </TouchableOpacity>
+                )}
+              </View>
+              
+              <View style={[styles.schedulesGrid, { marginTop: 15 }]}>
+                {(place.schedules || []).map((sched, sIdx) => (
+                  <View key={sched.id || sIdx} style={[styles.scheduleCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                    {isEditing ? (
+                      <View style={{ gap: 8 }}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <TextInput 
+                            style={[styles.scheduleLabelEdit, { color: theme.text, fontWeight: '800' }]}
+                            value={sched.days}
+                            onChangeText={(v) => {
+                              const newS = [...place.schedules];
+                              newS[sIdx].days = v;
+                              setPlace({...place, schedules: newS});
+                            }}
+                          />
+                          <TouchableOpacity onPress={() => {
+                            const newS = place.schedules.filter((_, i) => i !== sIdx);
+                            setPlace({...place, schedules: newS});
+                          }}>
+                            <MinusCircle color="#E74C3C" size={18} />
+                          </TouchableOpacity>
+                        </View>
+                        <TextInput 
+                          style={[styles.scheduleHoursEdit, { color: theme.primary }]}
+                          value={sched.hours}
+                          onChangeText={(v) => {
+                            const newS = [...place.schedules];
+                            newS[sIdx].hours = v;
+                            setPlace({...place, schedules: newS});
+                          }}
+                        />
+                      </View>
+                    ) : (
+                      <>
+                        <Text style={[styles.scheduleLabel, { color: theme.text }]}>{sched.days}</Text>
+                        <Text style={[styles.scheduleHours, { color: theme.textSecondary }]}>{sched.hours}</Text>
+                      </>
+                    )}
+                  </View>
+                ))}
+              </View>
+              
+              {(place.specialClosures || isEditing) && (
+                <View style={[styles.specialClosuresRow, { backgroundColor: '#FDEDEC', borderColor: '#E74C3C' }]}>
+                  <AlertCircle color="#E74C3C" size={16} />
+                  {isEditing ? (
+                    <TextInput 
+                      style={[styles.specialClosuresEdit, { color: '#C0392B' }]}
+                      value={place.specialClosures}
+                      onChangeText={(v) => setPlace({...place, specialClosures: v})}
+                      placeholder="Ej: Cerrado 25 Dic..."
+                    />
+                  ) : (
+                    <Text style={[styles.specialClosuresText, { color: '#C0392B' }]}>{place.specialClosures}</Text>
+                  )}
+                </View>
+              )}
             </View>
           )}
 
@@ -1253,26 +1370,57 @@ export function PlaceDetailScreen({ route, navigation }) {
               <CreditCard color={theme.primary} size={22} />
               <Text style={[styles.sectionTitle, { color: theme.text, marginLeft: 10, marginBottom: 0 }]}>Tarifas y Entradas</Text>
               {isEditing && (
-                <View style={{ marginLeft: 'auto', flexDirection: 'row', alignItems: 'center' }}>
+                <View style={{ marginLeft: 'auto', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                    <TouchableOpacity 
+                      style={{ flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: theme.primary + '20', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}
+                      onPress={handleAiGenerateTariffs}
+                    >
+                      <Zap color={theme.primary} size={14} fill={theme.primary} />
+                      <Text style={{ fontSize: 11, color: theme.primary, fontWeight: '800' }}>IA GEN</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity 
+                      onPress={() => setPlace({
+                        ...place,
+                        tariffs: [...(place.tariffs || []), { id: Date.now(), label: 'Nueva Tarifa', price: '0 €' }]
+                      })}
+                    >
+                      <PlusCircle color={theme.primary} size={24} />
+                    </TouchableOpacity>
+                  </View>
+                  
                   <TouchableOpacity 
-                    style={{ flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: theme.primary + '20', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 }}
-                    onPress={handleAiGenerateTariffs}
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: place.isLinkedEntrance ? theme.primary : theme.surface, borderWidth: 1, borderColor: theme.primary, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 }}
+                    onPress={() => setPlace({...place, isLinkedEntrance: !place.isLinkedEntrance})}
                   >
-                    <Zap color={theme.primary} size={14} fill={theme.primary} />
-                    <Text style={{ fontSize: 11, color: theme.primary, fontWeight: '800' }}>IA GEN</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={{ marginLeft: 10 }}
-                    onPress={() => setPlace({
-                      ...place,
-                      tariffs: [...(place.tariffs || []), { id: Date.now(), label: 'Nueva Tarifa', price: '0 €' }]
-                    })}
-                  >
-                    <PlusCircle color={theme.primary} size={24} />
+                    <Link color={place.isLinkedEntrance ? '#FFF' : theme.primary} size={14} />
+                    <Text style={{ fontSize: 10, color: place.isLinkedEntrance ? '#FFF' : theme.primary, fontWeight: '800' }}>VINCULAR ENTRADA</Text>
                   </TouchableOpacity>
                 </View>
               )}
             </View>
+
+            {/* AVISO DE ENTRADA VINCULADA */}
+            {(place.isLinkedEntrance || (isEditing && place.isLinkedEntrance)) && (
+              <View style={[styles.linkedEntranceCard, { backgroundColor: '#F4F6F7', borderColor: theme.primary, marginBottom: 15 }]}>
+                <Building2 color={theme.primary} size={20} />
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.linkedTitle, { color: theme.text }]}>Compra la entrada</Text>
+                  {isEditing ? (
+                    <TextInput 
+                      style={[styles.linkedInput, { color: theme.textSecondary }]}
+                      placeholder="Ej: La visita se incluye en la entrada del castillo"
+                      value={place.linkedEntranceName}
+                      onChangeText={(v) => setPlace({...place, linkedEntranceName: v})}
+                    />
+                  ) : (
+                    <Text style={[styles.linkedText, { color: theme.textSecondary }]}>
+                      {place.linkedEntranceName || 'La visita se incluye en la entrada del monumento principal.'}
+                    </Text>
+                  )}
+                </View>
+              </View>
+            )}
             <View style={[styles.tariffsContainer, { backgroundColor: theme.surface }]}>
               {(place.tariffs || []).length > 0 ? (
                 <>
@@ -1557,9 +1705,10 @@ const styles = StyleSheet.create({
   overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.3)' },
   heroMapOverlay: {
     position: 'absolute',
-    bottom: 50,
-    right: 20,
-    zIndex: 10,
+    top: 100,
+    right: 10,
+    zIndex: 1,
+    opacity: 0.5
   },
   cityChip: {
     paddingHorizontal: 12,
@@ -1633,6 +1782,45 @@ const styles = StyleSheet.create({
   infoText: { flex: 1 },
   infoLabel: { fontSize: 10, color: '#95A5A6', fontWeight: '700', textTransform: 'uppercase' },
   infoValue: { fontSize: 13, fontWeight: '700', marginTop: 2 },
+  savingsValue: { fontSize: 18, fontWeight: '800' },
+  schedulesGrid: { gap: 12 },
+  scheduleCard: {
+    padding: 15,
+    borderRadius: 16,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
+  },
+  scheduleLabel: { fontSize: 15, fontWeight: '800', marginBottom: 2 },
+  scheduleHours: { fontSize: 14, fontWeight: '500' },
+  scheduleLabelEdit: { fontSize: 15, fontWeight: '800', flex: 1 },
+  scheduleHoursEdit: { fontSize: 14, fontWeight: '600' },
+  specialClosuresRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 15,
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  specialClosuresText: { fontSize: 13, fontWeight: '600' },
+  specialClosuresEdit: { flex: 1, fontSize: 13, fontWeight: '600' },
+  linkedEntranceCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    borderRadius: 16,
+    borderWidth: 1,
+    gap: 12,
+    borderStyle: 'dashed',
+  },
+  linkedTitle: { fontSize: 16, fontWeight: '800' },
+  linkedText: { fontSize: 14, fontWeight: '500' },
+  linkedInput: { fontSize: 14, fontWeight: '500', flex: 1 },
   contactRow: { flexDirection: 'row', gap: 10 },
   contactBtn: { flex: 1, flexDirection: 'row', height: 50, borderRadius: 12, justifyContent: 'center', alignItems: 'center', gap: 8 },
   contactBtnText: { fontSize: 14, fontWeight: '700' },
@@ -2014,5 +2202,24 @@ const styles = StyleSheet.create({
   },
   savingsValue: {
     fontSize: 18,
-  }
+  },
+  locationBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  locationBarText: {
+    color: '#0A192F',
+    fontSize: 13,
+    fontWeight: '700',
+    marginLeft: 8,
+    letterSpacing: 1,
+    textTransform: 'uppercase'
+  },
 });

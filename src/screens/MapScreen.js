@@ -11,7 +11,7 @@ import {
 import MapView, { Marker, Callout, Polyline } from 'react-native-maps';
 import { colors } from '../theme/colors';
 import { MONUMENTOS } from '../data/monumentos';
-import { ChevronLeft, Info, Sun, Moon, MapPin, LocateFixed } from 'lucide-react-native';
+import { ChevronLeft, ChevronRight, Info, Sun, Moon, MapPin, LocateFixed } from 'lucide-react-native';
 import { mapStyles } from '../theme/mapStyles';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
@@ -24,6 +24,12 @@ export function MapScreen({ route, navigation }) {
   const [mapTheme, setMapTheme] = useState('dark');
   const [selectedMonument, setSelectedMonument] = useState(null);
   const [showRoutes, setShowRoutes] = useState(true);
+
+  // Función para normalizar texto (quitar acentos)
+  const normalize = (text) => {
+    if (!text) return '';
+    return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  };
 
   // Mock de "Pasillos Seguros" (Rutas verificadas accesibles)
   const safeCorridors = [
@@ -43,17 +49,25 @@ export function MapScreen({ route, navigation }) {
   const officialMonuments = city ? (MONUMENTOS[city.name] || []) : Object.values(MONUMENTOS).flat();
   const userContributions = (userData?.contributions || []).filter(p => {
     if (!city) return true;
-    return p.city.toLowerCase() === city.name.toLowerCase();
+    return normalize(p.city) === normalize(city.name);
   });
 
   const mergedMonumentsMap = new Map();
-  officialMonuments.forEach(m => mergedMonumentsMap.set(`${m.name}-${m.city || city?.name}`, m));
-  userContributions.forEach(m => mergedMonumentsMap.set(`${m.name}-${m.city}`, m));
+  // Usar una clave normalizada para evitar duplicados por mayúsculas/minúsculas
+  officialMonuments.forEach(m => {
+    const key = `${normalize(m.name)}-${normalize(m.city || city?.name || '')}`;
+    mergedMonumentsMap.set(key, { ...m, city: m.city || city?.name });
+  });
+  
+  userContributions.forEach(m => {
+    const key = `${normalize(m.name)}-${normalize(m.city)}`;
+    mergedMonumentsMap.set(key, { ...m }); // Las contribuciones del usuario pueden sobrescribir datos oficiales si tienen el mismo nombre/ciudad
+  });
 
   let displayMonuments = Array.from(mergedMonumentsMap.values());
 
-  // Aplicar FILTRO COSTE CERO
-  if (filter === 'free' && passedMonuments) {
+  // Aplicar FILTRO COSTE CERO o FILTRO DE LUGAR ESPECÍFICO
+  if ((filter === 'free' || filter === 'place') && passedMonuments) {
     displayMonuments = passedMonuments;
   }
 
@@ -86,22 +100,22 @@ export function MapScreen({ route, navigation }) {
     if (city && city.location) {
       return {
         ...city.location,
-        latitudeDelta: 0.01, // Más zoom (antes 0.05)
+        latitudeDelta: 0.01,
         longitudeDelta: 0.01,
       };
     }
     if (displayMonuments.length > 0) {
       return {
-        latitude: displayMonuments[0].location?.latitude || 40.4168,
-        longitude: displayMonuments[0].location?.longitude || -3.7038,
-        latitudeDelta: 0.02, // Más zoom (antes 0.1)
+        latitude: Number(displayMonuments[0].location?.latitude || 40.4168),
+        longitude: Number(displayMonuments[0].location?.longitude || -3.7038),
+        latitudeDelta: 0.02,
         longitudeDelta: 0.02,
       };
     }
     return {
       latitude: 40.4168,
       longitude: -3.7038,
-      latitudeDelta: 8, // Vista general un poco más cerrada
+      latitudeDelta: 8,
       longitudeDelta: 8,
     };
   }, [city, displayMonuments]);
@@ -126,9 +140,9 @@ export function MapScreen({ route, navigation }) {
             geodesic={true}
           />
         ))}
-        {displayMonuments.map((monument) => (
+        {displayMonuments.map((monument, idx) => (
           <Marker
-            key={monument.id}
+            key={`${monument.id || 'mon'}-${normalize(monument.name)}-${idx}`}
             coordinate={{
               latitude: Number(monument.location?.latitude || 40.4168),
               longitude: Number(monument.location?.longitude || -3.7038)
@@ -136,16 +150,15 @@ export function MapScreen({ route, navigation }) {
             pinColor={getMarkerColor(monument)}
           >
             <Callout 
-              tooltip
+              tooltip={false}
               onPress={() => navigation.navigate('PlaceDetail', { place: monument })}
             >
-              <View style={[styles.callout, { backgroundColor: '#FFFFFF', borderRadius: 16 }]}>
+              <View style={styles.callout}>
+                <Text style={styles.calloutCategory}>{(monument.category || 'Lugar').toUpperCase()}</Text>
                 <Text style={styles.calloutTitle}>{monument.name}</Text>
-                <Text style={styles.calloutPrice}>{monument.price}</Text>
-                <View style={styles.infoRow}>
-                  <Info size={12} color="#E67E22" />
-                  <Text style={styles.calloutAction}>Toca para info total</Text>
-                </View>
+                <Text style={styles.calloutPrice}>{monument.price || 'Consultar precio'}</Text>
+                <View style={styles.divider} />
+                <Text style={[styles.calloutAction, { color: colors.primary }]}>VER FICHA COMPLETA</Text>
               </View>
             </Callout>
           </Marker>
@@ -280,31 +293,42 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   callout: {
-    width: 220,
-    padding: 10,
+    width: 240,
+    minHeight: 100,
+    padding: 12,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+  },
+  calloutCategory: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#6366f1',
+    marginBottom: 4,
+    letterSpacing: 1,
   },
   calloutTitle: {
     fontWeight: '800',
-    fontSize: 14,
+    fontSize: 16,
+    color: '#0F172A',
     marginBottom: 4,
-    color: '#0f172a',
   },
   calloutPrice: {
-    fontSize: 12,
-    color: '#64748b',
-    fontWeight: '600',
-    marginBottom: 8,
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#64748B',
+    marginBottom: 10,
   },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  divider: {
+    height: 1,
+    width: '100%',
+    backgroundColor: '#F1F5F9',
+    marginBottom: 10,
   },
   calloutAction: {
-    color: colors.primary,
-    fontSize: 11,
-    fontWeight: '700',
-    marginLeft: 4,
-    textTransform: 'uppercase',
+    fontSize: 12,
+    fontWeight: '800',
+    textAlign: 'center',
+    letterSpacing: 0.5,
   },
   legend: {
     position: 'absolute',

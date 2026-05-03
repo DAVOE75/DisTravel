@@ -7,7 +7,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Meseta central, 657 metros de altitud.',
     landscape: 'Contraste entre el Madrid de los Austrias y la arquitectura contemporánea.',
     image: 'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?auto=format&fit=crop&w=800&q=80',
-    tags: ['Capital', 'Museos', 'Accesible']
+    tags: ['Capital', 'Museos', 'Accesible'],
+    population: '3.31M'
   },
   'Barcelona': {
     name: 'Barcelona', province: 'Barcelona', region: 'Cataluña',
@@ -17,7 +18,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Llanura litoral entre el mar y Collserola.',
     landscape: 'Gótico, Modernismo de Gaudí y playas urbanas.',
     image: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=800&q=80',
-    tags: ['Gaudí', 'Mar', 'Modernismo']
+    tags: ['Gaudí', 'Mar', 'Modernismo'],
+    population: '1.63M'
   },
   'Sevilla': {
     name: 'Sevilla', province: 'Sevilla', region: 'Andalucía',
@@ -27,7 +29,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Depresión del Guadalquivir, en una llanura aluvial.',
     landscape: 'Giralda, Torre del Oro y el barrio de Santa Cruz.',
     image: 'https://images.unsplash.com/photo-1559121010-447efdd92824?auto=format&fit=crop&w=800&q=80',
-    tags: ['Flamenco', 'Historia', 'Calor']
+    tags: ['Flamenco', 'Historia', 'Calor'],
+    population: '681k'
   },
   'Valencia': {
     name: 'Valencia', province: 'Valencia', region: 'C. Valenciana',
@@ -37,7 +40,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Llanura litoral del Golfo de Valencia.',
     landscape: 'Ciudad de las Artes y las Ciencias y playas de la Malvarrosa.',
     image: 'https://images.unsplash.com/photo-1512753360425-076135899661?auto=format&fit=crop&w=800&q=80',
-    tags: ['Arroz', 'Mar', 'Futurismo']
+    tags: ['Arroz', 'Mar', 'Futurismo'],
+    population: '791k'
   },
   'Bilbao': {
     name: 'Bilbao', province: 'Vizcaya', region: 'País Vasco',
@@ -47,7 +51,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'En el valle del río Nervión, rodeada de montes.',
     landscape: 'Museo Guggenheim y arquitectura de titanio.',
     image: 'https://images.unsplash.com/photo-1549893072-4bc678117f45?auto=format&fit=crop&w=800&q=80',
-    tags: ['Diseño', 'Ría', 'Vanguardia']
+    tags: ['Diseño', 'Ría', 'Vanguardia'],
+    population: '344k'
   },
   'Málaga': {
     name: 'Málaga', province: 'Málaga', region: 'Andalucía',
@@ -57,7 +62,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Litoral mediterráneo andaluz.',
     landscape: 'Alcazaba, Teatro Romano y playas cosmopolitas.',
     image: 'https://images.unsplash.com/photo-1512753360425-076135899661?auto=format&fit=crop&w=800&q=80',
-    tags: ['Sol', 'Picasso', 'Mar']
+    tags: ['Sol', 'Picasso', 'Mar'],
+    population: '578k'
   },
   'Zaragoza': {
     name: 'Zaragoza', province: 'Zaragoza', region: 'Aragón',
@@ -67,7 +73,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Valle del Ebro.',
     landscape: 'Basílica del Pilar y Palacio de la Aljafería.',
     image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Basilica_del_Pilar_desde_el_Ebro.jpg/800px-Basilica_del_Pilar_desde_el_Ebro.jpg',
-    tags: ['Ebro', 'Mudéjar', 'Historia']
+    tags: ['Ebro', 'Mudéjar', 'Historia'],
+    population: '673k'
   },
   'Granada': {
     name: 'Granada', province: 'Granada', region: 'Andalucía',
@@ -77,7 +84,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Pie de Sierra Nevada, en la Vega de Granada.',
     landscape: 'Alhambra y Generalife.',
     image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Alhambra_View.jpg/800px-Alhambra_View.jpg',
-    tags: ['Alhambra', 'Nieve', 'Historia']
+    tags: ['Alhambra', 'Nieve', 'Historia'],
+    population: '232k'
   },
   'Vitoria-Gasteiz': {
     name: 'Vitoria-Gasteiz', province: 'Álava', region: 'País Vasco',
@@ -87,7 +95,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Llanada Alavesa.',
     landscape: 'Casco histórico en forma de almendra y anillo verde.',
     image: 'https://images.unsplash.com/photo-1621695277150-137b79e2f9d7?auto=format&fit=crop&w=800&q=80',
-    tags: ['Ecológica', 'Medieval', 'Paz']
+    tags: ['Ecológica', 'Medieval', 'Paz'],
+    population: '253k'
   },
   'A Coruña': {
     name: 'A Coruña', province: 'A Coruña', region: 'Galicia',
@@ -97,7 +106,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'En una península gallega abierta al Atlántico.',
     landscape: 'Galerías de cristal, Torre de Hércules y paseo marítimo.',
     image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Coruna-Torre_de_Hercules.jpg/800px-Coruna-Torre_de_Hercules.jpg',
-    tags: ['Mar', 'Faro', 'Cristal']
+    tags: ['Mar', 'Faro', 'Cristal'],
+    population: '244k'
   },
   'Toledo': {
     name: 'Toledo', province: 'Toledo', region: 'Castilla-La Mancha',
@@ -107,7 +117,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Promontorio sobre el río Tajo.',
     landscape: 'Catedral Primada y Alcázar.',
     image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Toledo_City_View.jpg/800px-Toledo_City_View.jpg',
-    tags: ['Cultura', 'Tajo', 'Imperial']
+    tags: ['Cultura', 'Tajo', 'Imperial'],
+    population: '85k'
   },
   'Salamanca': {
     name: 'Salamanca', province: 'Salamanca', region: 'Castilla y León',
@@ -117,7 +128,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Junto al río Tormes en la meseta norte.',
     landscape: 'Plaza Mayor y fachadas platerescas de piedra dorada.',
     image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Salamanca_Plaza_Mayor.jpg/800px-Salamanca_Plaza_Mayor.jpg',
-    tags: ['Estudiantes', 'Dorada', 'Saber']
+    tags: ['Estudiantes', 'Dorada', 'Saber'],
+    population: '144k'
   },
   'Burgos': {
     name: 'Burgos', province: 'Burgos', region: 'Castilla y León',
@@ -127,7 +139,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Valle del río Arlanzón.',
     landscape: 'Catedral gótica Patrimonio de la Humanidad.',
     image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Catedral_de_Burgos.jpg/800px-Catedral_de_Burgos.jpg',
-    tags: ['Gótico', 'El Cid', 'Frío']
+    tags: ['Gótico', 'El Cid', 'Frío'],
+    population: '175k'
   },
   'Santander': {
     name: 'Santander', province: 'Cantabria', region: 'Cantabria',
@@ -136,8 +149,9 @@ export const CIUDADES_PREMIUM = {
     climate: 'Oceánico, suave y húmedo.',
     geography: 'Bahía de Santander.',
     landscape: 'Palacio de la Magdalena y playa de El Sardinero.',
-    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Palacio_de_la_Magdalena_Santander.jpg/800px-Palacio_de_la_Magdalena_Santander.jpg',
-    tags: ['Bahía', 'Señorial', 'Verde']
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Palacio_de_ la_Magdalena_Santander.jpg/800px-Palacio_de_la_Magdalena_Santander.jpg',
+    tags: ['Bahía', 'Señorial', 'Verde'],
+    population: '172k'
   },
   'San Sebastián': {
     name: 'San Sebastián', province: 'Guipúzcoa', region: 'País Vasco',
@@ -147,7 +161,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Bahía de la Concha.',
     landscape: 'Playa de la Concha y Peine del Viento.',
     image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Playa_de_la_Concha_Donostia.jpg/800px-Playa_de_la_Concha_Donostia.jpg',
-    tags: ['Gourmet', 'Cine', 'Playa']
+    tags: ['Gourmet', 'Cine', 'Playa'],
+    population: '188k'
   },
   'Pamplona': {
     name: 'Pamplona', province: 'Navarra', region: 'Navarra',
@@ -157,7 +172,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Cuenca de Pamplona sobre el río Arga.',
     landscape: 'Murallas renacentistas y plaza del Castillo.',
     image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Pamplona_-_Plaza_del_Castillo_01.jpg/800px-Pamplona_-_Plaza_del_Castillo_01.jpg',
-    tags: ['Fueros', 'Historia', 'San Fermín']
+    tags: ['Fueros', 'Historia', 'San Fermín'],
+    population: '203k'
   },
   'Logroño': {
     name: 'Logroño', province: 'La Rioja', region: 'La Rioja',
@@ -167,7 +183,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Valle del Ebro.',
     landscape: 'Calle Laurel y Concatedral de la Redonda.',
     image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Logro%C3%B1o_-_Concatedral_de_Santa_Mar%C3%ADa_de_la_Redonda.jpg/800px-Logro%C3%B1o_-_Concatedral_de_Santa_Mar%C3%ADa_de_la_Redonda.jpg',
-    tags: ['Vino', 'Tapeo', 'Hospitalidad']
+    tags: ['Vino', 'Tapeo', 'Hospitalidad'],
+    population: '151k'
   },
   'Murcia': {
     name: 'Murcia', province: 'Murcia', region: 'Murcia',
@@ -177,7 +194,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Valle del río Segura.',
     landscape: 'Catedral de Murcia y Real Casino.',
     image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Catedral_de_Murcia_desde_la_Plaza_del_Cardenal_Belluga.jpg/800px-Catedral_de_Murcia_desde_la_Plaza_del_Cardenal_Belluga.jpg',
-    tags: ['Huerta', 'Sol', 'Barroco']
+    tags: ['Huerta', 'Sol', 'Barroco'],
+    population: '460k'
   },
   'Palma de Mallorca': {
     name: 'Palma', province: 'Islas Baleares', region: 'Islas Baleares',
@@ -187,7 +205,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Bahía de Palma.',
     landscape: 'La Seu (Catedral) y Castillo de Bellver.',
     image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Catedral_de_Palma_de_Mallorca.jpg/800px-Catedral_de_Palma_de_Mallorca.jpg',
-    tags: ['Mar', 'Isla', 'Gótico']
+    tags: ['Mar', 'Isla', 'Gótico'],
+    population: '416k'
   },
   'Las Palmas de Gran Canaria': {
     name: 'Las Palmas de G.C.', province: 'Las Palmas', region: 'Islas Canarias',
@@ -197,7 +216,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Litoral canario.',
     landscape: 'Playa de Las Canteras y barrio de Vegueta.',
     image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Catedral_de_Santa_Ana_Las_Palmas.jpg/800px-Catedral_de_Santa_Ana_Las_Palmas.jpg',
-    tags: ['Playa', 'Colonial', 'Eterno Verano']
+    tags: ['Playa', 'Colonial', 'Eterno Verano'],
+    population: '378k'
   },
   'Santa Cruz de Tenerife': {
     name: 'Santa Cruz de Tenerife', province: 'S.C. Tenerife', region: 'Islas Canarias',
@@ -207,7 +227,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Bahía de Santa Cruz.',
     landscape: 'Auditorio de Tenerife y Parque García Sanabria.',
     image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Auditorio_de_Tenerife_Pilar_de_la_Esperanza.jpg/800px-Auditorio_de_Tenerife_Pilar_de_la_Esperanza.jpg',
-    tags: ['Carnaval', 'Diseño', 'Puerto']
+    tags: ['Carnaval', 'Diseño', 'Puerto'],
+    population: '209k'
   },
   'Valladolid': {
     name: 'Valladolid', province: 'Valladolid', region: 'Castilla y León',
@@ -217,7 +238,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Confluencia del Pisuerga y el Esgueva.',
     landscape: 'Plaza Mayor y Museo Nacional de Escultura.',
     image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Plaza_Mayor_de_Valladolid_01.jpg/800px-Plaza_Mayor_de_Valladolid_01.jpg',
-    tags: ['Historia', 'Literatura', 'Corte']
+    tags: ['Historia', 'Literatura', 'Corte'],
+    population: '298k'
   },
   'Alicante': {
     name: 'Alicante', province: 'Alicante', region: 'C. Valenciana',
@@ -227,7 +249,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Costa Blanca.',
     landscape: 'Explanada de España y Castillo de Santa Bárbara.',
     image: 'https://images.unsplash.com/photo-1515088911046-30ea4741b6c9?auto=format&fit=crop&w=800&q=80',
-    tags: ['Sol', 'Hogueras', 'Mar']
+    tags: ['Sol', 'Hogueras', 'Mar'],
+    population: '337k'
   },
   'Córdoba': {
     name: 'Córdoba', province: 'Córdoba', region: 'Andalucía',
@@ -237,7 +260,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Valle del Guadalquivir.',
     landscape: 'Mezquita-Catedral y patios cordobeses.',
     image: 'https://images.unsplash.com/photo-1559121010-447efdd92824?auto=format&fit=crop&w=800&q=80',
-    tags: ['Califato', 'Flores', 'Historia']
+    tags: ['Califato', 'Flores', 'Historia'],
+    population: '325k'
   },
   'Cádiz': {
     name: 'Cádiz', province: 'Cádiz', region: 'Andalucía',
@@ -247,7 +271,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Casi rodeada por el mar Atlántico.',
     landscape: 'Catedral de Cádiz y Playa de la Caleta.',
     image: 'https://images.unsplash.com/photo-1543783230-22e030303030?auto=format&fit=crop&w=800&q=80',
-    tags: ['Fenicia', 'Libertad', 'Luz']
+    tags: ['Fenicia', 'Libertad', 'Luz'],
+    population: '114k'
   },
   'Oviedo': {
     name: 'Oviedo', province: 'Asturias', region: 'Asturias',
@@ -257,7 +282,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Centro de Asturias.',
     landscape: 'Santa María del Naranco y Catedral de San Salvador.',
     image: 'https://images.unsplash.com/photo-1549893072-4bc678117f45?auto=format&fit=crop&w=800&q=80',
-    tags: ['Sidra', 'Historia', 'Verde']
+    tags: ['Sidra', 'Historia', 'Verde'],
+    population: '219k'
   },
   'Badajoz': {
     name: 'Badajoz', province: 'Badajoz', region: 'Extremadura',
@@ -267,7 +293,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Orillas del Guadiana.',
     landscape: 'Alcazaba y Plaza Alta.',
     image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
-    tags: ['Frontera', 'Muralla', 'Río']
+    tags: ['Frontera', 'Muralla', 'Río'],
+    population: '150k'
   },
   'Cáceres': {
     name: 'Cáceres', province: 'Cáceres', region: 'Extremadura',
@@ -277,17 +304,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Sobre una colina en la penillanura extremeña.',
     landscape: 'Ciudad vieja de Cáceres.',
     image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
-    tags: ['Medieval', 'Nobles', 'Cultura']
-  },
-  'Toledo': {
-    name: 'Toledo', province: 'Toledo', region: 'Castilla-La Mancha',
-    description: 'La ciudad de las tres culturas y el laberinto imperial.',
-    history: 'Antigua capital visigoda y sede de la corte de Carlos I.',
-    climate: 'Mediterráneo continentalizado.',
-    geography: 'Promontorio sobre el río Tajo.',
-    landscape: 'Catedral Primada y Alcázar.',
-    image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
-    tags: ['Cultura', 'Tajo', 'Imperial']
+    tags: ['Medieval', 'Nobles', 'Cultura'],
+    population: '96k'
   },
   'Albacete': {
     name: 'Albacete', province: 'Albacete', region: 'Castilla-La Mancha',
@@ -297,7 +315,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Llanura de La Mancha.',
     landscape: 'Pasaje de Lodares y Catedral de San Juan.',
     image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&w=800&q=80',
-    tags: ['Navajas', 'Feria', 'Llanura']
+    tags: ['Navajas', 'Feria', 'Llanura'],
+    population: '172k'
   },
   'Guadalajara': {
     name: 'Guadalajara', province: 'Guadalajara', region: 'Castilla-La Mancha',
@@ -307,7 +326,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Valle del Henares.',
     landscape: 'Palacio del Infantado y Panteón de la Duquesa de Sevillano.',
     image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&w=800&q=80',
-    tags: ['Palacios', 'Alcarria', 'Historia']
+    tags: ['Palacios', 'Alcarria', 'Historia'],
+    population: '87k'
   },
   'Cuenca': {
     name: 'Cuenca', province: 'Cuenca', region: 'Castilla-La Mancha',
@@ -317,7 +337,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Serranía de Cuenca.',
     landscape: 'Casas Colgadas y Puente de San Pablo.',
     image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
-    tags: ['Abismo', 'Casas Colgadas', 'Arte']
+    tags: ['Abismo', 'Casas Colgadas', 'Arte'],
+    population: '53k'
   },
   'Ciudad Real': {
     name: 'Ciudad Real', province: 'Ciudad Real', region: 'Castilla-La Mancha',
@@ -327,7 +348,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Llanura manchega.',
     landscape: 'Puerta de Toledo e Iglesia de San Pedro.',
     image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&w=800&q=80',
-    tags: ['Quijote', 'Llanura', 'Vino']
+    tags: ['Quijote', 'Llanura', 'Vino'],
+    population: '74k'
   },
   'Jaén': {
     name: 'Jaén', province: 'Jaén', region: 'Andalucía',
@@ -337,7 +359,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Faldas del cerro de Santa Catalina.',
     landscape: 'Catedral de Jaén y Castillo de Santa Catalina.',
     image: 'https://images.unsplash.com/photo-1559121010-447efdd92824?auto=format&fit=crop&w=800&q=80',
-    tags: ['Aceite', 'Olivos', 'Historia']
+    tags: ['Aceite', 'Olivos', 'Historia'],
+    population: '112k'
   },
   'Huelva': {
     name: 'Huelva', province: 'Huelva', region: 'Andalucía',
@@ -347,7 +370,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Marismas de los ríos Tinto y Odiel.',
     landscape: 'Muelle del Tinto y Monasterio de la Rábida.',
     image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
-    tags: ['Descubrimiento', 'Marismas', 'Jamón']
+    tags: ['Descubrimiento', 'Marismas', 'Jamón'],
+    population: '143k'
   },
   'Almería': {
     name: 'Almería', province: 'Almería', region: 'Andalucía',
@@ -357,17 +381,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Litoral andaluz oriental.',
     landscape: 'Alcazaba y Cabo de Gata.',
     image: 'https://images.unsplash.com/photo-1512753360425-076135899661?auto=format&fit=crop&w=800&q=80',
-    tags: ['Sol', 'Cine', 'Desierto']
-  },
-  'Cádiz': {
-    name: 'Cádiz', province: 'Cádiz', region: 'Andalucía',
-    description: 'La Tacita de Plata, cuna de la libertad.',
-    history: 'Ciudad más antigua de Occidente, fundada por los fenicios.',
-    climate: 'Mediterráneo marítimo.',
-    geography: 'Casi rodeada por el mar Atlántico.',
-    landscape: 'Catedral de Cádiz y Playa de la Caleta.',
-    image: 'https://images.unsplash.com/photo-1543783230-22e030303030?auto=format&fit=crop&w=800&q=80',
-    tags: ['Fenicia', 'Libertad', 'Luz']
+    tags: ['Sol', 'Cine', 'Desierto'],
+    population: '201k'
   },
   'Ceuta': {
     name: 'Ceuta', province: 'Ceuta', region: 'Ceuta',
@@ -377,7 +392,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Estrecho de Gibraltar.',
     landscape: 'Murallas Reales y foso navegable.',
     image: 'https://images.unsplash.com/photo-1590424564245-8173400d3839?auto=format&fit=crop&w=800&q=80',
-    tags: ['Estrecho', 'Culturas', 'Puerto']
+    tags: ['Estrecho', 'Culturas', 'Puerto'],
+    population: '84k'
   },
   'Melilla': {
     name: 'Melilla', province: 'Melilla', region: 'Melilla',
@@ -387,7 +403,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Cabo de Tres Forcas.',
     landscape: 'Melilla la Vieja y arquitectura modernista.',
     image: 'https://images.unsplash.com/photo-1590424564245-8173400d3839?auto=format&fit=crop&w=800&q=80',
-    tags: ['Modernismo', 'Historia', 'Mar']
+    tags: ['Modernismo', 'Historia', 'Mar'],
+    population: '86k'
   },
   'Teruel': {
     name: 'Teruel', province: 'Teruel', region: 'Aragón',
@@ -397,7 +414,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Sur de Aragón.',
     landscape: 'Torres mudéjares y Mausoleo de los Amantes.',
     image: 'https://images.unsplash.com/photo-1549893072-4bc678117f45?auto=format&fit=crop&w=800&q=80',
-    tags: ['Mudéjar', 'Amor', 'Frío']
+    tags: ['Mudéjar', 'Amor', 'Frío'],
+    population: '36k'
   },
   'Soria': {
     name: 'Soria', province: 'Soria', region: 'Castilla y León',
@@ -407,7 +425,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Alto Duero.',
     landscape: 'Ermita de San Saturio y Monasterio de San Juan de Duero.',
     image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&w=800&q=80',
-    tags: ['Poesía', 'Duero', 'Paz']
+    tags: ['Poesía', 'Duero', 'Paz'],
+    population: '39k'
   },
   'Zamora': {
     name: 'Zamora', province: 'Zamora', region: 'Castilla y León',
@@ -417,7 +436,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Borde del río Duero.',
     landscape: 'Catedral de Zamora y murallas medievales.',
     image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
-    tags: ['Románico', 'Duero', 'Historia']
+    tags: ['Románico', 'Duero', 'Historia'],
+    population: '60k'
   },
   'Palencia': {
     name: 'Palencia', province: 'Palencia', region: 'Castilla y León',
@@ -427,7 +447,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Llanura de Tierra de Campos.',
     landscape: 'Catedral de San Antolín y Cristo del Otero.',
     image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
-    tags: ['Gótico', 'Universidad', 'Tranquilidad']
+    tags: ['Gótico', 'Universidad', 'Tranquilidad'],
+    population: '77k'
   },
   'Segovia': {
     name: 'Segovia', province: 'Segovia', region: 'Castilla y León',
@@ -437,7 +458,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'A los pies de la Sierra de Guadarrama.',
     landscape: 'Acueducto romano y Alcázar de Segovia.',
     image: 'https://images.unsplash.com/photo-1543783230-22e030303030?auto=format&fit=crop&w=800&q=80',
-    tags: ['Acueducto', 'Castillo', 'Historia']
+    tags: ['Acueducto', 'Castillo', 'Historia'],
+    population: '51k'
   },
   'Ávila': {
     name: 'Ávila', province: 'Ávila', region: 'Castilla y León',
@@ -447,7 +469,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Valle del Amblés, a gran altitud.',
     landscape: 'Murallas de Ávila y Basílica de San Vicente.',
     image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
-    tags: ['Murallas', 'Mística', 'Frío']
+    tags: ['Murallas', 'Mística', 'Frío'],
+    population: '58k'
   },
   'Huesca': {
     name: 'Huesca', province: 'Huesca', region: 'Aragón',
@@ -457,7 +480,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Hoya de Huesca.',
     landscape: 'Catedral de Huesca y San Pedro el Viejo.',
     image: 'https://images.unsplash.com/photo-1549893072-4bc678117f45?auto=format&fit=crop&w=800&q=80',
-    tags: ['Pirineos', 'Aragón', 'Naturaleza']
+    tags: ['Pirineos', 'Aragón', 'Naturaleza'],
+    population: '53k'
   },
   'Lleida': {
     name: 'Lleida', province: 'Lleida', region: 'Cataluña',
@@ -467,7 +491,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Llanura del Segre.',
     landscape: 'Seu Vella y Castillo del Rey.',
     image: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=800&q=80',
-    tags: ['Historia', 'Segre', 'Cultura']
+    tags: ['Historia', 'Segre', 'Cultura'],
+    population: '140k'
   },
   'Tarragona': {
     name: 'Tarragona', province: 'Tarragona', region: 'Cataluña',
@@ -477,7 +502,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Costa Daurada.',
     landscape: 'Anfiteatro romano y Balcón del Mediterráneo.',
     image: 'https://images.unsplash.com/photo-1512753360425-076135899661?auto=format&fit=crop&w=800&q=80',
-    tags: ['Roma', 'Mar', 'Patrimonio']
+    tags: ['Roma', 'Mar', 'Patrimonio'],
+    population: '135k'
   },
   'Girona': {
     name: 'Girona', province: 'Girona', region: 'Cataluña',
@@ -487,7 +513,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Confluencia del Ter, Onyar, Güell y Galligants.',
     landscape: 'Catedral de Girona y casas del Onyar.',
     image: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=800&q=80',
-    tags: ['Historia', 'Ríos', 'Judío']
+    tags: ['Historia', 'Ríos', 'Judío'],
+    population: '102k'
   },
   'Pontevedra': {
     name: 'Pontevedra', province: 'Pontevedra', region: 'Galicia',
@@ -497,7 +524,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Ría de Pontevedra.',
     landscape: 'Iglesia de la Peregrina y casco antiguo peatonal.',
     image: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=800&q=80',
-    tags: ['Accesible', 'Galicia', 'Peatonal']
+    tags: ['Accesible', 'Galicia', 'Peatonal'],
+    population: '83k'
   },
   'Ourense': {
     name: 'Ourense', province: 'Ourense', region: 'Galicia',
@@ -507,7 +535,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Orillas del Miño.',
     landscape: 'As Burgas y Puente Romano.',
     image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
-    tags: ['Termas', 'Agua', 'Historia']
+    tags: ['Termas', 'Agua', 'Historia'],
+    population: '104k'
   },
   'Lugo': {
     name: 'Lugo', province: 'Lugo', region: 'Galicia',
@@ -517,7 +546,8 @@ export const CIUDADES_PREMIUM = {
     geography: 'Interior de Galicia.',
     landscape: 'Muralla romana Patrimonio de la Humanidad.',
     image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
-    tags: ['Muralla', 'Romana', 'Historia']
+    tags: ['Muralla', 'Romana', 'Historia'],
+    population: '97k'
   },
   'Belmonte': {
     name: 'Belmonte', province: 'Cuenca', region: 'Castilla-La Mancha',
@@ -527,6 +557,7 @@ export const CIUDADES_PREMIUM = {
     geography: 'Serranía Baja de Cuenca.',
     landscape: 'Castillo de Belmonte y casco antiguo medieval.',
     image: 'https://images.unsplash.com/photo-1599423300746-b62533397364?auto=format&fit=crop&w=800&q=80',
-    tags: ['Castillo', 'Poesía', 'Historia']
+    tags: ['Castillo', 'Poesía', 'Historia'],
+    population: '1.9k'
   }
 };

@@ -3,6 +3,7 @@ const multer = require('multer');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs-extra');
+const db = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,12 +15,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Asegurar directorios
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
-const DATA_FILE = path.join(__dirname, 'data', 'places.json');
-
 fs.ensureDirSync(UPLOADS_DIR);
-if (!fs.existsSync(DATA_FILE)) {
-  fs.writeJsonSync(DATA_FILE, []);
-}
+
 
 // Configuración de Multer para subida de imágenes
 const storage = multer.diskStorage({
@@ -89,106 +86,141 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
   });
 });
 
-// Endpoint para obtener lugares compartidos
-app.get('/api/places', async (req, res) => {
+// --- ENDPOINT: MUNICIPIOS ---
+
+// Buscar municipios o listar destacados
+app.get('/api/municipalities', (req, res) => {
   try {
-    const places = await fs.readJson(DATA_FILE);
-    res.json(places);
+    const { search, limit = 50 } = req.query;
+    let query = 'SELECT * FROM municipalities';
+    let params = [];
+
+    if (search) {
+      query += ' WHERE normalized_name LIKE ? OR name LIKE ?';
+      const searchParam = `%${search.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "")}%`;
+      params = [searchParam, searchParam];
+    }
+
+    query += ' ORDER BY population DESC LIMIT ?';
+    params.push(parseInt(limit));
+
+    const rows = db.prepare(query).all(...params);
+    res.json(rows);
   } catch (error) {
-    console.error('Error al leer lugares:', error);
-    res.status(500).json({ error: 'Error al leer los lugares de la base de datos' });
+    res.status(500).json({ error: 'Error al consultar municipios' });
   }
 });
 
-// Endpoint para añadir un nuevo lugar compartido
-app.post('/api/places', async (req, res) => {
+// Obtener detalle de un municipio
+app.get('/api/municipalities/:id', (req, res) => {
+  try {
+    const row = db.prepare('SELECT * FROM municipalities WHERE id = ?').get(req.params.id);
+    if (!row) return res.status(404).json({ error: 'Municipio no encontrado' });
+    res.json(row);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al consultar municipio' });
+  }
+});
+
+// --- ENDPOINT: PLACES (LUGARES COMPARTIDOS) ---
+
+// Obtener lugares compartidos
+app.get('/api/places', (req, res) => {
+  try {
+    const rows = db.prepare('SELECT * FROM places ORDER BY created_at DESC').all();
+    // Parsear el campo accessibility que guardamos como JSON string
+    const parsedRows = rows.map(r => ({
+      ...r,
+      accessibility: JSON.parse(r.accessibility || '{}'),
+      verified: !!r.verified
+    }));
+    res.json(parsedRows);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al leer lugares' });
+  }
+});
+
+// Añadir un nuevo lugar compartido
+app.post('/api/places', (req, res) => {
   try {
     const newPlace = req.body;
-    
-    // VALIDACIÓN ROBUSTA
     const requiredFields = ['id', 'name', 'city', 'image'];
     const missingFields = requiredFields.filter(f => !newPlace[f]);
     
     if (missingFields.length > 0) {
-      return res.status(400).json({ 
-        error: 'Faltan campos obligatorios', 
-        details: missingFields 
-      });
+      return res.status(400).json({ error: 'Faltan campos obligatorios', details: missingFields });
     }
 
-    // Asegurar estructura básica de accesibilidad si no viene
-    if (!newPlace.accessibility) {
-      newPlace.accessibility = { physical: false, visual: false, auditory: false, cognitive: false };
-    }
+    const accessibility = JSON.stringify(newPlace.accessibility || { physical: false, visual: false, auditory: false, cognitive: false });
     
-    const places = await fs.readJson(DATA_FILE);
+    const stmt = db.prepare(`
+      INSERT INTO places (id, name, city, category, description, image, accessibility, verified)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    stmt.run(
+      newPlace.id,
+      newPlace.name,
+      newPlace.city,
+      newPlace.category || 'Otros',
+      newPlace.description || '',
+      newPlace.image,
+      accessibility,
+      0
+    );
     
-    // Evitar duplicados por ID (Case Insensitive)
-    if (places.find(p => p.id.toLowerCase() === newPlace.id.toLowerCase())) {
-      return res.status(400).json({ error: 'El lugar ya existe con este ID' });
-    }
-    
-    places.push({
-      ...newPlace,
-      createdAt: new Date().toISOString(),
-      verified: false // Siempre empieza sin verificar para revisión admin
-    });
-    
-    // Escritura segura (atomic-like using fs-extra writeJson)
-    await fs.writeJson(DATA_FILE, places, { spaces: 2 });
-    
-    console.log(`Nuevo lugar compartido: ${newPlace.name} (${newPlace.city})`);
     res.json({ success: true, place: newPlace });
   } catch (error) {
     console.error('Error al guardar lugar:', error);
+    if (error.code === 'SQLITE_CONSTRAINT') {
+      return res.status(400).json({ error: 'El lugar ya existe con este ID' });
+    }
     res.status(500).json({ error: 'Error interno al procesar la solicitud' });
   }
 });
 
-// Endpoint para actualizar un lugar (Validación Admin)
-app.patch('/api/places/:id', async (req, res) => {
+// Actualizar un lugar
+app.patch('/api/places/:id', (req, res) => {
   try {
     const { id } = req.params;
     const updates = req.body;
     
-    const places = await fs.readJson(DATA_FILE);
-    const placeIndex = places.findIndex(p => p.id === id);
-    
-    if (placeIndex === -1) {
-      return res.status(404).json({ error: 'Lugar no encontrado' });
-    }
-    
     // Solo permitimos ciertos campos para actualizar vía PATCH simple
-    const allowedUpdates = ['verified', 'verifiedStatus', 'category', 'description'];
-    allowedUpdates.forEach(field => {
-      if (updates[field] !== undefined) {
-        places[placeIndex][field] = updates[field];
-      }
-    });
+    const fields = [];
+    const params = [];
+
+    if (updates.verified !== undefined) {
+      fields.push('verified = ?');
+      params.push(updates.verified ? 1 : 0);
+    }
+    if (updates.category) {
+      fields.push('category = ?');
+      params.push(updates.category);
+    }
+    if (updates.description) {
+      fields.push('description = ?');
+      params.push(updates.description);
+    }
+
+    if (fields.length === 0) return res.status(400).json({ error: 'No hay campos para actualizar' });
+
+    params.push(id);
+    const stmt = db.prepare(`UPDATE places SET ${fields.join(', ')} WHERE id = ?`);
+    const result = stmt.run(...params);
+
+    if (result.changes === 0) return res.status(404).json({ error: 'Lugar no encontrado' });
     
-    await fs.writeJson(DATA_FILE, places, { spaces: 2 });
-    
-    console.log(`Lugar actualizado [${id}]:`, updates);
-    res.json({ success: true, place: places[placeIndex] });
+    res.json({ success: true });
   } catch (error) {
-    console.error('Error al actualizar lugar:', error);
-    res.status(500).json({ error: 'Error al actualizar el lugar en el servidor' });
+    res.status(500).json({ error: 'Error al actualizar el lugar' });
   }
 });
 
-// Endpoint para eliminar un lugar (Rechazo Admin)
-app.delete('/api/places/:id', async (req, res) => {
+// Eliminar un lugar
+app.delete('/api/places/:id', (req, res) => {
   try {
-    const { id } = req.params;
-    const places = await fs.readJson(DATA_FILE);
-    const filtered = places.filter(p => p.id !== id);
-    
-    if (places.length === filtered.length) {
-      return res.status(404).json({ error: 'Lugar no encontrado' });
-    }
-    
-    await fs.writeJson(DATA_FILE, filtered, { spaces: 2 });
-    console.log(`Lugar eliminado: ${id}`);
+    const result = db.prepare('DELETE FROM places WHERE id = ?').run(req.params.id);
+    if (result.changes === 0) return res.status(404).json({ error: 'Lugar no encontrado' });
     res.json({ success: true });
   } catch (error) {
     res.status(500).json({ error: 'Error al eliminar el lugar' });

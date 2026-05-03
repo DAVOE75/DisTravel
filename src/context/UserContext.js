@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system';
+const { getInfoAsync, makeDirectoryAsync, copyAsync, documentDirectory } = FileSystem;
 
 const UserContext = createContext();
 
@@ -570,16 +571,23 @@ export const UserProvider = ({ children }) => {
     if (!uri || (!uri.startsWith('file://') && !uri.startsWith('content://'))) return uri;
     
     try {
-      const imgDir = `${FileSystem.documentDirectory}images/`;
-      const dirInfo = await FileSystem.getInfoAsync(imgDir);
-      if (!dirInfo.exists) {
-        await FileSystem.makeDirectoryAsync(imgDir, { intermediates: true });
+      // Verificar si el sistema de archivos está disponible (evita errores en Web)
+      if (!documentDirectory) {
+        console.warn('FileSystem: documentDirectory no disponible. Saltando persistencia local.');
+        return uri;
       }
 
-      const fileExtension = uri.split('.').pop();
+      const imgDir = `${documentDirectory}images/`;
+      const dirInfo = await getInfoAsync(imgDir);
+      
+      if (!dirInfo.exists) {
+        await makeDirectoryAsync(imgDir, { intermediates: true });
+      }
+
+      const fileExtension = uri.split('.').pop() || 'jpg';
       const permanentUri = `${imgDir}${filename}_${Date.now()}.${fileExtension}`;
       
-      await FileSystem.copyAsync({
+      await copyAsync({
         from: uri,
         to: permanentUri
       });

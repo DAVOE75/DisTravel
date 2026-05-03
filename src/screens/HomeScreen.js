@@ -45,6 +45,8 @@ import { calculatePlaceSavings } from '../utils/savings';
 import { typography } from '../theme/typography';
 import MUNICIPIOS_DATA from '../data/municipios.json';
 import { INE_PROVINCES, PROVINCE_TO_REGION } from '../data/provinces';
+import { getFiestaPatronal } from '../data/fiestasPatronales';
+import { getPoblacion } from '../data/poblacion';
 
 const { width } = Dimensions.get('window');
 
@@ -82,6 +84,7 @@ export function HomeScreen({ navigation }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
   const menuAnim = useRef(new Animated.Value(0)).current;
+  const scrollViewRef = useRef(null);
   
   const isAdmin = userData?.isAdmin || userData?.role === 'admin';
   
@@ -253,8 +256,8 @@ export function HomeScreen({ navigation }) {
             </View>
             <Text style={[styles.modalTitle, { color: theme.text }]}>¿Qué es Distravel?</Text>
             <Text style={[styles.modalBody, { color: theme.textSecondary }]}>
-              Distravel es la plataforma líder en turismo accesible. Ayudamos a personas con discapacidad a encontrar destinos, monumentos y rutas validadas por la comunidad y expertos.{"\n\n"}
-              Nuestra misión es que todos puedan viajar con total confianza y seguridad.
+              Distravel es una plataforma diseñada para ayudar a las personas con discapacidad a descubrir que tienen derecho a importantes descuentos y beneficios en entradas utilizando su tarjeta de discapacidad.{"\n\n"}
+              Somos una base de datos de lugares turísticos donde podrás conocer todos los beneficios que te corresponden en cada destino para que viajar sea más accesible y económico por disponer de tu tarjeta de discapacidad.
             </Text>
             <TouchableOpacity 
               style={[styles.modalCloseBtn, { backgroundColor: theme.primary }]}
@@ -273,6 +276,7 @@ export function HomeScreen({ navigation }) {
           { useNativeDriver: true }
         )}
         scrollEventThrottle={16}
+        ref={scrollViewRef}
       >
         {/* Header Layer (Profile, AI, Admin) */}
         <View style={styles.topActionsRow}>
@@ -291,8 +295,11 @@ export function HomeScreen({ navigation }) {
               <Zap color="#FFF" size={20} fill="#FFF" />
             </TouchableOpacity>
             
-            {isAdmin && (
-              <TouchableOpacity onPress={goToAdmin} style={[styles.actionBtn, { backgroundColor: '#EFBF04' }]}>
+            {isAdmin && (userData?.contributions || []).filter(p => !p.verified && p.id !== 'castillo-belmonte' && p.id !== 'castillo-la-mota' && p.id !== 'castillo-santa-barbara').length > 0 && (
+              <TouchableOpacity 
+                onPress={() => navigation.navigate('AdminValidations')} 
+                style={[styles.actionBtn, { backgroundColor: '#EFBF04' }]}
+              >
                 <ShieldCheck color="#0A192F" size={20} />
               </TouchableOpacity>
             )}
@@ -423,9 +430,20 @@ export function HomeScreen({ navigation }) {
               placeholder="Buscar ciudades..."
               placeholderTextColor={theme.textSecondary}
               value={searchQuery}
+              onFocus={() => {
+                // Scroll specifically to the search bar section
+                setTimeout(() => {
+                  scrollViewRef.current?.scrollTo({ y: 600, animated: true });
+                }, 100);
+              }}
               onChangeText={(text) => {
                 setSearchQuery(text);
-                setShowSearchResults(text.length > 1);
+                const hasResults = text.length > 1;
+                setShowSearchResults(hasResults);
+                if (hasResults) {
+                  // Scroll to position the search bar at the very top
+                  scrollViewRef.current?.scrollTo({ y: 620, animated: true });
+                }
               }}
             />
             {searchQuery.length > 0 && (
@@ -459,7 +477,7 @@ export function HomeScreen({ navigation }) {
                   
                   return 0;
                 })
-                .slice(0, 10)
+                .slice(0, 5)
                 .map((item, idx, arr) => (
                   <TouchableOpacity 
                     key={idx} 
@@ -478,9 +496,30 @@ export function HomeScreen({ navigation }) {
                     </View>
                     <View style={{ marginLeft: 12, flex: 1 }}>
                       <Text style={[styles.itemName, { color: theme.text }]}>{item.name}</Text>
-                      <Text style={[styles.itemCity, { color: theme.textSecondary }]}>
-                        {item.province}, {item.region}
-                      </Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
+                        <Text style={[styles.itemCity, { color: theme.textSecondary }]}>
+                          {item.province}, {item.region}
+                        </Text>
+                      </View>
+                      {/* FIESTA & POBLACION INFO */}
+                      {(() => {
+                        const fiesta = getFiestaPatronal(item.name);
+                        const habitantes = getPoblacion(item.name);
+                        return (
+                          <View style={{ flexDirection: 'row', gap: 6, marginTop: 4 }}>
+                            <View style={styles.searchFiestaBadge}>
+                              <Text style={styles.searchFiestaText}>
+                                🎊 {fiesta.fiesta}
+                              </Text>
+                            </View>
+                            <View style={[styles.searchFiestaBadge, { backgroundColor: '#3498DB15' }]}>
+                              <Text style={[styles.searchFiestaText, { color: '#3498DB' }]}>
+                                👥 {habitantes}
+                              </Text>
+                            </View>
+                          </View>
+                        );
+                      })()}
                     </View>
                     <ChevronRight color={theme.textSecondary} size={16} />
                   </TouchableOpacity>
@@ -795,7 +834,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 55,
     paddingBottom: 15,
   },
   topActionsLeft: {
@@ -1022,6 +1061,33 @@ const styles = StyleSheet.create({
   },
   itemName: { fontWeight: '700', fontSize: 15 },
   itemCity: { fontSize: 12, fontWeight: '500' },
+  searchFiestaBadge: {
+    marginTop: 4,
+    backgroundColor: 'rgba(241, 196, 15, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  searchFiestaText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#D4AC0D',
+  },
+  searchResults: {
+    position: 'absolute',
+    top: 60,
+    left: 0,
+    right: 0,
+    borderRadius: 16,
+    borderWidth: 1,
+    zIndex: 5000,
+    overflow: 'hidden',
+    elevation: 10,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.2,
+    shadowRadius: 15,
+  },
   section: { marginBottom: 35, marginTop: 25 },
   sectionHeader: {
     flexDirection: 'row',

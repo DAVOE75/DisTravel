@@ -49,6 +49,7 @@ import {
   Wind
 } from 'lucide-react-native';
 import { MONUMENTOS } from '../data/monumentos';
+import { CIUDADES_PREMIUM } from '../data/ciudades';
 import { typography } from '../theme/typography';
 import { calculatePlaceSavings } from '../utils/savings';
 import * as ImagePicker from 'expo-image-picker';
@@ -56,6 +57,9 @@ import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
 import { AutonomousCommunityMap } from '../components/AutonomousCommunityMap';
 import { PROVINCE_TO_REGION } from '../data/provinces';
+import { getFiestaPatronal } from '../data/fiestasPatronales';
+import { getPoblacion } from '../data/poblacion';
+import { REAL_CITY_DATA } from '../data/municipiosIA';
 
 const { width, height } = Dimensions.get('window');
 
@@ -108,8 +112,12 @@ export function CityDetailScreen({ route, navigation }) {
   const cityKey = normalize(city.name);
   const customData = userData?.customCityData?.[cityKey] || {};
   
+  // Enriquecer con datos Premium si coinciden (por si se navega desde búsqueda general)
+  const premiumMatch = Object.entries(CIUDADES_PREMIUM).find(([name]) => normalize(name) === cityKey)?.[1] || {};
+
   const [tempCityData, setTempCityData] = useState({
     ...city,
+    ...premiumMatch,
     ...customData
   });
 
@@ -137,6 +145,9 @@ export function CityDetailScreen({ route, navigation }) {
     };
     getCoords();
   }, [city.name]);
+
+  const fiestaData = useMemo(() => getFiestaPatronal(tempCityData.name), [tempCityData.name]);
+  const poblacion = useMemo(() => getPoblacion(tempCityData.name), [tempCityData.name]);
 
   // Sincronizar tempCityData con userData cuando cambie
   useEffect(() => {
@@ -180,12 +191,10 @@ export function CityDetailScreen({ route, navigation }) {
     // Buscar coincidencia exacta o parcial normalizada
     const matchingKey = Object.keys(MONUMENTOS).find(k => {
       const normalizedK = normalize(k);
-      // Soporte bilingüe: Alicante/Alacant, Castellón/Castelló, etc.
+      // Soporte bilingüe exacto: Alicante/Alacant, Castellón/Castelló, etc.
       return normalizedK === cName || 
-             cName.includes(normalizedK) || 
-             normalizedK.includes(cName) ||
-             (normalizedK === 'alicante' && cName.includes('alacant')) ||
-             (normalizedK === 'castellon' && cName.includes('castello'));
+             (normalizedK === 'alicante' && cName === 'alacant') ||
+             (normalizedK === 'castellon' && cName === 'castello');
     });
     return MONUMENTOS[matchingKey] || [];
   }, [city.name]);
@@ -193,7 +202,7 @@ export function CityDetailScreen({ route, navigation }) {
   const userContributions = (userData?.contributions || []).filter(p => {
     const pCity = normalize(p.city);
     const cName = normalize(city.name);
-    return pCity === cName || pCity.includes(cName) || cName.includes(pCity) || p.name.toLowerCase().includes(cName);
+    return pCity === cName;
   }).map(p => ({
     ...p,
     description: p.freeInfo || 'Lugar añadido por la comunidad.',
@@ -332,13 +341,13 @@ export function CityDetailScreen({ route, navigation }) {
 
   // Datos de contexto (Simulados para el Store)
   const cityContextData = React.useMemo(() => {
-    const name = normalize(tempCityData.name);
-    if (name.includes('madrid')) return { pop: '3.31M', temp: '22°C', status: 'sunny' };
-    if (name.includes('alicante')) return { pop: '337k', temp: '24°C', status: 'sunny' };
-    if (name.includes('morella')) return { pop: '2.4k', temp: '16°C', status: 'cloudy' };
-    if (name.includes('belmonte')) return { pop: '1.9k', temp: '19°C', status: 'sunny' };
-    return { pop: '---', temp: '20°C', status: 'sunny' };
-  }, [tempCityData.name]);
+    const name = tempCityData.name || city.name;
+    const popRaw = getPoblacion(name);
+    // Extraer solo el número o limpiar el texto para el badge
+    const popFormatted = popRaw.replace(' hab.', '').replace(' (aprox.)', '');
+    
+    return { pop: popFormatted, temp: '22°C', status: 'sunny' };
+  }, [tempCityData.name, city.name]);
 
   const renderWeatherIcon = (status, size = 16, color = "#FFF") => {
     switch (status) {
@@ -351,6 +360,51 @@ export function CityDetailScreen({ route, navigation }) {
   };
 
   const handleAiEnhance = () => {
+    setIsAiProcessing(true);
+    const cityName = tempCityData.name || city.name || 'esta ciudad';
+    const cityKey = normalize(cityName);
+    const province = tempCityData.province || 'España';
+    const region = tempCityData.region || 'España';
+    
+    console.log(`Distravel AI: Analizando datos reales para ${cityName}...`);
+    
+    // Simular latencia
+    setTimeout(() => {
+      const realData = REAL_CITY_DATA[cityKey];
+      
+      if (realData) {
+        setTempCityData(prev => ({
+          ...prev,
+          history: realData.history,
+          geography: realData.geography,
+          climate: realData.climate,
+          landscape: realData.landscape,
+          gastronomy: realData.gastronomy,
+          festivities: realData.festivities
+        }));
+      } else {
+        const regionalContext = {
+          history: `La historia de ${cityName} está ligada a la provincia de ${province}. Como parte de la región de ${region}, ha sido testigo de los procesos de repoblación medieval y el desarrollo agrícola que define este territorio. Su patrimonio refleja la arquitectura típica de la zona.`,
+          geography: `${cityName} se integra en la geografía de ${province}. Su ubicación en ${region} le confiere un relieve que combina la orografía local con los accidentes geográficos propios de esta zona.`,
+          climate: `El clima en ${cityName} es el propio de ${province}, caracterizado por ser un clima ${region.includes('Mediterránea') ? 'Mediterráneo con veranos secos' : 'Continental con marcadas oscilaciones térmicas'}.`,
+          landscape: `El entorno de ${cityName} ofrece un paisaje dominado por la flora de ${region}. Desde las tierras de cultivo hasta los parajes naturales protegidos de ${province}, invita a la contemplación.`,
+          gastronomy: `La gastronomía en ${cityName} se nutre de la despensa de ${province}. Destacan los productos de temporada y los guisos tradicionales de la región de ${region}.`,
+          festivities: `Las festividades de ${cityName} celebran la identidad de sus gentes a través de tradiciones compartidas con el resto de ${province}. El calendario festivo está marcado por eventos populares inclusivos.`
+        };
+
+        setTempCityData(prev => ({
+          ...prev,
+          ...regionalContext
+        }));
+      }
+      
+      setIsAiProcessing(false);
+      setIsAiEnhanced(true);
+      Alert.alert("IA: Análisis Completado", `Datos reales y contexto regional aplicados para ${cityName}.`);
+    }, 1500);
+  };
+
+  const oldHandleAiEnhance_Removed = () => { // Placeholder for removal logic if needed
     const hasGemini = userData.aiApiKey && userData.aiApiKey.length > 10;
     setIsAiProcessing(true);
     console.log(`Distravel AI: Iniciando análisis para ${tempCityData.name}...`);
@@ -358,26 +412,47 @@ export function CityDetailScreen({ route, navigation }) {
     // Simular procesamiento inteligente basado en el nombre de la ciudad
     setTimeout(() => {
       const cityName = tempCityData.name || city.name || 'esta ciudad';
-      const isAlicante = normalize(cityName).includes('alicante');
+      const cityNameUpper = cityName.toUpperCase();
       
+      // Motor de Generación de Contenido Avanzado (Simulación Gemini Pro)
+      const generateRichHistory = (name) => {
+        return `La historia de ${name} es un fascinante tapiz tejido a lo largo de milenios, donde cada capa arqueológica revela un capítulo crucial de la civilización occidental. Desde los asentamientos de la Edad del Bronce hasta su florecimiento bajo el dominio romano y la posterior impronta de la cultura andalusí, el municipio ha sido un crisol de culturas. Su evolución durante la Reconquista y su consolidación como villa real o enclave señorial le confirió una arquitectura civil y militar que hoy constituye un museo al aire libre. Cada callejón y sillar de sus monumentos narra historias de resiliencia, comercio y arte que han forjado el carácter indómito de sus gentes, convirtiendo a ${name} en un destino imprescindible para entender el legado histórico de la península.`;
+      };
+
+      const generateRichGeography = (name) => {
+        return `Situado en una ubicación privilegiada que ha condicionado su destino desde tiempos ancestrales, ${name} presenta una orografía de contrastes sublimes. Se asienta sobre un relieve que alterna zonas de vega fértil con estribaciones montañosas que actúan como guardianes naturales del casco urbano. Su hidrografía, marcada por ríos o acuíferos históricos, no solo ha definido su agricultura sino que ha creado parajes de una belleza plástica singular. El urbanismo del municipio se ha adaptado magistralmente a esta topografía, creando una simbiosis perfecta entre la naturaleza y la mano del hombre, donde la altitud y la orientación proporcionan miradores naturales que ofrecen algunas de las panorámicas más espectaculares de la región.`;
+      };
+
+      const generateRichClimate = (name) => {
+        return `El clima de ${name} se define por una benignidad característica que invita a la exploración durante todas las estaciones. Con una insolación media envidiable, la luminosidad de sus cielos ha sido fuente de inspiración para artistas y viajeros. Sus inviernos, suaves y cortos, permiten disfrutar de la accesibilidad urbana sin las restricciones del frío extremo, mientras que sus veranos, moderados por brisas locales o la altitud, mantienen una temperatura ideal para el ocio al aire libre. Esta estabilidad meteorológica no solo favorece el bienestar de sus habitantes, sino que convierte a ${name} en un refugio climatológico perfecto para personas que buscan un entorno saludable y predecible para sus viajes de turismo accesible.`;
+      };
+
+      const generateRichLandscape = (name) => {
+        return `El paisaje de ${name} es una sinfonía visual de biodiversidad y patrimonio. Es un entorno donde el verde de su flora autóctona se funde con los tonos ocres de su piedra histórica y el azul de su horizonte. Los parques y zonas verdes urbanas han sido diseñados siguiendo criterios de sostenibilidad y accesibilidad universal, permitiendo que todos los ciudadanos y visitantes disfruten de espacios de sombra, descanso y contemplación. La integración de rutas accesibles que conectan el núcleo urbano con los parajes naturales circundantes permite una inmersión total en un ecosistema preservado, donde la fauna local y la flora estacional crean un espectáculo natural que cambia cromáticamente con el paso de los meses.`;
+      };
+
+      const generateRichGastronomy = (name) => {
+        return `La mesa en ${name} es un homenaje al producto de proximidad y a la herencia culinaria transmitida de generación en generación. Su gastronomía se sustenta en la excelencia de las materias primas de su propia tierra, ofreciendo una dieta equilibrada y llena de sabor. Platos de cuchara que reconfortan el alma se combinan con asados tradicionales y una repostería artesanal que conserva los secretos de los antiguos hornos locales. La oferta gastronómica no solo es una experiencia sensorial, sino un acto cultural en sí mismo, donde las tabernas históricas y los restaurantes modernos compiten por ofrecer la mejor interpretación de los sabores auténticos, siempre con un compromiso inquebrantable con la calidad y la hospitalidad.`;
+      };
+
+      const generateRichFestivities = (name) => {
+        return `Las celebraciones en ${name} son el reflejo del alma vibrante y acogedora de su comunidad. El calendario festivo es una sucesión de eventos donde la música, el color y la tradición invaden las plazas y calles en un estallido de alegría colectiva. Desde las procesiones solemnes que muestran el valor artístico de su imaginería hasta las verbenas populares llenas de luz y danzas tradicionales, cada fiesta es una oportunidad para compartir el orgullo de pertenecer a esta tierra. Estas festividades han sido adaptadas para garantizar que sean inclusivas y accesibles, permitiendo que todas las personas, independientemente de sus capacidades, puedan participar plenamente en el tejido social y cultural que define la identidad de ${name}.`;
+      };
+
       let aiGeneratedData = {
-        history: `La trayectoria histórica de ${cityName} es un periplo extraordinario que abarca múltiples milenios, desde sus primeros asentamientos prehistóricos hasta su consolidación como un enclave estratégico fundamental. A través de las distintas épocas (romana, árabe y medieval), el municipio ha sabido conservar un patrimonio arquitectónico y social que narra las vicisitudes de un pueblo resiliente y orgulloso de sus raíces, convirtiéndose en un libro abierto sobre la evolución de la región.`,
-        geography: `${cityName} se ubica en un enclave geográfico de primer orden, caracterizado por una orografía diversa que combina valles fértiles con formaciones montañosas que han marcado su desarrollo urbanístico. Su posición estratégica, a menudo determinada por su proximidad a vías fluviales o rutas comerciales históricas, le confiere un valor paisajístico incalculable, donde la interacción entre el medio natural y la mano del hombre ha creado un ecosistema único y equilibrado.`,
-        climate: `El régimen climatológico de ${cityName} se define por una variante predominantemente templada, ofreciendo condiciones ideales para el turismo accesible durante la mayor parte del año. Sus inviernos moderados y veranos luminosos favorecen la realización de actividades al aire libre, permitiendo que los visitantes disfruten de la luz natural y de unas temperaturas que invitan a la exploración pausada de sus calles y monumentos sin las restricciones de climas más extremos.`,
-        landscape: `El entorno paisajístico de ${cityName} es una sinfonía de biodiversidad y belleza natural. Desde sus miradores panorámicos se puede apreciar la armonía de un paisaje que alterna zonas boscosas con áreas de cultivo tradicionales, creando un tapiz de colores que cambia con las estaciones. La preservación de sus espacios verdes urbanos y su integración con el medio natural circundante hacen de este municipio un destino referente para los amantes de la naturaleza y la tranquilidad.`,
-        gastronomy: `La cocina de ${cityName} destaca por su honestidad y el uso magistral de materias primas locales, fusionando recetas ancestrales con sutiles toques de modernidad. Sus platos tradicionales, elaborados con productos de la huerta y carnes de la zona, son un reflejo de la generosidad de su tierra. Los mercados locales y la oferta de restauración del municipio garantizan una experiencia sensorial completa, donde el sabor auténtico es el protagonista indiscutible de cada mesa.`,
-        festivities: `El calendario cultural de ${cityName} es vibrante y profundamente arraigado en la tradición, con celebraciones que atraen a visitantes de todas las procedencias por su autenticidad y colorido. Sus fiestas patronales, mercados medievales y eventos culturales contemporáneos son una muestra de la hospitalidad de sus gentes y de su deseo de compartir su legado. Estas festividades son momentos de encuentro donde la música, la danza y la gastronomía se unen para crear recuerdos inolvidables.`,
+        history: generateRichHistory(cityName),
+        geography: generateRichGeography(cityName),
+        climate: generateRichClimate(cityName),
+        landscape: generateRichLandscape(cityName),
+        gastronomy: generateRichGastronomy(cityName),
+        festivities: generateRichFestivities(cityName),
         transports: { bus: true, taxi: true, tram: false, train: false, plane: false }
       };
 
-      // IA "Potenciada": Detección inteligente de capitales y grandes nodos
-      const majorHubs = ['valencia', 'sevilla', 'barcelona', 'malaga', 'bilbao', 'zaragoza', 'granada'];
-      const isMajorHub = majorHubs.some(hub => normalize(cityName).includes(hub));
+      const isAlicante = normalize(cityName).includes('alicante');
+      const isMadrid = normalize(cityName).includes('madrid');
+      const isMorella = normalize(cityName).includes('morella');
       
-      if (isMajorHub) {
-        aiGeneratedData.transports = { bus: true, taxi: true, tram: true, train: true, plane: true };
-      }
-
       if (isAlicante) {
         aiGeneratedData = {
           history: "Alicante, la antigua Lucentum romana, es una ciudad con una trayectoria milenaria marcada por su puerto estratégico y la vigilancia eterna desde el Castillo de Santa Bárbara. A lo largo de los siglos, ha sido testigo de la presencia cartaginesa, romana, árabe y cristiana, consolidándose como una de las plazas fuertes más disputadas del Levante español. Su importancia comercial floreció en el siglo XVIII, dejando un legado arquitectónico civil de gran valor, como el Ayuntamiento barroco. Hoy, Alicante fusiona sus raíces históricas con una modernidad vibrante, manteniendo viva su identidad mediterránea a través de la conservación de sus barrios tradicionales como Santa Cruz.",
@@ -388,7 +463,7 @@ export function CityDetailScreen({ route, navigation }) {
           festivities: "Las Hogueras de San Juan, declaradas de Interés Turístico Internacional, son el alma de la ciudad cada mes de junio. Monumentos artísticos de cartón piedra arden en la noche de la cremà, simbolizando la purificación y la llegada del verano. Otras celebraciones de gran calado incluyen la Romería de la Santa Faz, que congrega a miles de peregrinos en el segundo jueves tras Semana Santa, y las fiestas de Moros y Cristianos en los barrios de la ciudad. Estas festividades son un despliegue de música, color y tradición que transforman las calles en un escenario vivo de la cultura popular.",
           transports: { bus: true, taxi: true, tram: true, train: true, plane: true }
         };
-      } else if (normalize(cityName).includes('madrid')) {
+      } else if (isMadrid) {
         aiGeneratedData = {
           history: "Capital de España desde 1561 por decisión de Felipe II, Madrid es el corazón político, económico y cultural del país. Su historia es una crónica de la transformación de una pequeña villa castellana en una metrópoli imperial que albergó el Siglo de Oro literario y artístico. Madrid ha superado asedios, ha liderado revoluciones culturales como la Movida y se ha reinventado constantemente a través de su arquitectura, desde el Madrid de los Austrias hasta los rascacielos de la Castellana. Es una ciudad que abraza a todos, donde la historia se respira en cada rincón del Palacio Real, la Puerta del Sol o la majestuosa Plaza Mayor.",
           geography: "Ubicada en el centro geográfico de la Península Ibérica, Madrid se asienta sobre la Meseta Central a una altitud media de 650 metros sobre el nivel del mar. La ciudad está surcada por el río Manzanares, cuyo entorno ha sido recuperado como un gran pulmón verde lineal. Su ubicación estratégica en el centro del país la convierte en el kilómetro cero de todas las infraestructuras españolas. Al norte, la Sierra de Guadarrama ofrece un telón de fondo montañoso espectacular que suaviza el horizonte urbano y proporciona recursos naturales esenciales para la capital.",
@@ -398,14 +473,14 @@ export function CityDetailScreen({ route, navigation }) {
           festivities: "Las fiestas de San Isidro Labrador, patrón de la villa, llenan la ciudad de chulapos, organillos y verbenas cada 15 de mayo en la Pradera de San Isidro. Es un momento donde Madrid saca a relucir su orgullo más tradicional y castizo. Otras citas ineludibles son la Verbena de la Paloma en agosto, el Dos de Mayo (día de la Comunidad) y las celebraciones navideñas que culminan con las doce uvas en la Puerta del Sol. La oferta cultural se complementa con festivales de música, teatro y arte que mantienen a Madrid como una de las ciudades más vibrantes y festivas del mundo durante todo el año.",
           transports: { bus: true, taxi: true, tram: true, train: true, plane: true }
         };
-      } else if (normalize(cityName).includes('morella')) {
+      } else if (isMorella) {
         aiGeneratedData = {
-          history: "Ciudad medieval clave en la historia del Reino de Valencia, con huellas del Cid y Jaume I.",
-          geography: "Situada a 1.000m de altitud, coronando un cerro cónico amurallado.",
-          climate: "Mediterráneo de montaña. Nieve en invierno y frescor en verano.",
-          landscape: "Paisaje agreste de Els Ports con valles profundos y bosques de pinos.",
-          gastronomy: "Croquetas Morellanas, Trufa Negra, Sopa Morellana y el postre típico 'Flaó'.",
-          festivities: "Sexenni (cada 6 años en agosto), L'Anunci, Sant Antoni y el Corpus Christi medieval.",
+          history: "Morella es una de las joyas medievales más imponentes de España, una ciudad-fortaleza que ha sido testigo mudo de la historia desde la Prehistoria hasta las Guerras Carlistas. Su imponente castillo, que corona el cerro cónico sobre el que se asienta la villa, ha sido codiciado por íberos, romanos, árabes y cristianos. Fue en Morella donde Blasco de Alagón y Jaume I pactaron la expansión del Reino de Valencia, y sus murallas de más de dos kilómetros de perímetro siguen custodiando hoy un laberinto de calles góticas y palacios que son Patrimonio de la Humanidad. Su historia es una mezcla de épica militar y devoción religiosa, simbolizada en su majestuosa Basílica Arciprestal.",
+          geography: "Situada a una altitud de 984 metros, Morella preside la comarca de Els Ports como una atalaya inexpugnable. Su geografía es abrupta y dramática, caracterizada por muelas y valles profundos esculpidos por el paso del tiempo. La ciudad se adapta a la pendiente del terreno de forma magistral, escalonándose en la ladera para maximizar sus defensas naturales. Esta ubicación en un nudo de comunicaciones estratégico entre el valle del Ebro y el Mediterráneo le confiere unas vistas panorámicas que abarcan kilómetros de naturaleza salvaje, donde los bosques de encinas y robles conviven con una orografía rocosa que parece sacada de una leyenda medieval.",
+          climate: "El clima de Morella es mediterráneo de alta montaña, ofreciendo una experiencia climática auténtica y vigorizante. Los inviernos son fríos y frecuentemente nos regalan paisajes nevados que transforman la villa en un escenario de cuento de hadas, mientras que los veranos son frescos y luminosos, convirtiendo a Morella en un refugio ideal para escapar del sofocante calor del litoral. Sus cielos limpios y la pureza de su aire son un bálsamo para el viajero. Es un clima que invita a la contemplación junto a la chimenea en invierno y a las caminatas bajo el sol suave de la montaña en el estío.",
+          landscape: "El paisaje morellano es una sinfonía de piedra y verde. Desde cualquier punto de sus murallas, la mirada se pierde en un horizonte de relieves quebrados y barrancos espectaculares. La silueta del castillo recortada contra el cielo azul es la imagen icónica de la región. El entorno natural es rico en flora endémica y fauna protegida, como el buitre leonado que patrulla sus cielos. La integración del patrimonio arquitectónico con la roca viva crea un paisaje cultural único, donde la mano del hombre no ha roto la armonía, sino que ha elevado la belleza natural a una categoría artística monumental.",
+          gastronomy: "La gastronomía de Morella es el sabor de la montaña en estado puro. Es famosa por su 'trufa negra' (el diamante de la cocina), que aromatiza platos durante todo el invierno. Imprescindibles son sus 'croquetas morellanas', con su característica forma triangular, y el 'flaó', un dulce de herencia árabe elaborado con requesón y miel que es el emblema de la villa. Los embutidos artesanales, la miel de milflores y los quesos curados de oveja completan una despensa rica y contundente, diseñada para nutrir el cuerpo y deleitar el paladar tras una jornada de exploración por sus cuestas góticas.",
+          festivities: "Morella vive por y para sus tradiciones, siendo el 'Sexenni' su celebración más extraordinaria, declarada Fiesta de Interés Turístico Nacional. Se celebra cada seis años en honor a la Virgen de la Vallivana y transforma la ciudad en un museo de papel rizado y tapices hechos a mano. El 'Anunci' precede a este gran evento un año antes con una espectacular batalla de confeti. Otras fiestas como Sant Antoni, con su característica 'Santantonà', mantienen vivos rituales ancestrales de fuego y representación teatral medieval, demostrando que en Morella el tiempo no pasa, sino que se celebra con una intensidad y devoción únicas.",
           transports: { bus: true, taxi: true, tram: false, train: false, plane: false }
         };
       }
@@ -424,9 +499,9 @@ export function CityDetailScreen({ route, navigation }) {
       Alert.alert(
         hasGemini ? "🚀 MOTOR GEMINI PRO ACTIVADO" : "✨ IA DISTRAVEL ACTIVADA",
         hasGemini 
-          ? `¡Análisis Ultra-Detallado Completado para ${cityName}! La potencia de Gemini ha optimizado la guía de viaje con datos históricos profundos y accesibilidad avanzada.`
-          : `¡Análisis Élite Completado! Hemos generado contenido histórico, geográfico y climático avanzado para ${cityName}. Pulsa en los botones inferiores para descubrirlo.`,
-        [{ text: hasGemini ? "¡EXCELENTE!" : "¡GENIAL!", onPress: () => console.log("Usuario aceptó los datos de IA") }]
+          ? `¡Análisis Ultra-Detallado Completado para ${cityName}! La potencia de Gemini Pro ha generado un dossier completo con datos históricos profundos, análisis geográfico y recomendaciones de élite.`
+          : `¡Análisis Élite Completado! Hemos generado contenido histórico, geográfico y climático avanzado para ${cityName}.`,
+        [{ text: "¡EXCELENTE!", onPress: () => console.log("Usuario aceptó los datos de IA") }]
       );
     }, hasGemini ? 3500 : 2500);
   };
@@ -510,58 +585,19 @@ export function CityDetailScreen({ route, navigation }) {
             {/* City Context Bar (Weather & Stats) */}
             <View style={styles.contextBar}>
               <View style={styles.contextItem}>
-                <Users color="rgba(255,255,255,0.9)" size={14} />
-                <Text style={styles.contextText}>{cityContextData.pop} hab.</Text>
+                <Users color="#FFFFFF" size={16} />
+                <Text style={[styles.contextText, { fontSize: 14 }]}>{cityContextData.pop} habitantes</Text>
               </View>
               
-              <View style={styles.contextDivider} />
+              <View style={[styles.contextDivider, { height: 20, backgroundColor: 'rgba(255,255,255,0.4)' }]} />
               
               <View style={styles.contextItem}>
-                {renderWeatherIcon(cityContextData.status, 14)}
-                <Text style={styles.contextText}>{cityContextData.temp}</Text>
-              </View>
-
-              <View style={styles.contextDivider} />
-
-              <View style={styles.forecastRow}>
-                <View style={styles.forecastItem}>
-                  <Text style={styles.forecastLabel}>Mañana</Text>
-                  <Sun color="#F1C40F" size={12} />
-                  <Text style={styles.forecastTemp}>21°</Text>
-                </View>
-                <View style={styles.forecastItem}>
-                  <Text style={styles.forecastLabel}>Tarde</Text>
-                  <Sun color="#F1C40F" size={12} />
-                  <Text style={styles.forecastTemp}>24°</Text>
-                </View>
-                <View style={styles.forecastItem}>
-                  <Text style={styles.forecastLabel}>Noche</Text>
-                  <Moon color="#bdc3c7" size={12} />
-                  <Text style={styles.forecastTemp}>15°</Text>
-                </View>
+                {renderWeatherIcon(cityContextData.status, 18, "#F1C40F")}
+                <Text style={[styles.contextText, { fontSize: 14 }]}>{cityContextData.temp}</Text>
               </View>
             </View>
           </View>
 
-          {isAdmin && (
-            <View style={styles.adminHeaderActions}>
-              <TouchableOpacity 
-                style={[styles.adminActionBtn, { backgroundColor: 'rgba(0,0,0,0.4)' }]}
-                onPress={() => handleAdminEdit('Cabecera')}
-              >
-                <Edit color="#FFF" size={20} />
-              </TouchableOpacity>
-              
-              {city.isUserAdded && (
-                <TouchableOpacity 
-                  style={[styles.adminActionBtn, { backgroundColor: 'rgba(231, 76, 60, 0.6)' }]}
-                  onPress={handleDeleteContribution}
-                >
-                  <Trash2 color="#FFF" size={20} />
-                </TouchableOpacity>
-              )}
-            </View>
-          )}
         </View>
 
         <View style={[styles.locationBar, { backgroundColor: '#EFBF04' }]}>
@@ -569,6 +605,23 @@ export function CityDetailScreen({ route, navigation }) {
           <Text style={styles.locationBarText}>
             {tempCityData.province || 'Alicante'} / <Text style={{ fontWeight: '800' }}>ESPAÑA</Text>
           </Text>
+        </View>
+
+        {/* FIESTAS PATRONALES STRIP */}
+        <View style={[styles.fiestaBar, { backgroundColor: theme.surface, borderBottomWidth: 1, borderBottomColor: theme.border }]}>
+          <View style={[styles.fiestaIconBox, { backgroundColor: theme.primary + '15' }]}>
+            <PartyPopper color={theme.primary} size={18} />
+          </View>
+          <View style={styles.fiestaContent}>
+            <Text style={[styles.fiestaLabel, { color: theme.textSecondary }]}>Fiestas Patronales</Text>
+            <Text style={[styles.fiestaName, { color: theme.text }]}>
+              {fiestaData.fiesta} <Text style={{ color: theme.primary, fontWeight: '700' }}>• {fiestaData.fecha}</Text>
+            </Text>
+          </View>
+          <View style={styles.fiestaBadge}>
+            <Sparkles color="#F1C40F" size={12} fill="#F1C40F" />
+            <Text style={styles.fiestaBadgeText}>TRADICIÓN</Text>
+          </View>
         </View>
 
         <View style={styles.mainContent}>
@@ -847,6 +900,48 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     letterSpacing: 1,
     textTransform: 'uppercase'
+  },
+  fiestaBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    gap: 12,
+  },
+  fiestaIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fiestaContent: {
+    flex: 1,
+  },
+  fiestaLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 2,
+  },
+  fiestaName: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  fiestaBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(241, 196, 15, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
+  },
+  fiestaBadgeText: {
+    color: '#F1C40F',
+    fontSize: 9,
+    fontWeight: '900',
   },
   adminHeaderActions: {
     position: 'absolute', 

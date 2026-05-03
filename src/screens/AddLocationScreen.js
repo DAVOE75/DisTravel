@@ -73,6 +73,11 @@ export function AddLocationScreen({ route, navigation }) {
     afternoonClose: '20:00',
     closedHolidays: true,
     image: null,
+    schedules: [
+      { id: '1', days: 'De miércoles a domingo', hours: 'De 11.00 h a 19.00 h' }
+    ],
+    isLinkedEntrance: false,
+    linkedEntranceName: '',
   });
 
   const [accessibilityFeatures, setAccessibilityFeatures] = useState({
@@ -713,7 +718,7 @@ export function AddLocationScreen({ route, navigation }) {
       setFormData(prev => ({
         ...prev,
         ...aiData,
-        city: aiData.city || prev.city,
+        city: defaultCity || aiData.city || prev.city, // Priorizar defaultCity si existe
         name: aiData.name || prev.name,
         image: aiData.image // Asegurar que la imagen se inyecta siempre
       }));
@@ -955,15 +960,25 @@ export function AddLocationScreen({ route, navigation }) {
               </TouchableOpacity>
             </View>
 
-            <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 10 }]}>
-              <MapPin color={theme.primary} size={20} />
+            <View style={[
+              styles.inputContainer, 
+              { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 10 },
+              defaultCity && { opacity: 0.7, backgroundColor: theme.background }
+            ]}>
+              <MapPin color={defaultCity ? theme.textSecondary : theme.primary} size={20} />
               <TextInput
-                style={[styles.input, { color: theme.text }]}
+                style={[styles.input, { color: defaultCity ? theme.textSecondary : theme.text }]}
                 placeholder="Ciudad"
                 placeholderTextColor={theme.textSecondary}
                 value={formData.city}
                 onChangeText={(text) => setFormData(prev => ({...prev, city: text}))}
+                editable={!defaultCity}
               />
+              {defaultCity && (
+                <View style={{ backgroundColor: theme.primary, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4, marginRight: 5 }}>
+                  <Text style={{ color: '#FFF', fontSize: 10, fontWeight: '800' }}>FIJO</Text>
+                </View>
+              )}
             </View>
 
             <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 10, height: 100, alignItems: 'flex-start', paddingTop: 12 }]}>
@@ -1131,66 +1146,67 @@ export function AddLocationScreen({ route, navigation }) {
             <Text style={[styles.sectionTitle, { color: theme.text }]}>Horarios de Visita</Text>
           </View>
           
-          <View style={styles.daysRow}>
-            {DAYS.map(day => (
-              <TouchableOpacity 
-                key={day}
-                onPress={() => toggleDay(day)}
-                style={[styles.dayCircle, { backgroundColor: openingDays[day] ? theme.primary : theme.surface, borderColor: theme.border }]}
-              >
-                <Text style={[styles.dayText, { color: openingDays[day] ? '#FFF' : theme.text }]}>{day}</Text>
-              </TouchableOpacity>
+          <View style={{ gap: 15, marginTop: 5 }}>
+            {(formData.schedules || []).map((sched, idx) => (
+              <View key={sched.id} style={[styles.dynamicScheduleCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                <View style={styles.scheduleRowTop}>
+                  <TextInput 
+                    style={[styles.scheduleInputLabel, { color: theme.text }]}
+                    placeholder="Días (Ej: Lunes y Martes)"
+                    placeholderTextColor={theme.textSecondary}
+                    value={sched.days}
+                    onChangeText={(val) => {
+                      const newScheds = [...formData.schedules];
+                      newScheds[idx].days = val;
+                      setFormData({...formData, schedules: newScheds});
+                    }}
+                  />
+                  {idx > 0 && (
+                    <TouchableOpacity onPress={() => {
+                      const newScheds = formData.schedules.filter((_, i) => i !== idx);
+                      setFormData({...formData, schedules: newScheds});
+                    }}>
+                      <Trash2 color="#E74C3C" size={18} />
+                    </TouchableOpacity>
+                  )}
+                </View>
+                <TextInput 
+                  style={[styles.scheduleInputTime, { color: theme.primary }]}
+                  placeholder="Horas (Ej: De 11:00 a 15:00 h)"
+                  placeholderTextColor={theme.textSecondary}
+                  value={sched.hours}
+                  onChangeText={(val) => {
+                    const newScheds = [...formData.schedules];
+                    newScheds[idx].hours = val;
+                    setFormData({...formData, schedules: newScheds});
+                  }}
+                />
+              </View>
             ))}
+
+            <TouchableOpacity 
+              style={[styles.addScheduleBtn, { borderColor: theme.primary }]}
+              onPress={() => setFormData({
+                ...formData, 
+                schedules: [...formData.schedules, { id: Date.now().toString(), days: '', hours: '' }]
+              })}
+            >
+              <Plus color={theme.primary} size={18} />
+              <Text style={[styles.addScheduleBtnText, { color: theme.primary }]}>Añadir otro bloque horario</Text>
+            </TouchableOpacity>
           </View>
 
-          <View style={styles.switchRow}>
-            <Text style={[styles.label, { color: theme.text }]}>Horario Partido (Mañana y Tarde)</Text>
-            <Switch 
-              value={formData.isSplitSchedule} 
-              onValueChange={(val) => setFormData({...formData, isSplitSchedule: val})}
-              trackColor={{ false: '#767577', true: theme.primary }}
+          <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 20, height: 'auto', paddingVertical: 10 }]}>
+            <AlertTriangle color="#E74C3C" size={20} />
+            <TextInput
+              style={[styles.input, { color: theme.text }]}
+              placeholder="Cierres especiales (Ej: Cerrado 25 Dic...)"
+              placeholderTextColor={theme.textSecondary}
+              multiline
+              value={formData.specialClosures}
+              onChangeText={(text) => setFormData({...formData, specialClosures: text})}
             />
           </View>
-
-          <View style={styles.timeInputsRow}>
-            <View style={styles.timeCol}>
-              <Text style={styles.timeLabel}>Apertura {formData.isSplitSchedule ? 'Mañana' : ''}</Text>
-              <TextInput 
-                style={[styles.timeInput, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]} 
-                value={formData.morningOpen}
-                onChangeText={(text) => setFormData({...formData, morningOpen: text})}
-              />
-            </View>
-            <View style={styles.timeCol}>
-              <Text style={styles.timeLabel}>Cierre {formData.isSplitSchedule ? 'Mañana' : ''}</Text>
-              <TextInput 
-                style={[styles.timeInput, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]} 
-                value={formData.morningClose}
-                onChangeText={(text) => setFormData({...formData, morningClose: text})}
-              />
-            </View>
-          </View>
-
-          {formData.isSplitSchedule && (
-            <View style={styles.timeInputsRow}>
-              <View style={styles.timeCol}>
-                <Text style={styles.timeLabel}>Apertura Tarde</Text>
-                <TextInput 
-                  style={[styles.timeInput, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]} 
-                  value={formData.afternoonOpen}
-                  onChangeText={(text) => setFormData({...formData, afternoonOpen: text})}
-                />
-              </View>
-              <View style={styles.timeCol}>
-                <Text style={styles.timeLabel}>Cierre Tarde</Text>
-                <TextInput 
-                  style={[styles.timeInput, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]} 
-                  value={formData.afternoonClose}
-                  onChangeText={(text) => setFormData({...formData, afternoonClose: text})}
-                />
-              </View>
-            </View>
-          )}
         </View>
 
         {/* Important Notices Section */}
@@ -1304,6 +1320,31 @@ export function AddLocationScreen({ route, navigation }) {
             </View>
           ))}
 
+          <View style={[styles.switchRow, { marginTop: 15 }]}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.label, { color: theme.text }]}>Entrada Vinculada</Text>
+              <Text style={{ color: theme.textSecondary, fontSize: 12 }}>¿Se incluye con la entrada de otro lugar?</Text>
+            </View>
+            <Switch 
+              value={formData.isLinkedEntrance} 
+              onValueChange={(val) => setFormData({...formData, isLinkedEntrance: val})}
+              trackColor={{ false: '#767577', true: theme.primary }}
+            />
+          </View>
+
+          {formData.isLinkedEntrance && (
+            <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 10 }]}>
+              <Building2 color={theme.primary} size={20} />
+              <TextInput
+                style={[styles.input, { color: theme.text }]}
+                placeholder="Nombre del lugar (Ej: Castillo de Morella)"
+                placeholderTextColor={theme.textSecondary}
+                value={formData.linkedEntranceName}
+                onChangeText={(text) => setFormData({...formData, linkedEntranceName: text})}
+              />
+            </View>
+          )}
+
           <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 15 }]}>
             <Info color={theme.primary} size={20} />
             <TextInput
@@ -1392,6 +1433,40 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   categoryText: { fontSize: 13, fontWeight: '700' },
+  dynamicScheduleCard: {
+    padding: 15,
+    borderRadius: 15,
+    borderWidth: 1,
+    gap: 5,
+  },
+  scheduleRowTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  scheduleInputLabel: {
+    fontSize: 15,
+    fontWeight: '800',
+    flex: 1,
+  },
+  scheduleInputTime: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  addScheduleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    gap: 8,
+  },
+  addScheduleBtnText: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
   accessibilityGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',

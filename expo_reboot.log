@@ -1685,3 +1685,206 @@ Android Bundled 376ms index.js (1 module)
  WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
  LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
  LOG  Distravel v3.0: Carga finalizada.
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 385ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ LOG  Distravel AI: Iniciando análisis para Barcelona...
+ LOG  Distravel AI: Datos generados con éxito (usando motor Gemini Pro).
+ LOG  Usuario aceptó los datos de IA
+ ERROR  [ReferenceError: Property 'CIUDADES_PREMIUM' doesn't exist]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 652ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ WARN  Sync servidor fallida en segundo plano
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ ERROR  Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. s1
+ ERROR  Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. b2
+ ERROR  Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. b1
+ ERROR  Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. m1
+ ERROR  Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. s1
+ ERROR  Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. b2
+ ERROR  Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. b1
+ ERROR  Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. m1
+ ERROR  [ReferenceError: Property 'normalize' doesn't exist]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [ReferenceError: Property 'ChevronRight' doesn't exist]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 97ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ ERROR  SyntaxError: /opt/distravel/src/screens/PlaceDetailScreen.js: Missing semicolon. (371:7)
+
+  369 |           isCity: true 
+  370 |         } 
+> 371 |       });
+      |        ^
+  372 |     }
+  373 |   };
+  374 |
+    at constructor (/opt/distravel/node_modules/@babel/parser/lib/index.js:365:19)
+    at FlowParserMixin.raise (/opt/distravel/node_modules/@babel/parser/lib/index.js:6616:19)
+    at FlowParserMixin.semicolon (/opt/distravel/node_modules/@babel/parser/lib/index.js:6912:10)
+    at FlowParserMixin.parseVarStatement (/opt/distravel/node_modules/@babel/parser/lib/index.js:13248:10)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12868:23)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseStatementListItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12764:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:61)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseBlock (/opt/distravel/node_modules/@babel/parser/lib/index.js:13314:10)
+    at FlowParserMixin.parseFunctionBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:12117:24)
+    at FlowParserMixin.parseFunctionBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:2907:11)
+    at FlowParserMixin.parseFunctionBodyAndFinish (/opt/distravel/node_modules/@babel/parser/lib/index.js:12103:10)
+    at FlowParserMixin.parseFunctionBodyAndFinish (/opt/distravel/node_modules/@babel/parser/lib/index.js:2915:18)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:13462:12
+    at FlowParserMixin.withSmartMixTopicForbiddingContext (/opt/distravel/node_modules/@babel/parser/lib/index.js:12420:14)
+    at FlowParserMixin.parseFunction (/opt/distravel/node_modules/@babel/parser/lib/index.js:13461:10)
+    at FlowParserMixin.parseFunctionStatement (/opt/distravel/node_modules/@babel/parser/lib/index.js:13142:17)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12808:21)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseStatementListItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12764:17)
+    at FlowParserMixin.parseExportDeclaration (/opt/distravel/node_modules/@babel/parser/lib/index.js:13951:17)
+    at FlowParserMixin.parseExportDeclaration (/opt/distravel/node_modules/@babel/parser/lib/index.js:3132:20)
+    at FlowParserMixin.maybeParseExportDeclaration (/opt/distravel/node_modules/@babel/parser/lib/index.js:13910:31)
+    at FlowParserMixin.parseExport (/opt/distravel/node_modules/@babel/parser/lib/index.js:13829:29)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12895:27)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseModuleItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12761:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:36)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseProgram (/opt/distravel/node_modules/@babel/parser/lib/index.js:12639:10)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:12629:25)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:3697:28)
+    at FlowParserMixin.parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14505:25)
+    at parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14518:26)
+    at parser (/opt/distravel/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/opt/distravel/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/opt/distravel/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/opt/distravel/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at evaluateSync (/opt/distravel/node_modules/gensync/index.js:251:28)
+    at sync (/opt/distravel/node_modules/gensync/index.js:89:14)
+    at stopHiding - secret - don't use this - v1 (/opt/distravel/node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:47:12)
+    at Object.transformSync (/opt/distravel/node_modules/@babel/core/lib/transform.js:40:76)
+ ERROR  [Error: TransformError SyntaxError: /opt/distravel/src/screens/PlaceDetailScreen.js: Missing semicolon. (371:7)
+
+[0m [90m 369 |[39m           isCity[33m:[39m [36mtrue[39m 
+ [90m 370 |[39m         } 
+[31m[1m>[22m[39m[90m 371 |[39m       })[33m;[39m
+ [90m     |[39m        [31m[1m^[22m[39m
+ [90m 372 |[39m     }
+ [90m 373 |[39m   }[33m;[39m
+ [90m 374 |[39m[0m]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 76ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 688ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ WARN  Sync servidor fallida en segundo plano
+ WARN  Sync servidor fallida en segundo plano
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ ERROR  [ReferenceError: Property 'ChevronRight' doesn't exist]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 70ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ LOG  Distravel AI: Iniciando análisis para Belmonte...
+ LOG  Distravel AI: Datos generados con éxito (usando motor Gemini Pro).
+ LOG  Usuario aceptó los datos de IA
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 452ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 362ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ LOG  Distravel AI: Iniciando análisis para Mutxamel...
+ LOG  Distravel AI: Datos generados con éxito (usando motor Gemini Pro).
+ LOG  Usuario aceptó los datos de IA
+ LOG  Distravel AI: Iniciando análisis para Turre...
+ LOG  Distravel AI: Datos generados con éxito (usando motor Gemini Pro).
+ LOG  Usuario aceptó los datos de IA
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 347ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ LOG  Distravel AI: Analizando datos reales para Mutxamel...

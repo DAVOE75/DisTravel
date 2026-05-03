@@ -27,32 +27,11 @@ import { useUser } from '../context/UserContext';
 
 const Stack = createStackNavigator();
 
-function AdminBanner() {
-  const navigation = useNavigation();
-  return (
-    <TouchableOpacity 
-      style={{ 
-        backgroundColor: '#FF3B30', 
-        paddingTop: 45, 
-        paddingBottom: 10, 
-        alignItems: 'center', 
-        zIndex: 9999,
-        borderBottomWidth: 1,
-        borderColor: '#FFF'
-      }}
-      onPress={() => navigation.navigate('AdminValidations')}
-    >
-      <Text style={{ color: '#FFF', fontWeight: '900', fontSize: 14 }}>🛡️ ACCESO ADMINISTRADOR - PULSA AQUÍ 🛡️</Text>
-    </TouchableOpacity>
-  );
-}
-
 function AuthenticatedStack() {
   const { theme } = useTheme();
   const { userData } = useUser();
   return (
     <View style={{ flex: 1 }}>
-      {(userData?.isAdmin || userData?.role === 'admin') && <AdminBanner />}
       <Stack.Navigator
         screenOptions={{
           headerShown: false,

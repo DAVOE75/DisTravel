@@ -70,20 +70,6 @@ export function SettingsScreen({ navigation }) {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
-        {/* Admin Quick Access - EMERGENCY VISIBILITY */}
-        <TouchableOpacity 
-          style={[styles.section, { backgroundColor: '#E67E22' + '15', borderColor: '#E67E22', borderWidth: 2, marginBottom: 24, padding: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}
-          onPress={() => navigation.navigate('AdminValidations')}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            <ShieldCheck color="#E67E22" size={24} />
-            <View>
-              <Text style={{ color: '#E67E22', fontWeight: '800', fontSize: 16 }}>Panel de Administrador</Text>
-              <Text style={{ color: theme.textSecondary, fontSize: 12 }}>Validar nuevas ubicaciones</Text>
-            </View>
-          </View>
-          <ChevronRight color="#E67E22" size={20} />
-        </TouchableOpacity>
 
         <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>Personalización</Text>
         <View style={[styles.section, { backgroundColor: theme.surface, borderColor: theme.border }]}>

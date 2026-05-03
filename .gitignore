@@ -39,3 +39,10 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Database and local data
+*.db
+server/data/
+server/uploads/*
+!server/uploads/.gitkeep
+
