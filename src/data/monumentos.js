@@ -63,6 +63,38 @@ export const MONUMENTOS = {
         userCount: 28
       },
       location: { latitude: 40.4179, longitude: -3.7143 }
+    },
+    {
+      id: 'm3',
+      name: 'Estadio Santiago Bernabéu',
+      category: 'Deportes',
+      image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Estadio_Santiago_Bernab%C3%A9u_-_Panorama.jpg/1200px-Estadio_Santiago_Bern%C3%A9u_-_Panorama.jpg',
+      description: 'El legendario estadio del Real Madrid. Ofrece un tour por el museo, vestuarios y el terreno de juego.',
+      schedule: 'Lunes a sábado: 09:30 - 19:00. Domingos y festivos: 10:00 - 18:30. (Sujeto a días de partido)',
+      price: 'ENTRADA DE PAGO: General desde 25€. Reducida desde 19€.',
+      disabilityBenefit: 'TARIFA REDUCIDA (No gratuito): Las personas con discapacidad deben adquirir entrada de tarifa reducida. El acompañante también dispone de descuento.',
+      technicalSpecs: {
+        doorWidth: '150cm (Accesos Premium)',
+        turningSpace: 'Sí, en Museo y Tienda',
+        magneticLoop: 'No disponible',
+        brailleSignage: 'Limitado',
+        adaptedAudio: 'No disponible',
+        adaptedToilet: 'Sí, en el área del Museo y Palcos'
+      },
+      audioguide: {
+        available: true,
+        price: 'Incluida en App',
+        accessible: false,
+        languages: ['Español', 'Inglés'],
+        note: 'Se recomienda usar la App oficial del Tour para guiado.'
+      },
+      suitability: ['MOTOR', 'COGNITIVE'],
+      verifiedByCommunity: {
+        status: 'En Obras (Accesibilidad Variable)',
+        lastCheck: 'Hoy',
+        userCount: 56
+      },
+      location: { latitude: 40.4530, longitude: -3.6883 }
     }
   ],
   'Granada': [
@@ -162,6 +194,38 @@ export const MONUMENTOS = {
         userCount: 31
       },
       location: { latitude: 41.4145, longitude: 2.1527 }
+    },
+    {
+      id: 'b3',
+      name: 'Spotify Camp Nou (Barça Immersive Tour)',
+      category: 'Deportes',
+      image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Camp_Nou_interior.jpg/1200px-Camp_Nou_interior.jpg',
+      description: 'El museo del FC Barcelona y la nueva experiencia inmersiva mientras se completa la remodelación del estadio.',
+      schedule: 'Diario: 10:00 - 19:00. (Cerrado en días de partido del primer equipo masculino)',
+      price: 'ENTRADA DE PAGO: General desde 28€. Reducida desde 21€.',
+      disabilityBenefit: 'TARIFA REDUCIDA (No gratuito): Las personas con discapacidad deben adquirir entrada de tarifa reducida. El acompañante puede tener gratuidad o descuento según el grado.',
+      technicalSpecs: {
+        doorWidth: '130cm',
+        turningSpace: 'Sí, excelente en el Museo',
+        magneticLoop: 'No disponible',
+        brailleSignage: 'Limitado',
+        adaptedAudio: 'Audioguía incluida',
+        adaptedToilet: 'Sí, múltiples puntos accesibles'
+      },
+      audioguide: {
+        available: true,
+        price: 'Incluida (Digital)',
+        accessible: true,
+        languages: ['Español', 'Catalán', 'Inglés', 'Francés', 'Alemán'],
+        note: 'Se entrega audioguía digital con la entrada.'
+      },
+      suitability: ['MOTOR', 'VISUAL', 'COGNITIVE'],
+      verifiedByCommunity: {
+        status: 'Muy Accesible (Nuevo Museo)',
+        lastCheck: 'Hoy',
+        userCount: 39
+      },
+      location: { latitude: 41.3809, longitude: 2.1228 }
     }
   ],
   'Sevilla': [

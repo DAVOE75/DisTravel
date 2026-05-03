@@ -389,6 +389,7 @@ const INITIAL_USER_DATA = {
   level: 1,           // Nivel actual
   badges: [],         // Insignias ganadas
   unlockedTitles: ['Viajero Novel'], // Títulos ganados
+  aiApiKey: 'AIzaSyAHvW4-KuvjmzPpxMxO1vjiTs7lddJ50iQ', // Clave de API para Gemini (Admin)
 };
 
 export const UserProvider = ({ children }) => {

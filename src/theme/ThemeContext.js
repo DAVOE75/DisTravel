@@ -35,7 +35,7 @@ export const ThemeProvider = ({ children }) => {
   const theme = isDarkMode ? darkTheme : lightTheme;
   const logo = isDarkMode 
     ? require('../../assets/logo_dark.png') 
-    : require('../../assets/logo_light.png');
+    : require('../../assets/logo_official.png');
   const logoOfficial = require('../../assets/logo_official.png');
 
   return (

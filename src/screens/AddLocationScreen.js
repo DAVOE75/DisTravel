@@ -127,10 +127,12 @@ export function AddLocationScreen({ route, navigation }) {
     })();
   }, []);
 
-  const normalize = (text) => 
-    text?.toString().toLowerCase()
+  const normalize = (text) => {
+    if (!text) return '';
+    return text.toString().trim().toLowerCase()
       .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]/g, '') || '';
+      .replace(/y/g, 'i');
+  };
 
   const mapRef = React.useRef(null);
 

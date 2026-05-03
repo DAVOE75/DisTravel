@@ -32,7 +32,8 @@ import {
   Calendar,
   Map,
   Globe,
-  CreditCard
+  CreditCard,
+  Zap
 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
@@ -348,6 +349,23 @@ export function EditProfileScreen({ navigation }) {
             onChangeText={(text) => setLocalData(prev => ({...prev, cardNumber: text.toUpperCase()}))}
           />
 
+          {userData.isAdmin && (
+            <View style={{ marginTop: 20 }}>
+              <Text style={[styles.adminSectionTitle, { color: '#E67E22' }]}>ADMINISTRACIÓN IA (GEMINI)</Text>
+              <InputField 
+                label="API Key de Google Gemini" 
+                value={localData.aiApiKey} 
+                icon={Zap}
+                theme={theme}
+                placeholder="Ingresa tu API Key para potencia extra"
+                onChangeText={(text) => setLocalData(prev => ({...prev, aiApiKey: text}))}
+              />
+              <Text style={{ color: theme.textSecondary, fontSize: 11, fontStyle: 'italic', marginTop: -15, marginLeft: 5 }}>
+                * Esta clave activa modelos de lenguaje más potentes en la generación de guías.
+              </Text>
+            </View>
+          )}
+
           <TouchableOpacity 
             style={[styles.saveButton, { backgroundColor: theme.primary }]}
             onPress={handleSave}
@@ -542,6 +560,13 @@ const styles = StyleSheet.create({
     marginLeft: 4,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+  },
+  adminSectionTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    marginBottom: 10,
+    marginLeft: 4,
+    letterSpacing: 1.2,
   },
   inputWrapper: {
     flexDirection: 'row',

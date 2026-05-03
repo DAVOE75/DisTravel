@@ -85,6 +85,13 @@ export function HomeScreen({ navigation }) {
   
   const isAdmin = userData?.isAdmin || userData?.role === 'admin';
   
+  const normalize = (text) => {
+    if (!text) return '';
+    return text.toString().trim().toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/y/g, 'i');
+  };
+  
   const getOpeningStatus = (place) => {
     if (!place) return 'Cerrado';
     
@@ -177,11 +184,6 @@ export function HomeScreen({ navigation }) {
 
     return 'Cerrado (Mañana abre a las 10:00)';
   };
-
-  const normalize = (text) => 
-    text?.toString().trim().toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/y/g, 'i') || '';
 
   const mergedPlaces = useMemo(() => {
     const staticPlaces = Object.entries(MONUMENTOS).flatMap(([cityName, list]) => 

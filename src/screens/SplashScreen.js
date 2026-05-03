@@ -6,7 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 const { width } = Dimensions.get('window');
 
 export function SplashScreen() {
-  const { theme, isDarkMode, logoOfficial } = useTheme();
+  const { theme, isDarkMode, logo } = useTheme();
 
   return (
     <View style={styles.container}>
@@ -21,11 +21,11 @@ export function SplashScreen() {
         style={styles.gradient}
       >
         <View style={[styles.logoContainer, { 
-          backgroundColor: isDarkMode ? '#1E293B' : '#FFFFFF',
+          backgroundColor: isDarkMode ? 'transparent' : '#FFFFFF',
           shadowColor: isDarkMode ? '#000' : '#64748B'
         }]}>
           <Image 
-            source={logoOfficial} 
+            source={logo} 
             style={styles.logo} 
             resizeMode="contain"
           />
