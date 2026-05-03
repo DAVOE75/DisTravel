@@ -302,17 +302,27 @@ export function CityDetailScreen({ route, navigation }) {
     // Simular procesamiento inteligente basado en el nombre de la ciudad
     setTimeout(() => {
       const cityName = tempCityData.name || city.name || 'esta ciudad';
+      const isAlicante = normalize(cityName).includes('alicante');
       
-      const aiGeneratedData = {
-        history: `La trayectoria histórica de ${cityName} es un periplo extraordinario que abarca múltiples milenios. Desde los primeros asentamientos del Calcolítico, pasando por la hegemonía romana que dotó a la urbe de su trazado original, hasta la rica influencia andalusí que refinó su arquitectura y sistemas hídricos. Durante la Reconquista, se consolidó como una plaza fuerte de valor incalculable, siendo testigo de firmas de tratados reales y cunas de linajes que marcaron el destino de Europa. En la era moderna, su transformación industrial y su resurgimiento como polo cultural la han convertido en un museo vivo donde cada estrato arqueológico cuenta una historia de superación y esplendor artístico.`,
-        geography: `${cityName} se ubica en un enclave geográfico de primer orden, asentada sobre una serie de terrazas fluviales y elevaciones que le otorgan un dominio visual absoluto sobre su entorno. Geológicamente, el terreno se compone de sustratos calizos y sedimentarios que han facilitado una arquitectura de piedra duradera. Su altitud media sobre el nivel del mar y su proximidad a accidentes geográficos clave, como valles profundos o sistemas montañosos circundantes, generan un ecosistema único. La hidrografía local, vertebrada por cursos de agua históricos, ha permitido un desarrollo agrícola y urbano sostenible que hoy se integra en una red de infraestructuras de transporte de vanguardia.`,
-        climate: `El régimen climatológico de ${cityName} se define por una variante mediterránea con matices continentales, lo que se traduce en una personalidad meteorológica vibrante. Las temperaturas medias anuales oscilan de forma equilibrada, con veranos secos que registran máximas que invitan al turismo de sol y sombra, e inviernos moderados que rara vez presentan heladas severas. La pluviosidad se concentra en equinoccios, alimentando los acuíferos locales y manteniendo la frescura de sus parques. La insolación anual supera las 2.800 horas, lo que no solo define el carácter alegre de sus habitantes, sino que impulsa la eficiencia energética y la luminosidad única de sus atardeceres dorados.`,
-        landscape: `El entorno paisajístico de ${cityName} es una sinfonía de biodiversidad y diseño urbano. La ciudad se funde con un cinturón verde donde predominan especies autóctonas como encinas, olivos centenarios y pinos piñoneros, creando un pulmón natural que regula la temperatura urbana. Desde sus miradores más elevados, se puede apreciar un contraste cromático fascinante entre el blanco de su casco histórico, el verde intenso de sus zonas de ribera y los tonos tierra de su campiña. La integración de rutas accesibles en este entorno permite una conexión profunda con la naturaleza sin barreras, donde el avistamiento de aves y la contemplación de horizontes infinitos se convierten en una experiencia sensorial inigualable.`
+      let aiGeneratedData = {
+        history: `La trayectoria histórica de ${cityName} es un periplo extraordinario que abarca múltiples milenios. Desde los primeros asentamientos del Calcolítico hasta su consolidación como polo cultural moderno.`,
+        geography: `${cityName} se ubica en un enclave geográfico de primer orden, asentada sobre una serie de terrazas fluviales y elevaciones que le otorgan un dominio visual absoluto sobre su entorno.`,
+        climate: `El régimen climatológico de ${cityName} se define por una variante mediterránea con matices continentales, lo que se traduce en una personalidad meteorológica vibrante.`,
+        landscape: `El entorno paisajístico de ${cityName} es una sinfonía de biodiversidad y diseño urbano, con rutas accesibles que permiten una conexión profunda con la naturaleza.`
       };
+
+      if (isAlicante) {
+        aiGeneratedData = {
+          history: "Alicante, la antigua Lucentum romana, es una ciudad marcada por su puerto y su vigilancia desde el Monte Benacantil. Su historia respira a través del MUSA (Museo de la Ciudad) en el Castillo de Santa Bárbara y el MUBAG, que custodia el arte alicantino en un palacio del s. XVIII. La ciudad guarda memorias profundas en sus Refugios Antiaéreos de la Guerra Civil y celebra su identidad cada año en el Museo de las Hogueras. Desde la Lonja de Pescado hasta el Palacio el Portalet, cada piedra cuenta la evolución de una villa marinera a una capital cultural vibrante.",
+          geography: "Asentada a orillas del Mediterráneo, Alicante está presidida por el Castillo de Santa Bárbara. Su geografía urbana se extiende desde el puerto, donde el Museo The Ocean Race marca el inicio de grandes aventuras, hasta el campus de San Vicente donde el MUA destaca por su arquitectura. La ciudad se vertebra en torno a la Explanada y el monte Benacantil, ofreciendo una orografía que combina playas accesibles con elevaciones estratégicas que han definido su defensa durante siglos.",
+          climate: "Alicante disfruta de un microclima mediterráneo excepcional con más de 3.000 horas de sol al año. Sus inviernos son suaves y primaverales, lo que permite visitar el Museo de Aguas de Alicante o los Pozos de Garrigós con una temperatura agradable. En verano, la brisa marina suaviza el calor, invitando a explorar el Museo de Nueva Tabarca o disfrutar de las exposiciones temporales en Las Cigarreras y la Lonja bajo cielos siempre despejados.",
+          landscape: "El paisaje alicantino es un contraste entre el azul intenso del mar y el ocre de sus montañas. La silueta de 'La Cara del Moro' en el Benacantil domina un horizonte donde se mezclan el urbanismo moderno con joyas históricas como el Palacio de Maisonnave. Desde el puerto deportivo hasta las murallas de La Ciudad Descubierta, el entorno ofrece una riqueza visual única, complementada por la biodiversidad de la Isla de Tabarca y la luz mágica que inspiró a artistas durante siglos."
+        };
+      }
 
       console.log('Distravel AI: Datos generados con éxito.');
       
-      // Forzar la actualización del estado
+      // Actualizar el estado local inmediatamente
       setTempCityData(current => ({
         ...current,
         ...aiGeneratedData

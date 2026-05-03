@@ -35,9 +35,9 @@ const SEED_DATA = [
       cognitive: true
     },
     tariffs: [
-      { id: 1, label: 'Entrada General', price: '10 €' },
-      { id: 2, label: 'Reducida (PCD)', price: '6 €' },
-      { id: 3, label: 'Niños (<12 años)', price: '5 €' }
+      { id: 1, label: 'Entrada General', price: '10 €', value: 10 },
+      { id: 2, label: 'Reducida (PCD)', price: '6 €', value: 6 },
+      { id: 3, label: 'Niños (<12 años)', price: '5 €', value: 5 }
     ],
     location: {
       latitude: 39.5594,
@@ -84,14 +84,14 @@ const SEED_DATA = [
       cognitive: true
     },
     tariffs: [
-      { id: 1, label: 'Visita Guiada Castillo (Gral)', price: '5,00 €' },
-      { id: 2, label: 'Visita Guiada Torre (Gral)', price: '5,00 €' },
-      { id: 3, label: 'Conjunta Castillo + Torre (Gral)', price: '9,00 €' },
-      { id: 4, label: 'Visita con Audioguía (Gral)', price: '4,50 €' },
-      { id: 5, label: 'Teatralizada Torre (Gral)', price: '8,00 €' },
-      { id: 6, label: 'Conjunta Teatralizada (Gral)', price: '11,00 €' },
-      { id: 7, label: 'Tarifa Especial (PCD 25-69%)', price: 'Desde 4,00 €' },
-      { id: 8, label: 'Tarifa Reducida (<18 años)', price: 'Desde 3,00 €' }
+      { id: 1, label: 'Visita Guiada Castillo (Gral)', price: '5,00 €', value: 5 },
+      { id: 2, label: 'Visita Guiada Torre (Gral)', price: '5,00 €', value: 5 },
+      { id: 3, label: 'Conjunta Castillo + Torre (Gral)', price: '9,00 €', value: 9 },
+      { id: 4, label: 'Visita con Audioguía (Gral)', price: '4,50 €', value: 4.5 },
+      { id: 5, label: 'Teatralizada Torre (Gral)', price: '8,00 €', value: 8 },
+      { id: 6, label: 'Conjunta Teatralizada (Gral)', price: '11,00 €', value: 11 },
+      { id: 7, label: 'Tarifa Especial (PCD 25-69%)', price: 'Desde 4,00 €', value: 4 },
+      { id: 8, label: 'Tarifa Reducida (<18 años)', price: 'Desde 3,00 €', value: 3 }
     ],
     location: {
       latitude: 41.3117,

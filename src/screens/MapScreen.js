@@ -17,7 +17,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
 
 export function MapScreen({ route, navigation }) {
-  const { city } = route.params || {};
+  const { city, filter, monuments: passedMonuments } = route.params || {};
   const { theme } = useTheme();
   const { userData } = useUser();
   const mapRef = useRef(null);
@@ -50,7 +50,12 @@ export function MapScreen({ route, navigation }) {
   officialMonuments.forEach(m => mergedMonumentsMap.set(`${m.name}-${m.city || city?.name}`, m));
   userContributions.forEach(m => mergedMonumentsMap.set(`${m.name}-${m.city}`, m));
 
-  const displayMonuments = Array.from(mergedMonumentsMap.values());
+  let displayMonuments = Array.from(mergedMonumentsMap.values());
+
+  // Aplicar FILTRO COSTE CERO
+  if (filter === 'free' && passedMonuments) {
+    displayMonuments = passedMonuments;
+  }
 
   const getMarkerColor = (monument) => {
     try {
@@ -155,6 +160,13 @@ export function MapScreen({ route, navigation }) {
           >
             <ChevronLeft color={mapTheme === 'dark' ? colors.text : '#000000'} size={24} />
           </TouchableOpacity>
+
+          {filter === 'free' && (
+            <View style={styles.freeBanner}>
+              <LocateFixed color="#FFF" size={16} />
+              <Text style={styles.freeBannerText}>RUTA COSTE CERO</Text>
+            </View>
+          )}
 
           <TouchableOpacity 
             style={[styles.iconButton, { backgroundColor: mapTheme === 'dark' ? 'rgba(15, 23, 42, 0.8)' : '#FFFFFF' }]}
@@ -335,4 +347,24 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '500',
   },
+  freeBanner: {
+    backgroundColor: '#2ECC71',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 8,
+    shadowColor: '#2ECC71',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  freeBannerText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 1,
+  }
 });

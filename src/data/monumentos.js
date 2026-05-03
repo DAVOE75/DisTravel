@@ -256,6 +256,50 @@ export const MONUMENTOS = {
         userCount: 24
       },
       location: { latitude: 38.3475, longitude: -0.4852 }
+    },
+    {
+      id: 'ali3',
+      name: 'MUBAG - Museo de Bellas Artes Gravina',
+      category: 'Museos',
+      image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/MUBAG_Alicante.jpg/1200px-MUBAG_Alicante.jpg',
+      description: 'Palacio del s.XVIII con lo mejor del arte alicantino.',
+      schedule: '10:00 - 20:00.',
+      price: 'Entrada GRATIS.',
+      disabilityBenefit: 'Accesibilidad total con ascensores y rampas.',
+      location: { latitude: 38.3444, longitude: -0.4795 }
+    },
+    {
+      id: 'ali4',
+      name: 'Museo The Ocean Race',
+      category: 'Museos',
+      image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Museo_Volvo_Ocean_Race.jpg/1200px-Museo_Volvo_Ocean_Race.jpg',
+      description: 'El único museo en el mundo dedicado a la regata Volvo Ocean Race.',
+      schedule: '11:00 - 20:00.',
+      price: 'Entrada GRATIS.',
+      disabilityBenefit: 'Edificio moderno 100% accesible.',
+      location: { latitude: 38.3401, longitude: -0.4815 }
+    },
+    {
+      id: 'ali5',
+      name: 'Museo de Fogueres',
+      category: 'Museos',
+      image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Museo_de_Hogueras_Alicante.jpg/1200px-Museo_de_Hogueras_Alicante.jpg',
+      description: 'Dedicado a la fiesta oficial de la ciudad: las Hogueras de San Juan.',
+      schedule: '10:00 - 20:00.',
+      price: 'Entrada GRATIS.',
+      disabilityBenefit: 'Totalmente accesible con ascensor.',
+      location: { latitude: 38.3452, longitude: -0.4828 }
+    },
+    {
+      id: 'ali6',
+      name: 'Refugios Antiaéreos de Alicante',
+      category: 'Museos',
+      image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Refugio_Plaza_Castellon_Alicante.jpg/1200px-Refugio_Plaza_Castellon_Alicante.jpg',
+      description: 'Visita guiada a los refugios de la Guerra Civil.',
+      schedule: 'Bajo reserva.',
+      price: '5€ (Reducida PCD: 3€).',
+      disabilityBenefit: 'Acceso limitado (Consultar reserva).',
+      location: { latitude: 38.3456, longitude: -0.4851 }
     }
   ]
 };

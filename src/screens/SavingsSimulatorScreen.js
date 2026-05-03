@@ -20,6 +20,7 @@ import {
 } from 'lucide-react-native';
 import { typography } from '../theme/typography';
 import { MONUMENTOS } from '../data/monumentos';
+import { CIUDADES_PREMIUM } from '../data/ciudades';
 
 const { width } = Dimensions.get('window');
 
@@ -29,26 +30,57 @@ export function SavingsSimulatorScreen({ navigation }) {
   const [selectedCity, setSelectedCity] = useState('Alicante');
 
   const calculateSavings = () => {
-    // Buscar monumentos en la ciudad seleccionada (Premium + Usuario)
-    const monuments = (userData.contributions || []).filter(p => p.city.toLowerCase() === selectedCity.toLowerCase());
+    // 1. Obtener monumentos estáticos oficiales para la ciudad
+    const officialForCity = MONUMENTOS[selectedCity] || [];
+    
+    // 2. Obtener contribuciones del usuario para la ciudad
+    const userForCity = (userData.contributions || []).filter(p => p.city.toLowerCase() === selectedCity.toLowerCase());
+    
+    // FUSIONAR (evitar duplicados por nombre)
+    const mergedMap = new Map();
+    officialForCity.forEach(m => mergedMap.set(m.name.toLowerCase(), m));
+    userForCity.forEach(m => mergedMap.set(m.name.toLowerCase(), m));
+    
+    const monuments = Array.from(mergedMap.values());
     
     let totalGeneral = 0;
     let totalDisability = 0;
+    const freeMonuments = [];
 
     monuments.forEach(m => {
+      // Priorizar objeto tariffs si existe (contribuciones/semillas)
       if (m.tariffs && Array.isArray(m.tariffs)) {
         const general = m.tariffs.find(t => t.label.toLowerCase().includes('general'))?.value || 10;
         const pcd = m.tariffs.find(t => t.label.toLowerCase().includes('pcd') || t.label.toLowerCase().includes('reducida'))?.value || 0;
         
         totalGeneral += general;
         totalDisability += pcd;
+
+        if (pcd === 0) {
+          freeMonuments.push(m);
+        }
+      } else {
+        // Fallback para monumentos estáticos sin tariffs (usar price y disabilityBenefit)
+        const benefit = (m.disabilityBenefit || '').toLowerCase();
+        const isFree = benefit.includes('gratis') || benefit.includes('gratuita');
+        const priceMatch = (m.price || '').match(/(\d+)/);
+        const generalPrice = priceMatch ? parseInt(priceMatch[0]) : 12;
+
+        totalGeneral += generalPrice;
+        if (isFree) {
+          totalDisability += 0;
+          freeMonuments.push(m);
+        } else {
+          totalDisability += generalPrice * 0.5; // Asumir 50% si no dice gratis
+        }
       }
     });
 
     return {
       general: totalGeneral,
       disability: totalDisability,
-      saved: totalGeneral - totalDisability
+      saved: totalGeneral - totalDisability,
+      freeMonuments
     };
   };
 
@@ -60,7 +92,7 @@ export function SavingsSimulatorScreen({ navigation }) {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <ChevronLeft color={theme.text} size={28} />
         </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: theme.text }, typography.h2]}>Simulador de Ahorro</Text>
+        <Text style={[styles.headerTitle, { color: theme.text }, typography.h2]}>Smart Benefit Router</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
@@ -78,7 +110,7 @@ export function SavingsSimulatorScreen({ navigation }) {
         </View>
 
         {/* City Selector */}
-        <Text style={[styles.label, { color: theme.textSecondary }]}>Simular viaje a...</Text>
+        <Text style={[styles.label, { color: theme.textSecondary }]}>Planear ruta gratuita en...</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.citySelector}>
           {['Alicante', 'Madrid', 'Barcelona', 'Granada', 'Medina del Campo'].map(city => (
             <TouchableOpacity 
@@ -99,47 +131,76 @@ export function SavingsSimulatorScreen({ navigation }) {
           <View style={styles.savingsIconContainer}>
              <TrendingDown color="#FFF" size={30} />
           </View>
-          <Text style={[styles.resultTitle, { color: theme.text }]}>¡Ahorrarías en {selectedCity}!</Text>
+          <Text style={[styles.resultTitle, { color: theme.text }]}>¡Potencial de Ahorro!</Text>
           <Text style={[styles.savingsValue, { color: theme.primary }]}>{results.saved.toFixed(0)}€</Text>
-          <Text style={[styles.resultSub, { color: theme.textSecondary }]}>En un recorrido de {userData.contributions?.filter(p => p.city === selectedCity).length || 0} puntos de interés</Text>
+          <Text style={[styles.resultSub, { color: theme.textSecondary }]}>
+            Tienes <Text style={{ color: '#2ECC71', fontWeight: '800' }}>{results.freeMonuments.length} entradas GRATIS</Text> en {selectedCity}
+          </Text>
           
           <View style={styles.breakdown}>
             <View style={styles.breakdownRow}>
               <View style={styles.breakdownLabelContainer}>
                 <Building2 color={theme.textSecondary} size={14} />
-                <Text style={[styles.breakdownLabel, { color: theme.textSecondary }]}>Precio Entradas Estándar</Text>
+                <Text style={[styles.breakdownLabel, { color: theme.textSecondary }]}>Coste para otros viajeros</Text>
               </View>
               <Text style={[styles.breakdownValue, { color: theme.text }]}>{results.general.toFixed(2)}€</Text>
             </View>
             <View style={styles.breakdownRow}>
               <View style={styles.breakdownLabelContainer}>
                 <Wallet color="#2ECC71" size={14} />
-                <Text style={[styles.breakdownLabel, { color: theme.textSecondary }]}>Tu Precio con Descuento</Text>
+                <Text style={[styles.breakdownLabel, { color: theme.textSecondary }]}>Tu Precio (Distravel Passport)</Text>
               </View>
               <Text style={[styles.breakdownValue, { color: '#2ECC71' }]}>{results.disability.toFixed(2)}€</Text>
             </View>
           </View>
         </View>
 
+        {/* Free Monuments Preview */}
+        {results.freeMonuments.length > 0 && (
+          <View style={styles.freeSection}>
+            <Text style={[styles.label, { color: theme.textSecondary }]}>Tus Entradas a 0€</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
+              {results.freeMonuments.map((m, idx) => (
+                <View key={idx} style={[styles.freeCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                  <Text style={[styles.freeName, { color: theme.text }]} numberOfLines={1}>{m.name}</Text>
+                  <View style={styles.freeBadge}>
+                    <Text style={styles.freeBadgeText}>GRATIS</Text>
+                  </View>
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
         {/* Benefits List */}
         <View style={styles.benefitsSection}>
-          <Text style={[styles.label, { color: theme.textSecondary }]}>¿Por qué ahorras tanto?</Text>
+          <Text style={[styles.label, { color: theme.textSecondary }]}>Ventajas del Colectivo PCD</Text>
           <View style={styles.benefitItem}>
             <CheckCircle2 color={theme.primary} size={20} />
             <Text style={[styles.benefitText, { color: theme.text }]}>Entrada gratuita en Museos Estatales</Text>
           </View>
           <View style={styles.benefitItem}>
             <CheckCircle2 color={theme.primary} size={20} />
-            <Text style={[styles.benefitText, { color: theme.text }]}>Descuento para acompañante (Ley 2024)</Text>
-          </View>
-          <View style={styles.benefitItem}>
-            <CheckCircle2 color={theme.primary} size={20} />
-            <Text style={[styles.benefitText, { color: theme.text }]}>Tarifa Dorada en transportes urbanos</Text>
+            <Text style={[styles.benefitText, { color: theme.text }]}>Acompañante Gratis (Ley 2024 / Grado {'>'}33%)</Text>
           </View>
         </View>
 
-        <TouchableOpacity style={[styles.actionBtn, { backgroundColor: theme.primary }]}>
-          <Text style={styles.actionBtnText}>Ver monumentos de {selectedCity}</Text>
+        <TouchableOpacity 
+          style={[styles.actionBtn, { backgroundColor: theme.primary }]}
+          onPress={() => {
+            if (results.freeMonuments.length > 0) {
+              const cityObj = CIUDADES_PREMIUM.find(c => c.name.toLowerCase() === selectedCity.toLowerCase()) || { name: selectedCity };
+              navigation.navigate('Map', { 
+                filter: 'free', 
+                city: cityObj,
+                monuments: results.freeMonuments 
+              });
+            } else {
+              Alert.alert("Buscando...", "Estamos localizando más beneficios en esta zona.");
+            }
+          }}
+        >
+          <Text style={styles.actionBtnText}>Generar Ruta Coste Cero</Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -290,6 +351,32 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     fontSize: 14,
     fontWeight: '500',
+  },
+  freeSection: {
+    marginBottom: 30,
+  },
+  freeCard: {
+    padding: 15,
+    borderRadius: 18,
+    borderWidth: 1,
+    width: 160,
+    alignItems: 'center',
+  },
+  freeName: {
+    fontSize: 14,
+    fontWeight: '800',
+    marginBottom: 8,
+  },
+  freeBadge: {
+    backgroundColor: '#2ECC71',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  freeBadgeText: {
+    color: '#FFF',
+    fontSize: 10,
+    fontWeight: '900',
   },
   actionBtn: {
     padding: 20,

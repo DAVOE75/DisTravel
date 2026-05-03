@@ -143,7 +143,170 @@ export function AddLocationScreen({ route, navigation }) {
       const nameNorm = normalize(formData.name);
       let aiData = null;
 
-      if (nameNorm.includes('prado')) {
+      if (nameNorm.includes('mubag') || nameNorm.includes('bellas artes gravina')) {
+        aiData = {
+          name: "MUBAG - Museo de Bellas Artes Gravina",
+          category: "Museo",
+          city: "Alicante",
+          province: "Alicante",
+          description: "Ubicado en el Palacio del Conde de Lumiares, edificio del siglo XVIII. Recorre la historia del arte alicantino desde el siglo XVI al XX.",
+          touristTip: "La entrada es gratuita. No te pierdas la colección de pintura del siglo XIX.",
+          website: "www.mubag.es",
+          phone: "+34 965 14 67 80",
+          tags: "Arte, Historia, Palacio",
+          freeInfo: "Entrada GRATUITA para todos los públicos.",
+          importantNotices: ["Totalmente accesible con ascensores y rampas.", "Dispone de aseos adaptados."],
+          seasons: [{ name: 'Anual', period: 'Todo el año', weekday: '10:00 a 20:00', weekend: '10:00 a 14:00' }],
+          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/MUBAG_Alicante.jpg/1200px-MUBAG_Alicante.jpg",
+          location: { latitude: 38.3444, longitude: -0.4795, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
+          accessibility: { physical: true, visual: true, auditory: true, cognitive: true },
+          history: "El Museo de Bellas Artes Gravina (MUBAG) se ubica en el antiguo Palacio del Conde de Lumiares, una joya arquitectónica del siglo XVIII restaurada para albergar el legado pictórico y escultórico de Alicante. Es el referente del arte clásico en la provincia.",
+          geography: "Situado en el casco histórico de Alicante, muy cerca del Ayuntamiento y de la Explanada de España.",
+          climate: "Alicante disfruta de un clima mediterráneo árido, con inviernos suaves y veranos cálidos, ideal para pasear por su centro histórico.",
+          landscape: "Rodeado de la arquitectura tradicional del barrio de Santa Cruz y la brisa marina del puerto de Alicante."
+        };
+      } else if (nameNorm.includes('volvo') || nameNorm.includes('ocean race')) {
+        aiData = {
+          name: "Museo The Ocean Race",
+          category: "Museo",
+          city: "Alicante",
+          province: "Alicante",
+          description: "Museo interactivo dedicado a la regata de vela más dura del mundo. Situado en el puerto de Alicante.",
+          touristTip: "Prueba el simulador de navegación. La tienda tiene productos náuticos exclusivos.",
+          website: "www.theoceanrace.com",
+          phone: "+34 966 01 11 00",
+          tags: "Deporte, Náutica, interactivo",
+          freeInfo: "Entrada gratuita al museo.",
+          importantNotices: ["Edificio moderno 100% accesible.", "Suelo nivelado y amplios espacios."],
+          seasons: [{ name: 'Verano', period: 'Anual', weekday: '11:00 a 20:00', weekend: '10:00 a 14:00' }],
+          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Museo_Volvo_Ocean_Race.jpg/1200px-Museo_Volvo_Ocean_Race.jpg",
+          location: { latitude: 38.3401, longitude: -0.4815, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
+          accessibility: { physical: true, visual: false, auditory: true, cognitive: true },
+          history: "Inaugurado en 2012 para celebrar el papel de Alicante como puerto de salida de la Volvo Ocean Race. Es el único museo en el mundo dedicado exclusivamente a esta legendaria competición de vela.",
+          geography: "En pleno Muelle de Levante, dentro de la zona portuaria de Alicante.",
+          climate: "Clima mediterráneo marítimo, con inviernos templados y mucha luminosidad durante todo el año.",
+          landscape: "Vistas directas al mar Mediterráneo y a los yates del puerto deportivo de Alicante."
+        };
+      } else if (nameNorm.includes('musa') || (nameNorm.includes('ciudad') && nameNorm.includes('alicante')) || nameNorm.includes('santabarbara')) {
+        aiData = {
+          name: "MUSA - Museo de la Ciudad de Alicante",
+          category: "Museo",
+          city: "Alicante",
+          province: "Alicante",
+          description: "Situado en el Castillo de Santa Bárbara. Muestra la historia de la ciudad desde la prehistoria hasta la actualidad.",
+          touristTip: "Aprovecha para ver el aljibe renacentista dentro del museo.",
+          tags: "Historia, Castillo, Vistas",
+          freeInfo: "Acceso gratuito al museo (el ascensor al castillo tiene coste para no residentes).",
+          importantNotices: ["El acceso al castillo puede ser complicado, use el ascensor de la playa.", "Pavimento irregular en zonas exteriores."],
+          seasons: [{ name: 'Anual', period: 'Todo el año', weekday: '10:00 a 20:00', weekend: '10:00 a 20:00' }],
+          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Castello_de_Santa_B%C3%A0rbara_Alicante.jpg/1200px-Castello_de_Santa_B%C3%A0rbara_Alicante.jpg",
+          location: { latitude: 38.3491, longitude: -0.4777, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
+          accessibility: { physical: true, visual: true, auditory: false, cognitive: true },
+          history: "El Museo de la Ciudad (MUSA) se integra en las distintas dependencias del Castillo de Santa Bárbara, una de las fortalezas medievales más grandes de España. Recorre los hitos de la capital alicantina desde sus orígenes íberos.",
+          geography: "Ubicado en la cima del Monte Benacantil, a 166 metros de altitud sobre el mar.",
+          climate: "Clima suave durante todo el año, aunque en la cima del castillo puede soplar brisa fresca.",
+          landscape: "Panorámicas inmejorables de toda la bahía de Alicante y de las montañas del interior de la provincia."
+        };
+      } else if (nameNorm.includes('refugios') || nameNorm.includes('antiaereos')) {
+        aiData = {
+          name: "Centro de Interpretación de los Refugios Antiaéreos",
+          category: "Museo",
+          city: "Alicante",
+          province: "Alicante",
+          description: "Espacio de memoria histórica que permite visitar los refugios construidos durante la Guerra Civil en Alicante.",
+          touristTip: "Es obligatorio reservar la visita guiada con antelación.",
+          website: "alicanteturismo.com",
+          tags: "Historia, Guerra Civil, Memoria",
+          freeInfo: "Entrada reducida para personas con discapacidad.",
+          importantNotices: ["Algunos refugios tienen acceso limitado para sillas de ruedas (consultar al reservar).", "Ambiente cerrado y húmedo."],
+          seasons: [{ name: 'Visitas Guiadas', period: 'Bajo reserva', weekday: '10:00 a 14:00', weekend: '10:00 a 14:00' }],
+          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Refugio_Plaza_Castellon_Alicante.jpg/1200px-Refugio_Plaza_Castellon_Alicante.jpg",
+          location: { latitude: 38.3456, longitude: -0.4851, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+          tariffs: [{ id: 1, label: 'General', price: '5' }, { id: 2, label: 'PCD', price: '3' }],
+          accessibility: { physical: false, visual: false, auditory: true, cognitive: true },
+          history: "Alicante fue una de las ciudades más bombardeadas durante la Guerra Civil. Se construyeron más de 90 refugios para proteger a la población, de los cuales varios han sido recuperados para la visita pública.",
+          geography: "Los refugios están repartidos por todo el casco urbano, principalmente bajo plazas públicas.",
+          climate: "Temperatura constante y fresca dentro de los túneles, independientemente del calor exterior.",
+          landscape: "Una experiencia subterránea que contrasta con la luminosidad de la superficie alicantina."
+        };
+      } else if (nameNorm.includes('hogueras') || nameNorm.includes('fogueres')) {
+        aiData = {
+          name: "Museo de Fogueres",
+          category: "Museo",
+          city: "Alicante",
+          province: "Alicante",
+          description: "Dedicado a las fiestas oficiales de la ciudad, las Hogueras de San Juan. Expone 'ninots indultados' y trajes típicos.",
+          touristTip: "Situado en la Rambla, muy céntrico. Entrada gratuita.",
+          tags: "Fiesta, Cultura, Tradición",
+          freeInfo: "Entrada GRATUITA.",
+          importantNotices: ["Edificio accesible de varias plantas con ascensor.", "Aseos adaptados disponibles."],
+          seasons: [{ name: 'Anual', period: 'Todo el año', weekday: '10:00 a 20:00', weekend: '10:00 a 14:00' }],
+          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Museo_de_Hogueras_Alicante.jpg/1200px-Museo_de_Hogueras_Alicante.jpg",
+          location: { latitude: 38.3452, longitude: -0.4828, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
+          accessibility: { physical: true, visual: true, auditory: true, cognitive: true },
+          history: "Recoge la evolución de las Hogueras de San Juan, declaradas Fiestas de Interés Turístico Internacional, desde 1928 hasta la actualidad.",
+          geography: "En la Rambla de Méndez Núñez, la arteria principal del centro de Alicante.",
+          climate: "Mediterráneo subtropical, cálido y soleado durante la mayor parte del año.",
+          landscape: "Centro neurálgico comercial y festivo rodeado de edificios señoriales."
+        };
+      } else if (nameNorm.includes('belenes')) {
+        aiData = {
+          name: "Museo de Belenes",
+          category: "Museo",
+          city: "Alicante",
+          province: "Alicante",
+          description: "Situado en el casco antiguo, alberga una importante colección de belenes de todo el mundo.",
+          tags: "Navidad, Artesanía, Tradición",
+          freeInfo: "Entrada GRATUITA.",
+          importantNotices: ["Ubicado en una calle peatonal del casco antiguo.", "Planta baja accesible."],
+          seasons: [{ name: 'Anual', period: 'Todo el año', weekday: '10:00 a 14:00 y 17:00 a 20:00', weekend: '10:00 a 14:00' }],
+          location: { latitude: 38.3461, longitude: -0.4819, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
+          accessibility: { physical: true, visual: true, auditory: false, cognitive: true },
+          history: "Un museo entrañable que muestra la maestría de los belenistas alicantinos y obras de arte internacionales relacionadas con el nacimiento.",
+          geography: "En la calle San Agustín, una de las más pintorescas del Barrio de Santa Cruz.",
+          climate: "Suave en invierno y fresco dentro del museo gracias a sus gruesos muros de piedra.",
+          landscape: "Calles estrechas, fachadas blancas y macetas con flores en el corazón tradicional de Alicante."
+        };
+      } else if (nameNorm.includes('mua') || nameNorm.includes('universidad')) {
+        aiData = {
+          name: "MUA - Museo de la Universidad de Alicante",
+          category: "Museo",
+          city: "Alicante (San Vicente)",
+          province: "Alicante",
+          description: "Espacio de arte contemporáneo dentro del campus universitario. Arquitectura vanguardista y exposiciones temporales.",
+          touristTip: "El campus es un ejemplo de accesibilidad universal.",
+          website: "www.mua.ua.es",
+          tags: "Arte Contemporáneo, Universidad, Cultura",
+          freeInfo: "Entrada GRATUITA.",
+          importantNotices: ["100% accesible.", "Gran cantidad de plazas de aparcamiento reservadas cerca."],
+          location: { latitude: 38.3845, longitude: -0.5135, latitudeDelta: 0.005, latitudeDelta: 0.005 },
+          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
+          accessibility: { physical: true, visual: true, auditory: true, cognitive: true },
+          history: "Fundado en 1999, es un centro pionero en la investigación y difusión del arte contemporáneo dentro de una universidad pública.",
+          geography: "En el campus de San Vicente del Raspeig, una ciudad universitaria perfectamente conectada con el centro de Alicante.",
+          climate: "Clima mediterráneo de interior, un poco más cálido que la costa en verano.",
+          landscape: "Campus moderno con amplias zonas verdes, fuentes y esculturas al aire libre."
+        };
+      } else if (nameNorm.includes('sede') && nameNorm.includes('universitaria')) {
+        aiData = {
+          name: "Sede Universitaria Ciudad de Alicante",
+          category: "Cultura",
+          city: "Alicante",
+          province: "Alicante",
+          description: "Espacio cultural de la Universidad de Alicante en el centro de la ciudad. Complemento al MUA donde se realizan actos, charlas y muestras artísticas.",
+          tags: "Cultura, Universidad, Conferencias",
+          freeInfo: "Entrada GRATUITA.",
+          importantNotices: ["Edificio histórico rehabilitado y accesible.", "Situado cerca de la calle San Fernando."],
+          location: { latitude: 38.3435, longitude: -0.4842, latitudeDelta: 0.005, latitudeDelta: 0.005 },
+          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
+          accessibility: { physical: true, visual: true, auditory: true, cognitive: true }
+        };
+      } else if (nameNorm.includes('prado')) {
         aiData = {
           name: "Museo Nacional del Prado",
           category: "Museo",
@@ -165,6 +328,153 @@ export function AddLocationScreen({ route, navigation }) {
           geography: "Situado en el Paseo del Prado de Madrid, forma parte del 'Paisaje de la Luz', declarado Patrimonio de la Humanidad.",
           climate: "Madrid tiene un clima mediterráneo continentalizado, con inviernos fríos y veranos calurosos.",
           landscape: "Entorno urbano monumental rodeado de jardines históricos y el cercano Parque del Retiro."
+        };
+      } else if (nameNorm.includes('aguas') || nameNorm.includes('garrigos')) {
+        aiData = {
+          name: "Museo de Aguas de Alicante - Pozos de Garrigós",
+          category: "Museo",
+          city: "Alicante",
+          province: "Alicante",
+          description: "Museo ubicado dentro de antiguos aljibes excavados en la roca del monte Benacantil. Explica el ciclo del agua y la historia del abastecimiento en la ciudad.",
+          touristTip: "Los Pozos de Garrigós son espectaculares por su arquitectura excavada.",
+          tags: "Agua, Ingeniería, Historia",
+          freeInfo: "Entrada GRATUITA.",
+          importantNotices: ["Acceso con rampas, aunque algunas zonas pueden ser estrechas.", "Fresco natural en el interior."],
+          seasons: [{ name: 'Horario Habitual', period: 'Anual', weekday: '10:00 a 14:00 y 17:00 a 20:00', weekend: '10:00 a 14:00' }],
+          location: { latitude: 38.3465, longitude: -0.4792, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
+          accessibility: { physical: true, visual: true, auditory: false, cognitive: true }
+        };
+      } else if (nameNorm.includes('archivo') || nameNorm.includes('maisonnave')) {
+        aiData = {
+          name: "Archivo Municipal - Palacio de Maisonnave",
+          category: "Cultura",
+          city: "Alicante",
+          province: "Alicante",
+          description: "Palacio del siglo XVIII que alberga el archivo histórico de la ciudad. Conserva restos de una necrópolis tardorromana.",
+          tags: "Palacio, Historia, Archivo",
+          freeInfo: "Entrada GRATUITA.",
+          importantNotices: ["Planta baja accesible.", "Consulta de documentos bajo petición."],
+          seasons: [{ name: 'Horario Archivo', period: 'Anual', weekday: '09:00 a 14:00', weekend: 'Cerrado' }],
+          location: { latitude: 38.3463, longitude: -0.4835, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
+          accessibility: { physical: true, visual: false, auditory: false, cognitive: true }
+        };
+      } else if (nameNorm.includes('cigarreras')) {
+        aiData = {
+          name: "Centro Cultural Las Cigarreras",
+          category: "Cultura",
+          city: "Alicante",
+          province: "Alicante",
+          description: "Antigua Fábrica de Tabacos reconvertida en un vibrante centro de cultura contemporánea, música y arte.",
+          touristTip: "Consulta su agenda, siempre hay conciertos o talleres interesantes.",
+          tags: "Cultura, Música, Arte",
+          freeInfo: "Entrada gratuita a las exposiciones.",
+          importantNotices: ["Recinto amplio y accesible.", "Dispone de cafetería y zonas de descanso."],
+          location: { latitude: 38.3512, longitude: -0.4885, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
+          accessibility: { physical: true, visual: true, auditory: true, cognitive: true }
+        };
+      } else if (nameNorm.includes('tabarca')) {
+        aiData = {
+          name: "Museo Nueva Tabarca",
+          category: "Museo",
+          city: "Isla de Tabarca (Alicante)",
+          province: "Alicante",
+          description: "Ubicado en el antiguo edificio del Almacén de la Almadraba. Muestra la historia y la biodiversidad de la reserva marina de la isla.",
+          touristTip: "Imprescindible si visitas la isla. El acceso en barco desde Alicante o Santa Pola es una aventura.",
+          tags: "Isla, Mar, Historia",
+          freeInfo: "Entrada GRATUITA.",
+          importantNotices: ["El museo es accesible, pero la isla tiene muchas calles de tierra y piedra.", "Transporte en barco adaptado disponible en algunas compañías."],
+          location: { latitude: 38.1611, longitude: -0.4735, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
+          accessibility: { physical: true, visual: false, auditory: false, cognitive: true }
+        };
+      } else if (nameNorm.includes('portalet')) {
+        aiData = {
+          name: "Palacio El Portalet",
+          category: "Cultura",
+          city: "Alicante",
+          province: "Alicante",
+          description: "Palacete del siglo XVIII que alberga una exposición permanente sobre la historia del edificio y la ciudad.",
+          tags: "Palacio, Historia, Arquitectura",
+          freeInfo: "Entrada GRATUITA.",
+          importantNotices: ["Totalmente rehabilitado y accesible con ascensor.", "Vistas interesantes al casco antiguo."],
+          location: { latitude: 38.3458, longitude: -0.4815, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
+          accessibility: { physical: true, visual: true, auditory: false, cognitive: true }
+        };
+      } else if (nameNorm.includes('taurino')) {
+        aiData = {
+          name: "Museo Taurino de Alicante",
+          category: "Museo",
+          city: "Alicante",
+          province: "Alicante",
+          description: "Situado en la Plaza de Toros, recorre la historia de la tauromaquia en la provincia con una amplia colección de objetos y trajes.",
+          tags: "Historia, Tradición, Plaza de Toros",
+          freeInfo: "Entrada GRATUITA.",
+          importantNotices: ["Acceso a nivel de calle.", "Situado dentro de la emblemática Plaza de Toros."],
+          location: { latitude: 38.3515, longitude: -0.4851, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
+          accessibility: { physical: true, visual: false, auditory: false, cognitive: true }
+        };
+      } else if (nameNorm.includes('lonja') || nameNorm.includes('pescado')) {
+        aiData = {
+          name: "Lonja de Pescado (Sala de Exposiciones)",
+          category: "Cultura",
+          city: "Alicante",
+          province: "Alicante",
+          description: "Antiguo edificio industrial reconvertido en la principal sala de exposiciones temporales de la ciudad, frente al puerto.",
+          touristTip: "Siempre hay exposiciones de gran nivel. El edificio en sí es una joya de la arquitectura industrial.",
+          tags: "Arte, Exposiciones, Arquitectura",
+          freeInfo: "Entrada gratuita a la mayoría de exposiciones.",
+          importantNotices: ["Espacio diáfano y 100% accesible.", "Entrada principal a nivel."],
+          location: { latitude: 38.3408, longitude: -0.4862, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
+          accessibility: { physical: true, visual: true, auditory: true, cognitive: true }
+        };
+      } else if (nameNorm.includes('artes') && nameNorm.includes('municipal')) {
+        aiData = {
+          name: "Centro Municipal de las Artes",
+          category: "Cultura",
+          city: "Alicante",
+          province: "Alicante",
+          description: "Espacio cultural en el casco antiguo que ofrece exposiciones temporales y formación artística.",
+          tags: "Cultura, Arte, Casco Antiguo",
+          freeInfo: "Entrada GRATUITA.",
+          importantNotices: ["Edificio moderno en el casco antiguo con ascensor.", "Fácil acceso desde la Plaza de Quijano."],
+          location: { latitude: 38.3468, longitude: -0.4821, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
+          accessibility: { physical: true, visual: false, auditory: false, cognitive: true }
+        };
+      } else if (nameNorm.includes('descubierta')) {
+        aiData = {
+          name: "La Ciudad Descubierta (Murallas)",
+          category: "Monumento",
+          city: "Alicante",
+          province: "Alicante",
+          description: "Espacio arqueológico que muestra tramos de la antigua muralla medieval y moderna de Alicante encontrados durante excavaciones.",
+          tags: "Arqueología, Historia, Murallas",
+          freeInfo: "Visitable desde el exterior o en horarios específicos.",
+          importantNotices: ["Pasarelas para observar los restos.", "Información histórica en paneles."],
+          location: { latitude: 38.3451, longitude: -0.4811, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
+          accessibility: { physical: true, visual: true, auditory: false, cognitive: true }
+        };
+      } else if (nameNorm.includes('iluciones') || nameNorm.includes('ilusiones')) {
+        aiData = {
+          name: "Museo de las Ilusiones Alicante",
+          category: "Museo",
+          city: "Alicante",
+          province: "Alicante",
+          description: "Espacio divertido con ilusiones ópticas, hologramas y salas temáticas para fotos sorprendentes.",
+          touristTip: "Lleva la cámara con mucha batería.",
+          tags: "Diversión, Fotos, Familia",
+          freeInfo: "Museo privado de pago. Descuento para PCD.",
+          importantNotices: ["Accesible en su mayoría.", "Puede haber luces parpadeantes o efectos visuales intensos."],
+          location: { latitude: 38.3448, longitude: -0.4831, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+          tariffs: [{ id: 1, label: 'General', price: '12' }, { id: 2, label: 'PCD', price: '9' }],
+          accessibility: { physical: true, visual: false, auditory: true, cognitive: false }
         };
       } else if (nameNorm.includes('lucentum') || nameNorm.includes('tossal de manises')) {
         aiData = {
