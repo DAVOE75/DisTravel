@@ -15,7 +15,7 @@ import {
   MapPin, 
   Star, 
   Navigation,
-  CheckCircle2,
+  CheckCircle,
   Wind
 } from 'lucide-react-native';
 import * as Location from 'expo-location';
@@ -57,7 +57,7 @@ const MOCK_TOILETS = [
 ];
 
 export function ToiletsScreen({ navigation }) {
-  const { theme } = useTheme();
+  const { theme, isDarkMode } = useTheme();
   const [userLocation, setUserLocation] = React.useState(null);
   const [toilets, setToilets] = React.useState(MOCK_TOILETS);
 
@@ -121,7 +121,7 @@ export function ToiletsScreen({ navigation }) {
       <View style={styles.featuresRow}>
         {item.features.map((f, i) => (
           <View key={i} style={[styles.featureBadge, { backgroundColor: theme.primary + '10' }]}>
-            <CheckCircle2 color={theme.primary} size={12} />
+            <CheckCircle color={theme.primary} size={12} />
             <Text style={[styles.featureText, { color: theme.text }]}>{f}</Text>
           </View>
         ))}
@@ -136,8 +136,8 @@ export function ToiletsScreen({ navigation }) {
           style={[styles.navBtn, { backgroundColor: theme.primary }]}
           onPress={() => Linking.openURL(`https://www.google.com/maps/dir/?api=1&destination=${item.coords.latitude},${item.coords.longitude}`)}
         >
-          <Navigation color="#FFFFFF" size={18} />
-          <Text style={styles.navBtnText}>Ir ahora</Text>
+          <Navigation color="#070B14" size={18} />
+          <Text style={[styles.navBtnText, { color: '#070B14' }]}>Ir ahora</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   navBtnText: {
-    color: '#FFFFFF',
+    color: '#070B14',
     fontWeight: '700',
     marginLeft: 8,
     fontSize: 13,

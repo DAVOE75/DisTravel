@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as FileSystem from 'expo-file-system';
 
 const UserContext = createContext();
 
@@ -319,7 +320,20 @@ const SEED_DATA = [
       'Punto de baño accesible (Acceso 13) en temporada estival.',
       'Sillas anfibias y personal de apoyo disponibles.'
     ],
-    seasons: [{ name: 'Temporada Baño', period: 'Servicios de socorrismo: 10:00 a 18:00 (Jun-Sep)', weekday: '24 horas abierto', weekend: '24 horas abierto' }],
+    seasons: [
+      { 
+        name: 'Siempre Abierto', 
+        period: 'Todo el año', 
+        weekday: 'Abierto 24 horas', 
+        weekend: 'Abierto 24 horas',
+        notes: 'Servicios de socorrismo y baño asistido: 10:00 a 18:00 (Jun-Sep)'
+      }
+    ],
+    workingHours: {
+      weekday: { open: '00:00', close: '24:00' },
+      weekend: { open: '00:00', close: '24:00' },
+      is24h: true
+    },
     accessibility: { physical: true, visual: true, auditory: true, cognitive: true },
     tariffs: [{ id: 1, label: 'Acceso Público', price: 'Gratis' }],
     location: { latitude: 38.3444, longitude: -0.4781, latitudeDelta: 0.01, longitudeDelta: 0.01 },
@@ -352,6 +366,8 @@ const INITIAL_USER_DATA = {
   birthDate: '',
   email: '',
   phone: '',
+  phonePrefix: '+34',
+  country: 'España',
   address: '',
   disabilityDegree: '',
   issuingBody: '',
@@ -415,7 +431,35 @@ export const UserProvider = ({ children }) => {
           }
         });
 
-        // Limpieza de duplicados
+        // 3. Intentar obtener lugares del SERVIDOR (Compartidos por otros) con Timeout
+        try {
+          const SERVER_URL = 'http://82.223.44.196:3000';
+          
+          // Timeout de 3 segundos para no bloquear el Splash
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 3000);
+          
+          const response = await fetch(`${SERVER_URL}/api/places`, { 
+            signal: controller.signal 
+          });
+          clearTimeout(timeoutId);
+
+          if (response.ok) {
+            const serverPlaces = await response.json();
+            console.log(`Distravel v3.0.2: ${serverPlaces.length} lugares recuperados del servidor.`);
+            
+            serverPlaces.forEach(sp => {
+              const idx = currentContributions.findIndex(p => p.id === sp.id);
+              if (idx === -1) {
+                currentContributions.push(sp);
+              }
+            });
+          }
+        } catch (serverError) {
+          console.warn('Servidor backend no disponible o tiempo excedido, operando en modo local.');
+        }
+
+        // Limpieza final de duplicados y ordenación
         const uniqueContributions = [];
         const seen = new Set();
         currentContributions.forEach(p => {
@@ -427,8 +471,19 @@ export const UserProvider = ({ children }) => {
         });
 
         parsed.contributions = uniqueContributions;
-        setUserData({ ...INITIAL_USER_DATA, ...parsed, isAdmin: true });
-        console.log('Distravel v3.0: Estado de usuario inicializado.');
+        const finalData = { ...INITIAL_USER_DATA, ...parsed, isAdmin: true };
+        
+        // Migración robusta v3.0.2: Asegurar que los nuevos campos tengan valores por defecto
+        // incluso si 'parsed' tiene cadenas vacías o valores nulos de sesiones anteriores.
+        if (!finalData.country || finalData.country.trim() === '') {
+          finalData.country = 'España';
+        }
+        if (!finalData.phonePrefix || finalData.phonePrefix.trim() === '') {
+          finalData.phonePrefix = '+34';
+        }
+        
+        setUserData(finalData);
+        console.log('Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.');
       } catch (e) {
         console.error('Distravel v3.0 Error:', e);
         setUserData(INITIAL_USER_DATA);
@@ -504,6 +559,95 @@ export const UserProvider = ({ children }) => {
     });
   };
 
+  /**
+   * Persiste una imagen en el almacenamiento local permanente de la aplicación.
+   * @param {string} uri URI temporal de la imagen (ej: de ImagePicker)
+   * @param {string} filename Nombre del archivo para guardar
+   * @returns {Promise<string>} La nueva URI permanente
+   */
+  const persistImage = async (uri, filename) => {
+    if (!uri || (!uri.startsWith('file://') && !uri.startsWith('content://'))) return uri;
+    
+    try {
+      const imgDir = `${FileSystem.documentDirectory}images/`;
+      const dirInfo = await FileSystem.getInfoAsync(imgDir);
+      if (!dirInfo.exists) {
+        await FileSystem.makeDirectoryAsync(imgDir, { intermediates: true });
+      }
+
+      const fileExtension = uri.split('.').pop();
+      const permanentUri = `${imgDir}${filename}_${Date.now()}.${fileExtension}`;
+      
+      await FileSystem.copyAsync({
+        from: uri,
+        to: permanentUri
+      });
+      
+      console.log('Imagen persistida en:', permanentUri);
+      return permanentUri;
+    } catch (error) {
+      console.error('Error al persistir imagen:', error);
+      return uri; // Fallback a la original si falla
+    }
+  };
+
+  /**
+   * Sube una imagen al servidor central.
+   * @param {string} uri URI local de la imagen
+   * @returns {Promise<string|null>} URL pública en el servidor o null si falla
+   */
+  const uploadImageToServer = async (uri) => {
+    if (!uri) return null;
+    
+    try {
+      // Intentar obtener la IP del host de Expo para el entorno de desarrollo
+      // En producción esto sería una URL fija
+      const formData = new FormData();
+      const filename = uri.split('/').pop();
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : `image`;
+
+      formData.append('image', { uri, name: filename, type });
+
+      // TODO: Configurar la URL real del servidor. 
+      // Por ahora usamos la IP pública detectada para pruebas
+      const SERVER_URL = 'http://82.223.44.196:3000'; 
+
+      const response = await fetch(`${SERVER_URL}/api/upload`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        console.log('Imagen subida al servidor:', result.url);
+        return `${SERVER_URL}${result.url}`;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error al subir imagen al servidor:', error);
+      return null;
+    }
+  };
+
+  /**
+   * Obtiene la lista de lugares compartidos por otros usuarios.
+   */
+  const fetchPlacesFromServer = async () => {
+    try {
+      const SERVER_URL = 'http://82.223.44.196:3000';
+      const response = await fetch(`${SERVER_URL}/api/places`);
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error al obtener lugares del servidor:', error);
+      return [];
+    }
+  };
+
   const logout = async () => {
     try {
       const loggedOutData = { ...userData, isLoggedIn: false };
@@ -519,6 +663,9 @@ export const UserProvider = ({ children }) => {
       userData, 
       updateUserData, 
       awardExperience,
+      persistImage,
+      uploadImageToServer,
+      fetchPlacesFromServer,
       logout, 
       isLoading 
     }}>

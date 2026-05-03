@@ -34,12 +34,38 @@ export function AdminValidationsScreen({ navigation }) {
     return (userData?.contributions || []).filter(p => !p.verified && p.id !== 'castillo-belmonte' && p.id !== 'castillo-la-mota' && p.id !== 'castillo-santa-barbara');
   }, [userData.contributions]);
 
+  const SERVER_URL = 'http://82.223.44.196:3000';
+
   const handleValidate = async (placeId) => {
-    const updated = userData.contributions.map(p => 
-      p.id === placeId ? { ...p, verified: true, verifiedStatus: 'Verificado' } : p
-    );
-    await updateUserData({ contributions: updated });
-    Alert.alert("¡Validado!", "La ubicación ahora es pública para todos los usuarios.");
+    try {
+      // 1. Actualizar LOCALMENTE de forma instantánea
+      updateUserData('contributions', (prev) => 
+        (prev || []).map(p => 
+          String(p.id) === String(placeId) ? { ...p, verified: true, verifiedStatus: 'Verificado' } : p
+        )
+      );
+      
+      Alert.alert("¡Validado!", "La ubicación ahora es pública para todos los usuarios.");
+
+      // 2. Intentar validar en el SERVIDOR en SEGUNDO PLANO (sin esperar)
+      const place = userData.contributions.find(p => p.id === placeId);
+      if (place && !place.isLocalOnly) {
+        // Ejecución en segundo plano con timeout corto
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 2000);
+        
+        fetch(`${SERVER_URL}/api/places/${placeId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ verified: true, verifiedStatus: 'Verificado' }),
+          signal: controller.signal
+        }).then(() => clearTimeout(timeoutId))
+          .catch(() => console.warn('Sync servidor fallida en segundo plano'));
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "No se pudo procesar la validación.");
+    }
   };
 
   const handleReject = (placeId) => {
@@ -51,9 +77,23 @@ export function AdminValidationsScreen({ navigation }) {
         { 
           text: "Eliminar", 
           style: "destructive", 
-          onPress: async () => {
-            const updated = userData.contributions.filter(p => p.id !== placeId);
-            await updateUserData({ contributions: updated });
+          onPress: () => {
+            try {
+              // 1. Actualizar LOCALMENTE de forma instantánea
+              updateUserData('contributions', (prev) => 
+                (prev || []).filter(p => String(p.id) !== String(placeId))
+              );
+
+              // 2. Intentar eliminar en el SERVIDOR en segundo plano
+              const place = userData.contributions.find(p => p.id === placeId);
+              if (place && !place.isLocalOnly) {
+                fetch(`${SERVER_URL}/api/places/${placeId}`, { method: 'DELETE' })
+                  .catch(() => console.warn('Borrado servidor fallido en segundo plano'));
+              }
+            } catch (error) {
+              console.error(error);
+              Alert.alert("Error", "No se pudo eliminar.");
+            }
           } 
         }
       ]

@@ -31,7 +31,7 @@ import { typography } from '../theme/typography';
 const { width } = Dimensions.get('window');
 
 export function DigitalWalletScreen({ navigation }) {
-  const { theme } = useTheme();
+  const { theme, isDarkMode, logo } = useTheme();
   const { userData } = useUser();
 
   return (
@@ -75,7 +75,7 @@ export function DigitalWalletScreen({ navigation }) {
                 <Text style={styles.edcOfficialTitleEs}>Tarjeta Europea de Discapacidad</Text>
                 <View style={styles.edcVerifiedBadge}>
                    <ShieldCheck color="#FFCC00" size={10} />
-                   <Text style={styles.edcVerifiedText}>VERIFIED v3.0</Text>
+                    <Text style={styles.edcVerifiedText}>{userData.disabilityDegree || '33'}% DISCAPACIDAD</Text>
                 </View>
              </View>
           </View>
@@ -117,7 +117,7 @@ export function DigitalWalletScreen({ navigation }) {
           <View style={styles.edcBottomBar}>
              <View>
                <Text style={styles.edcFieldLabel}>Card Number / Número</Text>
-               <Text style={styles.edcCardNum}>{userData.id?.toUpperCase() || 'ES-123456789'}</Text>
+               <Text style={styles.edcCardNum}>{userData.cardNumber || `ES-${Math.floor(100000000 + Math.random() * 900000000)}`}</Text>
              </View>
              <View style={styles.edcExpiryArea}>
                 <Text style={styles.edcFieldLabel}>Valid until / Vence</Text>
@@ -157,7 +157,7 @@ export function DigitalWalletScreen({ navigation }) {
                 <View style={[styles.qrPixel, { bottom: 0, left: 0 }]} />
                 <View style={styles.qrCenter}>
                    <Image 
-                     source={require('../../assets/logo_official.png')} 
+                     source={logo} 
                      style={{ width: 40, height: 40, tintColor: theme.primary }} 
                    />
                 </View>
@@ -177,13 +177,13 @@ export function DigitalWalletScreen({ navigation }) {
                  </Text>
               </View>
            </View>
-           <TouchableOpacity 
-             style={[styles.requestBtn, { backgroundColor: theme.primary }]}
-             onPress={() => Linking.openURL('https://ec.europa.eu/social/main.jsp?catId=1139&langId=es')}
-           >
-              <Text style={styles.requestBtnText}>Ver Información Oficial</Text>
-              <ExternalLink color="#FFF" size={16} />
-           </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.requestBtn, { backgroundColor: theme.primary }]}
+              onPress={() => Linking.openURL('https://ec.europa.eu/social/main.jsp?catId=1139&langId=es')}
+            >
+               <Text style={[styles.requestBtnText, { color: isDarkMode ? '#070B14' : '#FFFFFF' }]}>Ver Información Oficial</Text>
+               <ExternalLink color={isDarkMode ? '#070B14' : '#FFFFFF'} size={16} />
+            </TouchableOpacity>
         </View>
 
         {/* Action Buttons */}
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
   },
   edcOfficialBraille: {
     position: 'absolute',
-    bottom: 12,
+    top: 12,
     right: 12,
     flexDirection: 'row',
     gap: 2,
@@ -457,7 +457,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   requestBtnText: {
-    color: '#FFFFFF',
+    color: '#070B14',
     fontWeight: '700',
     fontSize: 14,
   },

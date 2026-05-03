@@ -1,0 +1,40 @@
+Starting project at /opt/distravel
+Starting Metro Bundler
+warning: Bundler cache is empty, rebuilding (this may take a minute)
+Tunnel connected.
+Tunnel ready.
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+Web ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web ./index.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 71.6% (451/579)
+Web Bundling failed 7026ms index.js (2502 modules)
+Web ./index.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.8% (2500/2502)
+ ERROR  Importing native-only module "react-native/Libraries/Utilities/codegenNativeCommands" on web from: node_modules/react-native-maps/lib/MapMarkerNativeComponent.js
+
+Import stack:
+
+ node_modules/react-native-maps/lib/MapMarkerNativeComponent.js
+ | import "react-native/Libraries/Utilities/codegenNativeCommands"
+           ^ Importing react-native internals is not supported on web.
+
+ node_modules/react-native-maps/lib/MapMarker.js
+ | import "./MapMarkerNativeComponent"
+
+ node_modules/react-native-maps/lib/index.js
+ | import "./MapMarker"
+
+ src/screens/PlaceDetailScreen.js
+ | import "react-native-maps"
+
+ src/navigation/AppNavigator.js
+ | import "../screens/PlaceDetailScreen"
+
+ App.js
+ | import "./src/navigation/AppNavigator"
+
+ index.js
+ | import "./App"
+
+ 
+ | import "./index"
+

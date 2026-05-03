@@ -16,7 +16,7 @@ import {
   TrendingDown, 
   Building2,
   Users,
-  CheckCircle2
+  CheckCircle
 } from 'lucide-react-native';
 import { typography } from '../theme/typography';
 import { MONUMENTOS } from '../data/monumentos';
@@ -25,7 +25,7 @@ import { CIUDADES_PREMIUM } from '../data/ciudades';
 const { width } = Dimensions.get('window');
 
 export function SavingsSimulatorScreen({ navigation }) {
-  const { theme } = useTheme();
+  const { theme, isDarkMode } = useTheme();
   const { userData } = useUser();
   const [selectedCity, setSelectedCity] = useState('Alicante');
 
@@ -121,7 +121,7 @@ export function SavingsSimulatorScreen({ navigation }) {
               ]}
               onPress={() => setSelectedCity(city)}
             >
-              <Text style={[styles.cityBtnText, { color: selectedCity === city ? '#FFFFFF' : theme.text }]}>{city}</Text>
+              <Text style={[styles.cityBtnText, { color: selectedCity === city ? '#070B14' : theme.text }]}>{city}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -176,11 +176,11 @@ export function SavingsSimulatorScreen({ navigation }) {
         <View style={styles.benefitsSection}>
           <Text style={[styles.label, { color: theme.textSecondary }]}>Ventajas del Colectivo PCD</Text>
           <View style={styles.benefitItem}>
-            <CheckCircle2 color={theme.primary} size={20} />
+            <CheckCircle color={theme.primary} size={20} />
             <Text style={[styles.benefitText, { color: theme.text }]}>Entrada gratuita en Museos Estatales</Text>
           </View>
           <View style={styles.benefitItem}>
-            <CheckCircle2 color={theme.primary} size={20} />
+            <CheckCircle color={theme.primary} size={20} />
             <Text style={[styles.benefitText, { color: theme.text }]}>Acompañante Gratis (Ley 2024 / Grado {'>'}33%)</Text>
           </View>
         </View>
@@ -238,17 +238,17 @@ const styles = StyleSheet.create({
   divider: {
     width: 1,
     height: '60%',
-    backgroundColor: 'rgba(255,255,255,0.3)',
+    backgroundColor: 'rgba(7, 11, 20, 0.2)',
   },
   profileLabel: {
-    color: 'rgba(255,255,255,0.8)',
+    color: 'rgba(7, 11, 20, 0.6)',
     fontSize: 10,
     fontWeight: '700',
     textTransform: 'uppercase',
     marginBottom: 5,
   },
   profileValue: {
-    color: '#FFFFFF',
+    color: '#070B14',
     fontSize: 20,
     fontWeight: '900',
   },
@@ -385,7 +385,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   actionBtnText: {
-    color: '#FFFFFF',
+    color: '#070B14',
     fontSize: 16,
     fontWeight: '800',
   }

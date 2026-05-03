@@ -164,22 +164,22 @@ export function DistravelAIScreen({ navigation }) {
           style={[styles.tab, activeTab === 'chat' && { backgroundColor: theme.primary }]}
           onPress={() => setActiveTab('chat')}
         >
-          <Bot color={activeTab === 'chat' ? '#FFFFFF' : theme.textSecondary} size={18} />
-          <Text style={[styles.tabText, { color: activeTab === 'chat' ? '#FFFFFF' : theme.textSecondary }]}>Chat</Text>
+          <Bot color={activeTab === 'chat' ? '#070B14' : theme.textSecondary} size={18} />
+          <Text style={[styles.tabText, { color: activeTab === 'chat' ? '#070B14' : theme.textSecondary }]}>Chat</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.tab, activeTab === 'auditor' && { backgroundColor: theme.primary }]}
           onPress={() => setActiveTab('auditor')}
         >
-          <ScanSearch color={activeTab === 'auditor' ? '#FFFFFF' : theme.textSecondary} size={18} />
-          <Text style={[styles.tabText, { color: activeTab === 'auditor' ? '#FFFFFF' : theme.textSecondary }]}>Auditor</Text>
+          <ScanSearch color={activeTab === 'auditor' ? '#070B14' : theme.textSecondary} size={18} />
+          <Text style={[styles.tabText, { color: activeTab === 'auditor' ? '#070B14' : theme.textSecondary }]}>Auditor</Text>
         </TouchableOpacity>
         <TouchableOpacity 
           style={[styles.tab, activeTab === 'explorer' && { backgroundColor: theme.primary }]}
           onPress={() => setActiveTab('explorer')}
         >
-          <Library color={activeTab === 'explorer' ? '#FFFFFF' : theme.textSecondary} size={18} />
-          <Text style={[styles.tabText, { color: activeTab === 'explorer' ? '#FFFFFF' : theme.textSecondary }]}>Explorar</Text>
+          <Library color={activeTab === 'explorer' ? '#070B14' : theme.textSecondary} size={18} />
+          <Text style={[styles.tabText, { color: activeTab === 'explorer' ? '#070B14' : theme.textSecondary }]}>Explorar</Text>
         </TouchableOpacity>
       </View>
 
@@ -204,7 +204,7 @@ export function DistravelAIScreen({ navigation }) {
                   [styles.aiBubble, { backgroundColor: theme.surface, borderColor: theme.border }]
                 ]}
               >
-                <Text style={[styles.messageText, { color: msg.sender === 'user' ? '#FFFFFF' : theme.text }]}>
+                <Text style={[styles.messageText, { color: msg.sender === 'user' ? '#070B14' : theme.text }]}>
                   {msg.text}
                 </Text>
               </View>
@@ -225,7 +225,7 @@ export function DistravelAIScreen({ navigation }) {
               onChangeText={setInputText}
             />
             <TouchableOpacity style={[styles.sendButton, { backgroundColor: theme.primary }]} onPress={handleSend}>
-              <Send color="#FFFFFF" size={20} />
+              <Send color="#070B14" size={20} />
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
@@ -254,8 +254,8 @@ export function DistravelAIScreen({ navigation }) {
             onPress={startAnalysis}
             disabled={isAnalyzing}
           >
-            <ScanSearch color="#FFFFFF" size={24} />
-            <Text style={styles.analyzeBtnText}>Auditar ahora con IA</Text>
+            <ScanSearch color="#070B14" size={24} />
+            <Text style={[styles.analyzeBtnText, { color: '#070B14' }]}>Auditar ahora con IA</Text>
           </TouchableOpacity>
 
           {analysisResult && (
@@ -265,8 +265,8 @@ export function DistravelAIScreen({ navigation }) {
                   <Text style={[styles.resultTitle, { color: theme.text }]}>Resultado del Análisis</Text>
                   <Text style={[styles.resultStatus, { color: theme.success }]}>{analysisResult.status}</Text>
                 </View>
-                <View style={[styles.scoreBadge, { backgroundColor: theme.primary + '20' }]}>
-                  <Text style={[styles.scoreText, { color: theme.primary }]}>{analysisResult.score}</Text>
+                <View style={[styles.scoreBadge, { backgroundColor: '#F1C40F' }]}>
+                  <Text style={[styles.scoreText, { color: '#000000' }]}>{analysisResult.score}</Text>
                 </View>
               </View>
               
@@ -309,8 +309,8 @@ export function DistravelAIScreen({ navigation }) {
             onPress={startExploration}
             disabled={isAnalyzing}
           >
-            <Sparkles color="#FFFFFF" size={24} />
-            <Text style={styles.analyzeBtnText}>Identificar con IA</Text>
+            <Sparkles color="#070B14" size={24} />
+            <Text style={[styles.analyzeBtnText, { color: '#070B14' }]}>Identificar con IA</Text>
           </TouchableOpacity>
 
           {explorerResult && (
@@ -375,8 +375,8 @@ export function DistravelAIScreen({ navigation }) {
                         <ActivityIndicator size="small" color="#FFFFFF" />
                       ) : (
                         <>
-                          <Check color="#FFFFFF" size={18} />
-                          <Text style={styles.verifyBtnText}>Verificar</Text>
+                          <Check color="#070B14" size={18} />
+                          <Text style={[styles.verifyBtnText, { color: '#070B14' }]}>Verificar</Text>
                         </>
                       )}
                     </TouchableOpacity>
@@ -419,7 +419,7 @@ const styles = StyleSheet.create({
   scanLine: { position: 'absolute', width: '100%', height: 2, backgroundColor: '#00F2FF', top: '50%', shadowColor: '#00F2FF', shadowOpacity: 0.8 },
   analyzingText: { marginTop: 15, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 },
   analyzeBtn: { flexDirection: 'row', height: 60, borderRadius: 20, justifyContent: 'center', alignItems: 'center', marginBottom: 25 },
-  analyzeBtnText: { color: '#FFFFFF', fontSize: 18, fontWeight: '800', marginLeft: 12 },
+  analyzeBtnText: { color: '#070B14', fontSize: 18, fontWeight: '800', marginLeft: 12 },
   resultCard: { padding: 20, borderRadius: 25, borderWidth: 1 },
   resultHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, borderBottomWidth: 1, borderBottomColor: 'rgba(255, 255, 255, 0.1)', paddingBottom: 15 },
   resultTitle: { fontSize: 16, fontWeight: '700' },
@@ -442,5 +442,5 @@ const styles = StyleSheet.create({
   cancelBtn: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10, borderWidth: 1 },
   cancelBtnText: { fontWeight: '700', fontSize: 14 },
   verifyBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10, gap: 8 },
-  verifyBtnText: { color: '#FFFFFF', fontWeight: '800', fontSize: 14 },
+  verifyBtnText: { color: '#070B14', fontWeight: '800', fontSize: 14 },
 });

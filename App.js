@@ -8,6 +8,11 @@ import { UserProvider } from './src/context/UserContext';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function App() {
+  React.useEffect(() => {
+    console.log('Distravel App v3.0.2 - REFRESHED');
+  }, []);
+  
+  console.log('Distravel App v3.0.2 - REFRESHED');
   return (
     <SafeAreaProvider>
       <UserProvider>

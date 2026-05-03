@@ -9,7 +9,6 @@ export const MONUMENTOS = {
       schedule: 'Lunes a sábado: 10:00 - 20:00. Domingos y festivos: 10:00 - 19:00.',
       price: 'General: 15€. Reducida: 7.50€.',
       disabilityBenefit: 'GRATIS para personas con discapacidad (>33%) y un acompañante (si la discapacidad es >65% o requiere ayuda).',
-      // DATOS TÉCNICOS (El Océano Azul)
       technicalSpecs: {
         doorWidth: '120cm',
         turningSpace: 'Sí (>150cm)',
@@ -17,6 +16,13 @@ export const MONUMENTOS = {
         brailleSignage: 'En ascensores y puntos clave',
         adaptedAudio: 'Audioguías con audiodescripción',
         adaptedToilet: 'Sí, 4 puntos en Planta 0 y 1'
+      },
+      audioguide: {
+        available: true,
+        price: '5,00 €',
+        accessible: true,
+        languages: ['Español', 'Inglés', 'Francés', 'Alemán', 'Italiano', 'Chino', 'Japonés', 'Portugués', 'LSE', 'Audiodescripción'],
+        note: 'Audioguía con audiodescripción y bucle magnético disponible.'
       },
       suitability: ['MOTOR', 'VISUAL', 'AUDITORY', 'COGNITIVE'],
       verifiedByCommunity: {
@@ -42,6 +48,13 @@ export const MONUMENTOS = {
         brailleSignage: 'Limitado',
         adaptedAudio: 'Disponible',
         adaptedToilet: 'Sí, en el Patio de Armas'
+      },
+      audioguide: {
+        available: true,
+        price: '4,00 €',
+        accessible: true,
+        languages: ['Español', 'Inglés', 'Francés', 'Alemán', 'Italiano'],
+        note: 'Dispositivos con contenidos adaptados disponibles en taquilla.'
       },
       suitability: ['MOTOR', 'AUDITORY'],
       verifiedByCommunity: {
@@ -70,6 +83,13 @@ export const MONUMENTOS = {
         adaptedAudio: 'Sí, audioguía especial',
         adaptedToilet: 'Sí, en zonas de descanso'
       },
+      audioguide: {
+        available: true,
+        price: '6,00 €',
+        accessible: true,
+        languages: ['Español', 'Inglés', 'Francés', 'Alemán', 'Italiano', 'Árabe'],
+        note: 'Audioguías con guiones adaptados y rutas accesibles señalizadas.'
+      },
       suitability: ['VISUAL', 'AUDITORY', 'COGNITIVE'],
       verifiedByCommunity: {
         status: 'Requiere Atención (Rutas empedradas)',
@@ -97,6 +117,13 @@ export const MONUMENTOS = {
         adaptedAudio: 'App oficial accesible',
         adaptedToilet: 'Sí, accesible'
       },
+      audioguide: {
+        available: true,
+        price: 'Incluida',
+        accessible: true,
+        languages: ['Español', 'Catalán', 'Inglés', 'Francés', 'Alemán', 'Italiano', 'Chino', 'LSE', 'Audiodescripción'],
+        note: 'Audioguía incluida en la App oficial con opciones de accesibilidad sensorial.'
+      },
       suitability: ['MOTOR', 'VISUAL', 'AUDITORY', 'COGNITIVE'],
       verifiedByCommunity: {
         status: 'Alta Confianza (Ascensor adaptado)',
@@ -121,6 +148,13 @@ export const MONUMENTOS = {
         brailleSignage: 'No',
         adaptedAudio: 'No',
         adaptedToilet: 'Sí, en entrada principal'
+      },
+      audioguide: {
+        available: true,
+        price: 'Gratis (App)',
+        accessible: true,
+        languages: ['Español', 'Catalán', 'Inglés', 'Francés'],
+        note: 'Guía disponible mediante descarga de aplicación oficial.'
       },
       verifiedByCommunity: {
         status: 'Difícil (Ruta recomendada para sillas)',
@@ -148,6 +182,13 @@ export const MONUMENTOS = {
         adaptedAudio: 'Disponible',
         adaptedToilet: 'Sí'
       },
+      audioguide: {
+        available: true,
+        price: '5,00 €',
+        accessible: true,
+        languages: ['Español', 'Inglés', 'Francés', 'Alemán', 'Italiano'],
+        note: 'Contenidos disponibles en formato audioguía tradicional.'
+      },
       verifiedByCommunity: {
         status: 'Verificado (Giralda no accesible)',
         lastCheck: 'Hace 1 semana',
@@ -173,6 +214,13 @@ export const MONUMENTOS = {
         brailleSignage: 'Sí',
         adaptedAudio: 'Sí, videoguías en lengua de signos',
         adaptedToilet: 'Sí, en todas las plantas'
+      },
+      audioguide: {
+        available: true,
+        price: 'Incluida',
+        accessible: true,
+        languages: ['Español', 'Euskera', 'Inglés', 'Francés', 'Alemán', 'Italiano', 'LSE'],
+        note: 'Videoguías en LSE y audiodescripción disponibles sin coste adicional.'
       },
       verifiedByCommunity: {
         status: 'Máxima Excelencia (5 estrellas)',
@@ -200,6 +248,13 @@ export const MONUMENTOS = {
         adaptedAudio: 'Disponible',
         adaptedToilet: 'Sí, múltiples puntos'
       },
+      audioguide: {
+        available: true,
+        price: '3,50 €',
+        accessible: true,
+        languages: ['Español', 'Valenciano', 'Inglés', 'Francés', 'Alemán', 'Italiano'],
+        note: 'Audioguías disponibles para los diferentes edificios del complejo.'
+      },
       verifiedByCommunity: {
         status: 'Muy Alta Accesibilidad',
         lastCheck: 'Hace 5 días',
@@ -226,10 +281,22 @@ export const MONUMENTOS = {
         adaptedAudio: 'App móvil',
         adaptedToilet: 'Sí, en el patio'
       },
+      audioguide: {
+        available: true,
+        price: 'Gratis (QR)',
+        accessible: true,
+        languages: ['Español', 'Inglés', 'Francés', 'Alemán'],
+        note: 'Visita guiada por audio mediante códigos QR distribuidos por el recinto.'
+      },
       verifiedByCommunity: {
         status: 'Excelente (Uso de Ascensor)',
         lastCheck: 'Hace 1 día',
         userCount: 52
+      },
+      workingHours: {
+        weekday: { open: '10:00', close: '20:00' },
+        weekend: { open: '10:00', close: '20:00' },
+        is24h: false
       },
       location: { latitude: 38.3489, longitude: -0.4777 }
     },
@@ -250,6 +317,13 @@ export const MONUMENTOS = {
         adaptedAudio: 'No',
         adaptedToilet: 'Sí'
       },
+      audioguide: {
+        available: false,
+        price: 'N/A',
+        accessible: false,
+        languages: [],
+        note: 'No dispone de servicio de audioguía.'
+      },
       verifiedByCommunity: {
         status: 'Muy Accesible',
         lastCheck: 'Hace 3 días',
@@ -266,6 +340,13 @@ export const MONUMENTOS = {
       schedule: '10:00 - 20:00.',
       price: 'Entrada GRATIS.',
       disabilityBenefit: 'Accesibilidad total con ascensores y rampas.',
+      audioguide: {
+        available: true,
+        price: 'Gratis',
+        accessible: true,
+        languages: ['Español', 'Valenciano', 'Inglés'],
+        note: 'Audioguía disponible a través de la web oficial y códigos QR.'
+      },
       location: { latitude: 38.3444, longitude: -0.4795 }
     },
     {
@@ -277,6 +358,13 @@ export const MONUMENTOS = {
       schedule: '11:00 - 20:00.',
       price: 'Entrada GRATIS.',
       disabilityBenefit: 'Edificio moderno 100% accesible.',
+      audioguide: {
+        available: true,
+        price: 'Gratis (Interactivo)',
+        accessible: true,
+        languages: ['Español', 'Inglés'],
+        note: 'Contenidos interactivos con soporte de audio en salas.'
+      },
       location: { latitude: 38.3401, longitude: -0.4815 }
     },
     {
@@ -288,6 +376,18 @@ export const MONUMENTOS = {
       schedule: '10:00 - 20:00.',
       price: 'Entrada GRATIS.',
       disabilityBenefit: 'Totalmente accesible con ascensor.',
+      audioguide: {
+        available: true,
+        price: 'Gratis',
+        accessible: true,
+        languages: ['Español', 'Inglés', 'Valenciano'],
+        note: 'Folleto digital y soporte de audio mediante App.'
+      },
+      workingHours: {
+        weekday: { open: '10:00', close: '20:00' },
+        weekend: { open: '10:00', close: '14:00' },
+        is24h: false
+      },
       location: { latitude: 38.3452, longitude: -0.4828 }
     },
     {
@@ -299,6 +399,13 @@ export const MONUMENTOS = {
       schedule: 'Bajo reserva.',
       price: '5€ (Reducida PCD: 3€).',
       disabilityBenefit: 'Acceso limitado (Consultar reserva).',
+      audioguide: {
+        available: true,
+        price: 'Incluida en guía',
+        accessible: false,
+        languages: ['Español', 'Inglés'],
+        note: 'La visita es guiada por personal experto.'
+      },
       location: { latitude: 38.3456, longitude: -0.4851 }
     }
   ]

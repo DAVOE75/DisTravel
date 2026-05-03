@@ -27,7 +27,7 @@ import {
 import { typography } from '../theme/typography';
 
 export function LoginScreen({ navigation }) {
-  const { theme, isDarkMode } = useTheme();
+  const { theme, isDarkMode, logo } = useTheme();
   const { updateUserData, userData } = useUser();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -86,7 +86,7 @@ export function LoginScreen({ navigation }) {
           <View style={styles.header}>
             <View style={styles.logoContainer}>
               <Image 
-                source={require('../../assets/logo_official.png')} 
+                source={logo} 
                 style={styles.logo} 
                 resizeMode="contain"
               />
@@ -127,8 +127,8 @@ export function LoginScreen({ navigation }) {
               style={[styles.loginBtn, { backgroundColor: theme.primary }]}
               onPress={() => handleLogin('Email')}
             >
-              <Text style={styles.loginBtnText}>Iniciar Sesión</Text>
-              <ArrowRight color="#FFFFFF" size={20} />
+              <Text style={[styles.loginBtnText, { color: isDarkMode ? '#070B14' : '#FFFFFF' }]}>Iniciar Sesión</Text>
+              <ArrowRight color={isDarkMode ? '#070B14' : '#FFFFFF'} size={20} />
             </TouchableOpacity>
           </View>
 
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   loginBtnText: {
-    color: '#FFFFFF',
+    color: '#070B14',
     fontSize: 18,
     fontWeight: '800',
     marginRight: 10,

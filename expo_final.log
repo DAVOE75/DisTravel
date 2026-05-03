@@ -1,0 +1,35 @@
+nohup: ignoring input
+  --non-interactive is not supported, use $CI=1 instead
+Starting project at /opt/distravel
+Starting Metro Bundler
+warning: Bundler cache is empty, rebuilding (this may take a minute)
+Tunnel connected.
+Tunnel ready.
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android ./index.js ▓▓▓▓▓░░░░░░░░░░░ 36.3% (375/622)
+Android ./index.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 77.3% (1898/2664)
+Android Bundled 9841ms index.js (2960 modules)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  HomeScreen: Iniciando servicios...
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  HomeScreen: Iniciando servicios...
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO

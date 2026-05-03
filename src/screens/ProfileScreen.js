@@ -59,7 +59,7 @@ const ProfileItem = ({ icon: Icon, title, value, onPress, isLast, color, theme }
 
 export function ProfileScreen({ navigation }) {
   const { theme, isDarkMode } = useTheme();
-  const { userData, updateUserData, logout } = useUser();
+  const { userData, updateUserData, persistImage, logout } = useUser();
   const insets = useSafeAreaInsets();
 
   const [editModalVisible, setEditModalVisible] = React.useState(false);
@@ -105,10 +105,16 @@ export function ProfileScreen({ navigation }) {
     }
   };
 
-  const saveEditedImage = () => {
-    updateUserData({ profileImage: tempImage });
-    setEditModalVisible(false);
-    Alert.alert('¡Hecho!', 'Tu foto de perfil se ha actualizado correctamente.');
+  const saveEditedImage = async () => {
+    try {
+      const permanentUri = await persistImage(tempImage, `profile_${userData.id || 'user'}`);
+      updateUserData({ profileImage: permanentUri });
+      setEditModalVisible(false);
+      Alert.alert('¡Hecho!', 'Tu foto de perfil se ha actualizado correctamente.');
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'No se pudo guardar la imagen de perfil.');
+    }
   };
 
   return (
@@ -123,7 +129,7 @@ export function ProfileScreen({ navigation }) {
         >
           <ChevronLeft color={theme.text} size={22} />
         </TouchableOpacity>
-        <Text style={[styles.topTitle, { color: theme.text }, typography.h2]}>Perfil</Text>
+        <Text style={[styles.topTitle, { color: theme.text }, typography.h2]}>Perfil v3.0.2</Text>
         <TouchableOpacity 
           style={[styles.settingsBtn, { backgroundColor: theme.surface }]}
           onPress={() => navigation.navigate('Settings')}
@@ -150,13 +156,27 @@ export function ProfileScreen({ navigation }) {
               style={[styles.cameraButton, { backgroundColor: theme.primary }]}
               onPress={handleImageOption}
             >
-              <Camera color="#FFFFFF" size={16} />
+              <Camera color="#070B14" size={16} />
             </TouchableOpacity>
           </View>
           <Text style={[styles.userName, { color: theme.text }, typography.h1]}>{userData?.name || 'Viajero'}</Text>
-          <Text style={[styles.userEmail, { color: theme.textSecondary }]}>{userData?.email || 'viajero@distravel.com'}</Text>
-          {userData?.phone && (
-            <Text style={[styles.userPhone, { color: theme.primary }]}>{userData.phone}</Text>
+          <View style={styles.userInfoRow}>
+             <Text style={[styles.userEmail, { color: theme.textSecondary }]}>{userData?.email || 'viajero@distravel.com'}</Text>
+             {userData?.country && (
+               <>
+                 <Text style={[styles.dot, { color: theme.textSecondary }]}>•</Text>
+                 <Text style={[styles.userCountry, { color: theme.textSecondary }]}>{userData.country}</Text>
+               </>
+             )}
+          </View>
+          {userData?.phone ? (
+            <Text style={[styles.userPhone, { color: theme.primary }]}>
+              {userData.phonePrefix || '+34'} {userData.phone}
+            </Text>
+          ) : (
+            <Text style={[styles.userPhone, { color: theme.textSecondary, opacity: 0.6, fontSize: 12 }]}>
+              Teléfono no configurado
+            </Text>
           )}
         </View>
 
@@ -476,6 +496,20 @@ const styles = StyleSheet.create({
   userEmail: {
     fontSize: 14,
     opacity: 0.7,
+  },
+  userInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 2,
+  },
+  dot: {
+    fontSize: 14,
+    opacity: 0.5,
+  },
+  userCountry: {
+    fontSize: 14,
+    fontWeight: '600',
   },
   userPhone: {
     fontSize: 14,

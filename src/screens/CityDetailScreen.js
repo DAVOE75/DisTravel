@@ -34,10 +34,16 @@ import {
   Plus,
   Bus,
   Zap,
-  Car
+  Car,
+  Utensils,
+  PartyPopper,
+  Train,
+  Plane,
+  TrendingDown
 } from 'lucide-react-native';
 import { MONUMENTOS } from '../data/monumentos';
 import { typography } from '../theme/typography';
+import { calculatePlaceSavings } from '../utils/savings';
 import * as ImagePicker from 'expo-image-picker';
 
 import * as Location from 'expo-location';
@@ -157,12 +163,25 @@ export function CityDetailScreen({ route, navigation }) {
     }
   }, [tempCityData]);
 
-  const officialPlaces = MONUMENTOS[city.name] || [];
+  const officialPlaces = useMemo(() => {
+    const cName = normalize(city.name);
+    // Buscar coincidencia exacta o parcial normalizada
+    const matchingKey = Object.keys(MONUMENTOS).find(k => {
+      const normalizedK = normalize(k);
+      // Soporte bilingüe: Alicante/Alacant, Castellón/Castelló, etc.
+      return normalizedK === cName || 
+             cName.includes(normalizedK) || 
+             normalizedK.includes(cName) ||
+             (normalizedK === 'alicante' && cName.includes('alacant')) ||
+             (normalizedK === 'castellon' && cName.includes('castello'));
+    });
+    return MONUMENTOS[matchingKey] || [];
+  }, [city.name]);
 
   const userContributions = (userData?.contributions || []).filter(p => {
     const pCity = normalize(p.city);
     const cName = normalize(city.name);
-    return pCity === cName || p.name.toLowerCase().includes(cName);
+    return pCity === cName || pCity.includes(cName) || cName.includes(pCity) || p.name.toLowerCase().includes(cName);
   }).map(p => ({
     ...p,
     description: p.freeInfo || 'Lugar añadido por la comunidad.',
@@ -173,13 +192,15 @@ export function CityDetailScreen({ route, navigation }) {
     userId: p.userId
   }));
 
-  // MEZCLA INTELIGENTE: Priorizar versiones del usuario (sobrescribir oficiales con el mismo nombre)
-  const userPlaceMap = new Map();
-  userContributions.forEach(p => userPlaceMap.set(p.name.toLowerCase(), p));
+  // MEZCLA INTELIGENTE: Priorizar versiones del usuario visibles
+  const visibleUserContributions = (userContributions || []).filter(p => 
+    isAdmin || p.verified || p.userId === userData?.id
+  );
+  const visibleUserNames = new Set(visibleUserContributions.map(p => p.name.toLowerCase()));
 
   const allPlaces = [
-    ...userContributions.filter(p => isAdmin || p.verified || p.userId === userData.id),
-    ...officialPlaces.filter(p => !userPlaceMap.has(p.name.toLowerCase()))
+    ...visibleUserContributions,
+    ...officialPlaces.filter(p => !visibleUserNames.has(p.name.toLowerCase()))
   ];
 
   const handleValidate = async (placeId) => {
@@ -258,7 +279,9 @@ export function CityDetailScreen({ route, navigation }) {
               'Historia': 'history',
               'Geografía': 'geography',
               'Clima': 'climate',
-              'Paisaje': 'landscape'
+              'Paisaje': 'landscape',
+              'Gastronomía': 'gastronomy',
+              'Festividades': 'festivities'
             };
             setTempCityData(prev => ({ ...prev, [fieldMap[section]]: newText }));
             Alert.alert("Éxito", "Cambios guardados permanentemente.");
@@ -305,18 +328,34 @@ export function CityDetailScreen({ route, navigation }) {
       const isAlicante = normalize(cityName).includes('alicante');
       
       let aiGeneratedData = {
-        history: `La trayectoria histórica de ${cityName} es un periplo extraordinario que abarca múltiples milenios. Desde los primeros asentamientos del Calcolítico hasta su consolidación como polo cultural moderno.`,
-        geography: `${cityName} se ubica en un enclave geográfico de primer orden, asentada sobre una serie de terrazas fluviales y elevaciones que le otorgan un dominio visual absoluto sobre su entorno.`,
-        climate: `El régimen climatológico de ${cityName} se define por una variante mediterránea con matices continentales, lo que se traduce en una personalidad meteorológica vibrante.`,
-        landscape: `El entorno paisajístico de ${cityName} es una sinfonía de biodiversidad y diseño urbano, con rutas accesibles que permiten una conexión profunda con la naturaleza.`
+        history: `La trayectoria histórica de ${cityName} es un periplo extraordinario que abarca múltiples milenios.`,
+        geography: `${cityName} se ubica en un enclave geográfico de primer orden.`,
+        climate: `El régimen climatológico de ${cityName} se define por una variante predominantemente templada.`,
+        landscape: `El entorno paisajístico de ${cityName} es una sinfonía de biodiversidad.`,
+        gastronomy: `Platos autóctonos y tradicionales de la zona elaborados con productos de proximidad.`,
+        festivities: `Calendario vibrante con fiestas patronales y eventos culturales de gran calado.`,
+        transports: { bus: true, taxi: true, tram: false, train: false, plane: false }
       };
 
       if (isAlicante) {
         aiGeneratedData = {
-          history: "Alicante, la antigua Lucentum romana, es una ciudad marcada por su puerto y su vigilancia desde el Monte Benacantil. Su historia respira a través del MUSA (Museo de la Ciudad) en el Castillo de Santa Bárbara y el MUBAG, que custodia el arte alicantino en un palacio del s. XVIII. La ciudad guarda memorias profundas en sus Refugios Antiaéreos de la Guerra Civil y celebra su identidad cada año en el Museo de las Hogueras. Desde la Lonja de Pescado hasta el Palacio el Portalet, cada piedra cuenta la evolución de una villa marinera a una capital cultural vibrante.",
-          geography: "Asentada a orillas del Mediterráneo, Alicante está presidida por el Castillo de Santa Bárbara. Su geografía urbana se extiende desde el puerto, donde el Museo The Ocean Race marca el inicio de grandes aventuras, hasta el campus de San Vicente donde el MUA destaca por su arquitectura. La ciudad se vertebra en torno a la Explanada y el monte Benacantil, ofreciendo una orografía que combina playas accesibles con elevaciones estratégicas que han definido su defensa durante siglos.",
-          climate: "Alicante disfruta de un microclima mediterráneo excepcional con más de 3.000 horas de sol al año. Sus inviernos son suaves y primaverales, lo que permite visitar el Museo de Aguas de Alicante o los Pozos de Garrigós con una temperatura agradable. En verano, la brisa marina suaviza el calor, invitando a explorar el Museo de Nueva Tabarca o disfrutar de las exposiciones temporales en Las Cigarreras y la Lonja bajo cielos siempre despejados.",
-          landscape: "El paisaje alicantino es un contraste entre el azul intenso del mar y el ocre de sus montañas. La silueta de 'La Cara del Moro' en el Benacantil domina un horizonte donde se mezclan el urbanismo moderno con joyas históricas como el Palacio de Maisonnave. Desde el puerto deportivo hasta las murallas de La Ciudad Descubierta, el entorno ofrece una riqueza visual única, complementada por la biodiversidad de la Isla de Tabarca y la luz mágica que inspiró a artistas durante siglos."
+          history: "Alicante, la antigua Lucentum romana, es una ciudad marcada por su puerto y su vigilancia desde el Monte Benacantil.",
+          geography: "Asentada a orillas del Mediterráneo, Alicante está presidida por el Castillo de Santa Bárbara.",
+          climate: "Microclima mediterráneo excepcional con más de 3.000 horas de sol al año.",
+          landscape: "Contraste entre el azul intenso del mar y el ocre de sus montañas. La Cara del Moro es su icono.",
+          gastronomy: "Capital del arroz. Imprescindibles: Arroz a Banda, del Senyoret, Olleta Alicantina y Gachamiga. Dulce: Turrón de Jijona.",
+          festivities: "Hogueras de San Juan (24 de junio), Romería de la Santa Faz (abril - segundo jueves tras Semana Santa), Moros y Cristianos.",
+          transports: { bus: true, taxi: true, tram: true, train: true, plane: true }
+        };
+      } else if (normalize(cityName).includes('morella')) {
+        aiGeneratedData = {
+          history: "Ciudad medieval clave en la historia del Reino de Valencia, con huellas del Cid y Jaume I.",
+          geography: "Situada a 1.000m de altitud, coronando un cerro cónico amurallado.",
+          climate: "Mediterráneo de montaña. Nieve en invierno y frescor en verano.",
+          landscape: "Paisaje agreste de Els Ports con valles profundos y bosques de pinos.",
+          gastronomy: "Croquetas Morellanas, Trufa Negra, Sopa Morellana y el postre típico 'Flaó'.",
+          festivities: "Sexenni (cada 6 años en agosto), L'Anunci, Sant Antoni y el Corpus Christi medieval.",
+          transports: { bus: true, taxi: true, tram: false, train: false, plane: false }
         };
       }
 
@@ -423,7 +462,7 @@ export function CityDetailScreen({ route, navigation }) {
           )}
         </View>
 
-        <View style={[styles.locationBar, { backgroundColor: '#FFD700' }]}>
+        <View style={[styles.locationBar, { backgroundColor: '#EFBF04' }]}>
           <MapPin color="#0A192F" size={18} />
           <Text style={styles.locationBarText}>
             {tempCityData.province || 'Alicante'} / <Text style={{ fontWeight: '800' }}>ESPAÑA</Text>
@@ -494,6 +533,26 @@ export function CityDetailScreen({ route, navigation }) {
               <Text style={[styles.infoCardTitle, { color: theme.text }]}>Paisaje</Text>
               {isAdmin && <View style={styles.adminDot} />}
             </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.infoCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
+              onPress={() => openInfo('Gastronomía', tempCityData.gastronomy || 'Gastronomía rica y variada.', Utensils)}
+              onLongPress={() => isAdmin && handleAdminEdit('Gastronomía', tempCityData.gastronomy)}
+            >
+              <Utensils color={theme.primary} size={24} />
+              <Text style={[styles.infoCardTitle, { color: theme.text }]}>Gastronomía</Text>
+              {isAdmin && <View style={styles.adminDot} />}
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.infoCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
+              onPress={() => openInfo('Festividades', tempCityData.festivities || 'Calendario festivo y cultural.', PartyPopper)}
+              onLongPress={() => isAdmin && handleAdminEdit('Festividades', tempCityData.festivities)}
+            >
+              <PartyPopper color={theme.primary} size={24} />
+              <Text style={[styles.infoCardTitle, { color: theme.text }]}>Festividades</Text>
+              {isAdmin && <View style={styles.adminDot} />}
+            </TouchableOpacity>
           </View>
 
           {/* Transporte Conectado v3.0 */}
@@ -502,30 +561,33 @@ export function CityDetailScreen({ route, navigation }) {
               Transporte Conectado
             </Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
-              <View style={[styles.transportCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                 <Bus color={theme.primary} size={24} />
-                 <Text style={[styles.transportTitle, { color: theme.text }]}>Autobuses</Text>
-                 <View style={styles.transportStatus}>
-                    <View style={[styles.statusDot, { backgroundColor: '#2ECC71' }]} />
-                    <Text style={[styles.statusText, { color: theme.textSecondary }]}>100% Accesible</Text>
-                 </View>
-              </View>
-              <View style={[styles.transportCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                 <Zap color="#F1C40F" size={24} />
-                 <Text style={[styles.transportTitle, { color: theme.text }]}>TRAM / Metro</Text>
-                 <View style={styles.transportStatus}>
-                    <View style={[styles.statusDot, { backgroundColor: '#2ECC71' }]} />
-                    <Text style={[styles.statusText, { color: theme.textSecondary }]}>Rampa Auto</Text>
-                 </View>
-              </View>
-              <View style={[styles.transportCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                 <Car color="#3498DB" size={24} />
-                 <Text style={[styles.transportTitle, { color: theme.text }]}>EuroTaxi</Text>
-                 <View style={styles.transportStatus}>
-                    <View style={[styles.statusDot, { backgroundColor: '#2ECC71' }]} />
-                    <Text style={[styles.statusText, { color: theme.textSecondary }]}>Disponible</Text>
-                 </View>
-              </View>
+              {[
+                { id: 'bus', title: 'Autobuses', icon: Bus, activeColor: theme.primary, activeText: '100% Accesible' },
+                { id: 'taxi', title: 'EuroTaxi', icon: Car, activeColor: '#3498DB', activeText: 'Disponible' },
+                { id: 'tram', title: 'TRAM / Metro', icon: Zap, activeColor: '#F1C40F', activeText: 'Rampa Auto' },
+                { id: 'train', title: 'Tren', icon: Train, activeColor: '#9B59B6', activeText: 'Adaptado' },
+                { id: 'plane', title: 'Aeropuerto', icon: Plane, activeColor: '#E74C3C', activeText: 'Asistencia PMR' }
+              ].map((transport) => {
+                // Si la IA ha devuelto transports, los usamos. Si no, por defecto mostramos bus y taxi (para evitar que salga todo activo al entrar).
+                const isActive = tempCityData.transports 
+                  ? tempCityData.transports[transport.id] 
+                  : ['bus', 'taxi'].includes(transport.id); // Valor por defecto antes de usar IA
+
+                const Icon = transport.icon;
+
+                return (
+                  <View key={transport.id} style={[styles.transportCard, { backgroundColor: theme.surface, borderColor: theme.border, opacity: isActive ? 1 : 0.4 }]}>
+                     <Icon color={isActive ? transport.activeColor : theme.textSecondary} size={24} />
+                     <Text style={[styles.transportTitle, { color: isActive ? theme.text : theme.textSecondary }]}>{transport.title}</Text>
+                     <View style={styles.transportStatus}>
+                        <View style={[styles.statusDot, { backgroundColor: isActive ? '#2ECC71' : '#7F8C8D' }]} />
+                        <Text style={[styles.statusText, { color: theme.textSecondary }]}>
+                          {isActive ? transport.activeText : 'No Disponible'}
+                        </Text>
+                     </View>
+                  </View>
+                );
+              })}
             </ScrollView>
           </View>
 
@@ -548,53 +610,63 @@ export function CityDetailScreen({ route, navigation }) {
             showsHorizontalScrollIndicator={false} 
             contentContainerStyle={{ paddingBottom: 20, paddingRight: 20 }}
           >
-            {allPlaces.map((place) => (
-              <TouchableOpacity 
-                key={place.id} 
-                style={[styles.placeCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-                onPress={() => navigation.navigate('PlaceDetail', { place })}
-                activeOpacity={0.9}
-              >
-                <Image 
-                  source={{ uri: place.image || 'https://images.unsplash.com/photo-1559564484-e48b3e040ff4' }} 
-                  style={styles.placeCardImage} 
-                />
-                <View style={styles.placeCardOverlay} />
-                
-                <View style={styles.placeCardBadge}>
-                  <Accessibility color="#FFF" size={12} />
-                  <Text style={styles.placeCardBadgeText}>Adaptado</Text>
-                </View>
-
-                {isAiEnhanced && (
-                  <View style={styles.aiInsightBadge}>
-                    <Zap color="#F1C40F" size={10} fill="#F1C40F" />
-                    <Text style={styles.aiInsightText}>IA: Ruta Optimizada</Text>
+            {allPlaces.map((place) => {
+              const savings = calculatePlaceSavings(place);
+              return (
+                <TouchableOpacity 
+                  key={place.id} 
+                  style={[styles.placeCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
+                  onPress={() => navigation.navigate('PlaceDetail', { place })}
+                  activeOpacity={0.9}
+                >
+                  <Image 
+                    source={{ uri: place.image || 'https://images.unsplash.com/photo-1559564484-e48b3e040ff4' }} 
+                    style={styles.placeCardImage} 
+                  />
+                  <View style={styles.placeCardOverlay} />
+                  
+                  <View style={styles.placeCardBadge}>
+                    <Accessibility color="#FFF" size={12} />
+                    <Text style={styles.placeCardBadgeText}>Adaptado</Text>
                   </View>
-                )}
 
-                <View style={styles.placeCardContent}>
-                  {isAiEnhanced && (
-                    <Text style={styles.aiTipText}>
-                      Tip IA: Mejor acceso a las 10:00 AM
-                    </Text>
+                  {savings && (
+                    <View style={styles.savingsBadge}>
+                      <TrendingDown color="#FFF" size={12} />
+                      <Text style={styles.savingsBadgeText}>Ahorras {savings}€</Text>
+                    </View>
                   )}
-                  <Text style={styles.placeCardName} numberOfLines={2}>{place.name}</Text>
-                  <View style={styles.placeCardTag}>
-                    <Text style={styles.placeCardTagText}>{place.category || 'Monumento'}</Text>
-                  </View>
-                </View>
 
-                {isAdmin && place.isUserAdded && (
-                  <TouchableOpacity 
-                    style={[styles.adminBadgeAction, { backgroundColor: place.verified ? '#2ECC71' : '#FF9500' }]}
-                    onPress={() => place.verified ? handleUnvalidate(place.id) : handleValidate(place.id)}
-                  >
-                    {place.verified ? <CheckCircle color="#FFF" size={14} /> : <Zap color="#FFF" size={14} />}
-                  </TouchableOpacity>
-                )}
-              </TouchableOpacity>
-            ))}
+                  {isAiEnhanced && (
+                    <View style={styles.aiInsightBadge}>
+                      <Zap color="#F1C40F" size={10} fill="#F1C40F" />
+                      <Text style={styles.aiInsightText}>IA: Ruta Optimizada</Text>
+                    </View>
+                  )}
+
+                  <View style={styles.placeCardContent}>
+                    {isAiEnhanced && (
+                      <Text style={styles.aiTipText}>
+                        Tip IA: Mejor acceso a las 10:00 AM
+                      </Text>
+                    )}
+                    <Text style={styles.placeCardName} numberOfLines={2}>{place.name}</Text>
+                    <View style={styles.placeCardTag}>
+                      <Text style={styles.placeCardTagText}>{place.category || 'Monumento'}</Text>
+                    </View>
+                  </View>
+
+                  {isAdmin && place.isUserAdded && (
+                    <TouchableOpacity 
+                      style={[styles.adminBadgeAction, { backgroundColor: place.verified ? '#2ECC71' : '#FF9500' }]}
+                      onPress={() => place.verified ? handleUnvalidate(place.id) : handleValidate(place.id)}
+                    >
+                      {place.verified ? <CheckCircle color="#FFF" size={14} /> : <Zap color="#FFF" size={14} />}
+                    </TouchableOpacity>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
           </ScrollView>
         </View>
         <View style={{ height: 60 }} />
@@ -630,11 +702,10 @@ const styles = StyleSheet.create({
     zIndex: 10 
   },
   heroContent: { 
-    position: 'absolute', 
-    top: 40,
-    left: 0, 
-    right: 0, 
-    bottom: 0,
+    position: 'absolute',
+    bottom: 50,
+    left: 20,
+    right: 20, 
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: 20
@@ -777,7 +848,7 @@ const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 35 },
   infoCard: { width: '48%', padding: 22, borderRadius: 24, alignItems: 'center', marginBottom: 15, borderWidth: 1, position: 'relative' },
   infoCardTitle: { marginTop: 12, fontSize: 15, fontWeight: '700' },
-  adminDot: { position: 'absolute', top: 12, right: 12, width: 8, height: 8, borderRadius: 4, backgroundColor: '#FFD700' },
+  adminDot: { position: 'absolute', top: 12, right: 12, width: 8, height: 8, borderRadius: 4, backgroundColor: '#EFBF04' },
   sectionTitle: { fontSize: 20, fontWeight: '900' },
   sectionHeaderRow: { 
     flexDirection: 'row', 
@@ -832,9 +903,33 @@ const styles = StyleSheet.create({
   },
   placeCardBadgeText: {
     color: '#FFF',
+    fontSize: 9,
+    fontWeight: '800',
+    marginLeft: 4,
+    textTransform: 'uppercase'
+  },
+  savingsBadge: {
+    position: 'absolute',
+    top: 45,
+    right: 12,
+    backgroundColor: '#2ECC71',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    zIndex: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  savingsBadgeText: {
+    color: '#FFF',
     fontSize: 10,
     fontWeight: '800',
-    textTransform: 'uppercase',
   },
   placeCardContent: {
     position: 'absolute',

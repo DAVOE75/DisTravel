@@ -51,7 +51,7 @@ const DAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 export function AddLocationScreen({ route, navigation }) {
   const { defaultCity } = route.params || {};
   const { theme, isDarkMode } = useTheme();
-  const { updateUserData } = useUser();
+  const { updateUserData, persistImage, uploadImageToServer } = useUser();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -73,10 +73,6 @@ export function AddLocationScreen({ route, navigation }) {
     afternoonClose: '20:00',
     closedHolidays: true,
     image: null,
-    history: '',
-    geography: '',
-    climate: '',
-    landscape: '',
   });
 
   const [accessibilityFeatures, setAccessibilityFeatures] = useState({
@@ -105,6 +101,13 @@ export function AddLocationScreen({ route, navigation }) {
     longitudeDelta: 0.005,
   });
 
+  const [audioguide, setAudioguide] = useState({
+    available: false,
+    price: 'No disponible',
+    accessible: false,
+    languages: ['Español']
+  });
+
   const [isSearchingLocation, setIsSearchingLocation] = useState(false);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
 
@@ -125,9 +128,9 @@ export function AddLocationScreen({ route, navigation }) {
   }, []);
 
   const normalize = (text) => 
-    text?.toLowerCase()
+    text?.toString().toLowerCase()
       .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/y/g, 'i') || '';
+      .replace(/[^a-z0-9]/g, '') || '';
 
   const mapRef = React.useRef(null);
 
@@ -139,7 +142,7 @@ export function AddLocationScreen({ route, navigation }) {
 
     setIsRecognizing(true);
     
-    setTimeout(() => {
+    setTimeout(async () => {
       const nameNorm = normalize(formData.name);
       let aiData = null;
 
@@ -621,20 +624,87 @@ export function AddLocationScreen({ route, navigation }) {
           ],
           accessibility: { physical: true, visual: false, auditory: false, cognitive: false }
         };
-      } else {
-        // Fallback inteligente para lugares desconocidos
+      } else if (nameNorm.includes('morella') || nameNorm.includes('castillo de morella')) {
         aiData = {
-          category: "Atracción",
-          description: `Un rincón especial descubierto por la comunidad en ${formData.city || 'este destino'}. Pendiente de validación detallada por la IA.`,
-          importantNotices: ["Verificar accesibilidad física al llegar."],
-          seasons: [{ name: 'Estándar', period: 'Anual', weekday: '10:00 a 19:00', weekend: '10:00 a 14:00' }],
-          accessibility: { physical: true, visual: false, auditory: false, cognitive: false },
-          // Imagen genérica de patrimonio de Wikipedia como fallback
-          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Vista_general_de_Alicante.jpg/1200px-Vista_general_de_Alicante.jpg",
-          history: `Este enclave posee un legado histórico que se remonta a varios siglos atrás, habiendo sido testigo de transformaciones culturales y sociales clave en la región de ${formData.city || 'la provincia'}. Sus muros y estructuras conservan la huella de distintas épocas, desde sus orígenes fundacionales hasta su consolidación como punto de interés patrimonial, desempeñando un papel fundamental en la identidad local y el desarrollo de la comunidad a lo largo del tiempo.`,
-          geography: `Situado en una posición geográfica privilegiada, este lugar presenta una orografía característica que combina elementos naturales con intervenciones arquitectónicas respetuosas. La zona se encuentra integrada en un ecosistema diverso, con accesos que han sido estudiados para garantizar la fluidez de movimiento, manteniendo un equilibrio entre la preservación del terreno original y la infraestructura necesaria para la visita pública y la accesibilidad universal.`,
-          climate: "El clima predominante se encuadra dentro de las variantes mediterráneas continentales, caracterizado por una marcada estacionalidad. Los veranos suelen ser cálidos y secos, mientras que los inviernos presentan temperaturas más frescas con precipitaciones moderadas. Esta dinámica climática influye directamente en la conservación de los materiales del monumento y en el ciclo biológico de la vegetación circundante, creando un microclima particular en este emplazamiento.",
-          landscape: "El paisaje ofrece una panorámica visual de gran impacto, donde la arquitectura se funde con el horizonte en una composición armónica. La vegetación autóctona aporta matices cromáticos que cambian con las estaciones, ofreciendo desde verdes intensos en primavera hasta tonos ocres en otoño. El entorno visual ha sido preservado para evitar la contaminación paisajística, permitiendo al visitante disfrutar de una experiencia estética única y una conexión profunda con el ambiente natural y monumental."
+          name: "Castillo de Morella",
+          category: "Monumento",
+          city: "Morella",
+          province: "Castellón",
+          description: "Imponente fortaleza que domina el casco histórico de Morella desde lo alto.",
+          importantNotices: [
+            "Acceso a través de la plaza de toros.",
+            "Audioguía gratuita en la app de Castillos y Palacios de España."
+          ],
+          seasons: [
+            {
+              name: 'Invierno',
+              period: 'octubre - marzo',
+              weekday: '11:00 a 17:00',
+              weekend: '11:00 a 17:00'
+            },
+            {
+              name: 'Verano',
+              period: 'abril - septiembre',
+              weekday: '11:00 a 19:00',
+              weekend: '11:00 a 19:00'
+            }
+          ],
+          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Castillo_de_Morella_y_convento_de_San_Francisco.JPG/1200px-Castillo_de_Morella_y_convento_de_San_Francisco.JPG",
+          location: { latitude: 40.6192, longitude: -0.0989, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+          tariffs: [
+            { id: 1, label: 'General', price: '5' },
+            { id: 2, label: 'Reducida (PCD, Estudiantes, +65)', price: '4' },
+            { id: 3, label: 'Grupos (+25 pax)', price: '3.5' },
+            { id: 4, label: 'Gratuita (Vecinos, <6 años)', price: '0' }
+          ],
+          accessibility: { physical: false, visual: false, auditory: true, cognitive: true },
+          website: "https://www.morella.net",
+          phone: "+34 964 173 032"
+        };
+      } else {
+        // Fallback inteligente para lugares desconocidos con Geocodificación
+        let lat = 40.4168;
+        let lng = -3.7038;
+        try {
+          const geocodeLocation = `${formData.name}, ${formData.city || ''}, España`;
+          const geocodeResult = await Location.geocodeAsync(geocodeLocation);
+          if (geocodeResult && geocodeResult.length > 0) {
+            lat = geocodeResult[0].latitude;
+            lng = geocodeResult[0].longitude;
+          } else if (formData.city) {
+            const cityResult = await Location.geocodeAsync(`${formData.city}, España`);
+            if (cityResult && cityResult.length > 0) {
+              lat = cityResult[0].latitude;
+              lng = cityResult[0].longitude;
+            }
+          }
+        } catch(e) {
+          console.log("Geocode error", e);
+        }
+
+        aiData = {
+          name: formData.name,
+          city: formData.city,
+          category: "Monumento",
+          description: `Descubre la historia y la belleza de ${formData.name}, uno de los lugares más emblemáticos de ${formData.city || 'la región'}. Un rincón imprescindible para cualquier viajero.`,
+          importantNotices: ["Verificar accesibilidad física en la entrada principal.", "Recomendamos contactar previamente para confirmar horarios."],
+          freeInfo: "Consulta descuentos presentando tu tarjeta de discapacidad en taquilla.",
+          accessibility: { physical: true, visual: true, auditory: true, cognitive: true },
+          image: "https://images.unsplash.com/photo-1519677100203-a0e668c92439",
+          tariffs: [
+            { id: 1, label: 'Entrada General', price: '10' },
+            { id: 2, label: 'PCD / Discapacidad', price: '0' }
+          ],
+          location: { latitude: lat, longitude: lng, latitudeDelta: 0.05, longitudeDelta: 0.05 },
+          website: formData.city ? `turismo.${normalize(formData.city).replace(/\s+/g, '')}.es` : `www.turismo.es`,
+          phone: "+34 900 112 112 (Turismo / Ayto.)",
+          audioguide: {
+            available: formData.name.toLowerCase().includes('museo') || formData.name.toLowerCase().includes('castillo'),
+            price: 'Consulta en taquilla',
+            accessible: true,
+            languages: ['Español', 'Inglés'],
+            note: "Posibilidad de audioguía adaptada o app móvil oficial."
+          }
         };
       }
 
@@ -647,6 +717,7 @@ export function AddLocationScreen({ route, navigation }) {
       }));
       
       if (aiData.tariffs) setTariffs(aiData.tariffs);
+      if (aiData.audioguide) setAudioguide(aiData.audioguide);
       if (aiData.location) {
         setLocation(aiData.location);
         mapRef.current?.animateToRegion(aiData.location, 1000);
@@ -756,31 +827,69 @@ export function AddLocationScreen({ route, navigation }) {
 
     setIsUploading(true);
     
-    setTimeout(() => {
-      // Crear el objeto del nuevo lugar asegurando que la imagen de Wikipedia o Cámara se guarda
-      const newPlace = {
-        id: Date.now().toString(),
-        ...formData, // Incluye name, city, description, image, etc.
-        location,
-        tariffs,
-        openingDays,
-        accessibility: accessibilityFeatures,
-        isUserAdded: true,
-        rating: 5.0,
-        reviews: 0,
-        verifiedStatus: 'Pendiente'
-      };
+    (async () => {
+      try {
+        // Persistir la imagen localmente primero por seguridad
+        let finalImage = formData.image;
+        if (formData.image && formData.image.startsWith('file://')) {
+          const sanitizedName = formData.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+          const localUri = await persistImage(formData.image, `place_${sanitizedName}`);
+          
+          // Intentar subir al servidor para compartir con otros
+          const serverUrl = await uploadImageToServer(localUri);
+          if (serverUrl) {
+            finalImage = serverUrl;
+          } else {
+            finalImage = localUri; // Fallback a local si el servidor falla
+          }
+        }
 
-      // Guardar en las contribuciones del usuario
-      updateUserData('contributions', (prev) => [...(prev || []), newPlace]);
-      
-      setIsUploading(false);
-      Alert.alert(
-        "¡Lugar Registrado!", 
-        "Los datos y la fotografía se han guardado correctamente. Estará visible tras la validación.", 
-        [{ text: "Entendido", onPress: () => navigation.goBack() }]
-      );
-    }, 1500);
+        // Crear el objeto del nuevo lugar asegurando que la imagen de Wikipedia o Cámara se guarda
+        const newPlace = {
+          id: Date.now().toString(),
+          ...formData, // Incluye name, city, description, etc.
+          image: finalImage, // Usar la imagen persistida
+          location,
+          tariffs,
+          openingDays,
+          audioguide,
+          accessibility: accessibilityFeatures,
+          isUserAdded: true,
+          rating: 5.0,
+          reviews: 0,
+          verifiedStatus: 'Pendiente'
+        };
+
+        // Guardar en las contribuciones del usuario localmente
+        updateUserData('contributions', (prev) => [...(prev || []), newPlace]);
+        
+        // Compartir con el servidor si tenemos URL de servidor
+        if (newPlace.image.startsWith('http')) {
+          try {
+            const SERVER_URL = 'http://82.223.44.196:3000';
+            await fetch(`${SERVER_URL}/api/places`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(newPlace)
+            });
+            console.log('Lugar compartido en el servidor');
+          } catch (e) {
+            console.warn('No se pudo compartir el lugar en el servidor, se guardó solo localmente');
+          }
+        }
+        
+        setIsUploading(false);
+        Alert.alert(
+          "¡Lugar Registrado!", 
+          "Los datos y la fotografía se han guardado correctamente. Estará visible tras la validación.", 
+          [{ text: "Entendido", onPress: () => navigation.goBack() }]
+        );
+      } catch (error) {
+        console.error(error);
+        setIsUploading(false);
+        Alert.alert("Error", "No se pudo guardar la imagen correctamente.");
+      }
+    })();
   };
 
   const toggleAccessibility = (key) => {
@@ -920,63 +1029,7 @@ export function AddLocationScreen({ route, navigation }) {
           </View>
         </View>
 
-        {/* AI Augmented Experience Section */}
-        <View style={styles.formSection}>
-          <View style={styles.sectionHeader}>
-            <Sparkles color="#A29BFE" size={20} />
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Experiencia Aumentada (IA)</Text>
-          </View>
-          
-          <View style={styles.inputGroup}>
-            <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, height: 80, alignItems: 'flex-start', paddingTop: 12 }]}>
-              <Languages color="#A29BFE" size={20} style={{ marginTop: 2 }} />
-              <TextInput
-                style={[styles.input, { color: theme.text, height: 60, textAlignVertical: 'top' }]}
-                placeholder="Historia y Origen..."
-                placeholderTextColor={theme.textSecondary}
-                multiline
-                value={formData.history}
-                onChangeText={(text) => setFormData(prev => ({...prev, history: text}))}
-              />
-            </View>
 
-            <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 10, height: 80, alignItems: 'flex-start', paddingTop: 12 }]}>
-              <MapPin color="#A29BFE" size={20} style={{ marginTop: 2 }} />
-              <TextInput
-                style={[styles.input, { color: theme.text, height: 60, textAlignVertical: 'top' }]}
-                placeholder="Geografía y Ubicación..."
-                placeholderTextColor={theme.textSecondary}
-                multiline
-                value={formData.geography}
-                onChangeText={(text) => setFormData(prev => ({...prev, geography: text}))}
-              />
-            </View>
-
-            <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 10, height: 80, alignItems: 'flex-start', paddingTop: 12 }]}>
-              <Zap color="#A29BFE" size={20} style={{ marginTop: 2 }} />
-              <TextInput
-                style={[styles.input, { color: theme.text, height: 60, textAlignVertical: 'top' }]}
-                placeholder="Clima y Meteorología..."
-                placeholderTextColor={theme.textSecondary}
-                multiline
-                value={formData.climate}
-                onChangeText={(text) => setFormData(prev => ({...prev, climate: text}))}
-              />
-            </View>
-
-            <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 10, height: 80, alignItems: 'flex-start', paddingTop: 12 }]}>
-              <Globe color="#A29BFE" size={20} style={{ marginTop: 2 }} />
-              <TextInput
-                style={[styles.input, { color: theme.text, height: 60, textAlignVertical: 'top' }]}
-                placeholder="Paisaje y Entorno..."
-                placeholderTextColor={theme.textSecondary}
-                multiline
-                value={formData.landscape}
-                onChangeText={(text) => setFormData(prev => ({...prev, landscape: text}))}
-              />
-            </View>
-          </View>
-        </View>
 
         {/* Accessibility Features Section */}
         <View style={styles.formSection}>
@@ -987,35 +1040,59 @@ export function AddLocationScreen({ route, navigation }) {
           
           <View style={styles.accessibilityGrid}>
             <TouchableOpacity 
-              style={[styles.accessCard, accessibilityFeatures.physical && styles.accessCardActive, { backgroundColor: theme.surface, borderColor: theme.border }]}
+              style={[
+                styles.accessCard, 
+                { 
+                  backgroundColor: accessibilityFeatures.physical ? theme.primary : theme.surface, 
+                  borderColor: accessibilityFeatures.physical ? theme.primary : theme.border 
+                }
+              ]}
               onPress={() => toggleAccessibility('physical')}
             >
-              <MapPin color={accessibilityFeatures.physical ? '#FFF' : theme.primary} size={24} />
-              <Text style={[styles.accessText, { color: accessibilityFeatures.physical ? '#FFF' : theme.text }]}>Física</Text>
+              <MapPin color={accessibilityFeatures.physical ? (isDarkMode ? '#070B14' : '#FFFFFF') : theme.primary} size={24} />
+              <Text style={[styles.accessText, { color: accessibilityFeatures.physical ? (isDarkMode ? '#070B14' : '#FFFFFF') : theme.text }]}>Física</Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
-              style={[styles.accessCard, accessibilityFeatures.visual && styles.accessCardActive, { backgroundColor: theme.surface, borderColor: theme.border }]}
+              style={[
+                styles.accessCard, 
+                { 
+                  backgroundColor: accessibilityFeatures.visual ? theme.primary : theme.surface, 
+                  borderColor: accessibilityFeatures.visual ? theme.primary : theme.border 
+                }
+              ]}
               onPress={() => toggleAccessibility('visual')}
             >
-              <Eye color={accessibilityFeatures.visual ? '#FFF' : theme.primary} size={24} />
-              <Text style={[styles.accessText, { color: accessibilityFeatures.visual ? '#FFF' : theme.text }]}>Visual</Text>
+              <Eye color={accessibilityFeatures.visual ? (isDarkMode ? '#070B14' : '#FFFFFF') : theme.primary} size={24} />
+              <Text style={[styles.accessText, { color: accessibilityFeatures.visual ? (isDarkMode ? '#070B14' : '#FFFFFF') : theme.text }]}>Visual</Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
-              style={[styles.accessCard, accessibilityFeatures.auditory && styles.accessCardActive, { backgroundColor: theme.surface, borderColor: theme.border }]}
+              style={[
+                styles.accessCard, 
+                { 
+                  backgroundColor: accessibilityFeatures.auditory ? theme.primary : theme.surface, 
+                  borderColor: accessibilityFeatures.auditory ? theme.primary : theme.border 
+                }
+              ]}
               onPress={() => toggleAccessibility('auditory')}
             >
-              <Ear color={accessibilityFeatures.auditory ? '#FFF' : theme.primary} size={24} />
-              <Text style={[styles.accessText, { color: accessibilityFeatures.auditory ? '#FFF' : theme.text }]}>Auditiva</Text>
+              <Ear color={accessibilityFeatures.auditory ? (isDarkMode ? '#070B14' : '#FFFFFF') : theme.primary} size={24} />
+              <Text style={[styles.accessText, { color: accessibilityFeatures.auditory ? (isDarkMode ? '#070B14' : '#FFFFFF') : theme.text }]}>Auditiva</Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
-              style={[styles.accessCard, accessibilityFeatures.cognitive && styles.accessCardActive, { backgroundColor: theme.surface, borderColor: theme.border }]}
+              style={[
+                styles.accessCard, 
+                { 
+                  backgroundColor: accessibilityFeatures.cognitive ? theme.primary : theme.surface, 
+                  borderColor: accessibilityFeatures.cognitive ? theme.primary : theme.border 
+                }
+              ]}
               onPress={() => toggleAccessibility('cognitive')}
             >
-              <Brain color={accessibilityFeatures.cognitive ? '#FFF' : theme.primary} size={24} />
-              <Text style={[styles.accessText, { color: accessibilityFeatures.cognitive ? '#FFF' : theme.text }]}>Cognitiva</Text>
+              <Brain color={accessibilityFeatures.cognitive ? (isDarkMode ? '#070B14' : '#FFFFFF') : theme.primary} size={24} />
+              <Text style={[styles.accessText, { color: accessibilityFeatures.cognitive ? (isDarkMode ? '#070B14' : '#FFFFFF') : theme.text }]}>Cognitiva</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -1243,11 +1320,11 @@ export function AddLocationScreen({ route, navigation }) {
           disabled={isUploading}
         >
           {isUploading ? (
-            <ActivityIndicator color="#FFF" />
+            <ActivityIndicator color={isDarkMode ? '#070B14' : '#FFFFFF'} />
           ) : (
             <>
-              <Check color="#FFF" size={24} />
-              <Text style={styles.submitBtnText}>Publicar Lugar</Text>
+              <Check color={isDarkMode ? '#070B14' : '#FFFFFF'} size={24} />
+              <Text style={[styles.submitBtnText, { color: isDarkMode ? '#070B14' : '#FFFFFF' }]}>Publicar Lugar</Text>
             </>
           )}
         </TouchableOpacity>
@@ -1429,5 +1506,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 8,
   },
-  submitBtnText: { color: '#FFF', fontSize: 18, fontWeight: '900', marginLeft: 12 },
+  submitBtnText: { color: '#070B14', fontSize: 18, fontWeight: '900', marginLeft: 12 },
 });

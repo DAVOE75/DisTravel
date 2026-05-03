@@ -1,0 +1,1488 @@
+  --non-interactive is not supported, use $CI=1 instead
+Starting project at /opt/distravel
+Starting Metro Bundler
+warning: Bundler cache is empty, rebuilding (this may take a minute)
+Tunnel connected.
+Tunnel ready.
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android ./index.js ▓▓▓▓▓░░░░░░░░░░░ 35.2% (368/620)
+Android ./index.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 76.3% (1791/2670)
+Android Bundled 9850ms index.js (2960 modules)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  HomeScreen: Iniciando servicios...
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 100ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  HomeScreen: Iniciando servicios...
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  HomeScreen: Iniciando servicios...
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  HomeScreen: Iniciando servicios...
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  HomeScreen: Iniciando servicios...
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  HomeScreen: Iniciando servicios...
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  HomeScreen: Iniciando servicios...
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel AI: Iniciando análisis para Alicante...
+ LOG  Distravel AI: Datos generados con éxito.
+ LOG  Usuario aceptó los datos de IA
+ WARN  [expo-image-picker] `ImagePicker.MediaTypeOptions` have been deprecated. Use `ImagePicker.MediaType` or an array of `ImagePicker.MediaType` instead.
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 72ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  HomeScreen: Iniciando servicios...
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 272ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  HomeScreen: Iniciando servicios...
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  HomeScreen: Iniciando servicios...
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  HomeScreen: Iniciando servicios...
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  HomeScreen: Iniciando servicios...
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ ERROR  SyntaxError: /opt/distravel/src/screens/HomeScreen.js: Unterminated string constant. (283:57)
+
+  281 |               <Text style={styles.proBrandBadgeText}>TARJETA DE DISCAPACIDAD</Text>
+  282 |             </View>
+> 283 |             <Text style={styles.proHeroTitle}>Viaja más.{'
+      |                                                          ^
+  284 | '}Gasta menos.</Text>
+  285 |             <Text style={styles.proHeroSub}>Descubre museos, monumentos y destinos donde tu certificado de discapacidad te da entrada gratis o descuento de hasta el 100%.</Text>
+  286 |             
+    at constructor (/opt/distravel/node_modules/@babel/parser/lib/index.js:365:19)
+    at FlowParserMixin.raise (/opt/distravel/node_modules/@babel/parser/lib/index.js:6616:19)
+    at Object.unterminated (/opt/distravel/node_modules/@babel/parser/lib/index.js:5681:20)
+    at readStringContents (/opt/distravel/node_modules/@babel/parser/lib/index.js:5423:16)
+    at FlowParserMixin.readString (/opt/distravel/node_modules/@babel/parser/lib/index.js:6515:9)
+    at FlowParserMixin.getTokenFromCode (/opt/distravel/node_modules/@babel/parser/lib/index.js:6275:14)
+    at FlowParserMixin.getTokenFromCode (/opt/distravel/node_modules/@babel/parser/lib/index.js:4809:11)
+    at FlowParserMixin.getTokenFromCode (/opt/distravel/node_modules/@babel/parser/lib/index.js:3209:13)
+    at FlowParserMixin.nextToken (/opt/distravel/node_modules/@babel/parser/lib/index.js:5799:10)
+    at FlowParserMixin.next (/opt/distravel/node_modules/@babel/parser/lib/index.js:5709:10)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4719:20)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4710:32)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4710:32)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4710:32)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4710:32)
+    at FlowParserMixin.jsxParseElement (/opt/distravel/node_modules/@babel/parser/lib/index.js:4761:17)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:4771:19)
+    at FlowParserMixin.parseExprSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11098:23)
+    at FlowParserMixin.parseUpdate (/opt/distravel/node_modules/@babel/parser/lib/index.js:11083:21)
+    at FlowParserMixin.parseMaybeUnary (/opt/distravel/node_modules/@babel/parser/lib/index.js:11063:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/opt/distravel/node_modules/@babel/parser/lib/index.js:10916:61)
+    at FlowParserMixin.parseExprOps (/opt/distravel/node_modules/@babel/parser/lib/index.js:10921:23)
+    at FlowParserMixin.parseMaybeConditional (/opt/distravel/node_modules/@babel/parser/lib/index.js:10898:23)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:10848:21)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:3510:39
+    at FlowParserMixin.tryParse (/opt/distravel/node_modules/@babel/parser/lib/index.js:6924:20)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:3510:18)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:10817:39
+    at FlowParserMixin.allowInAnd (/opt/distravel/node_modules/@babel/parser/lib/index.js:12443:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/opt/distravel/node_modules/@babel/parser/lib/index.js:10817:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/opt/distravel/node_modules/@babel/parser/lib/index.js:12510:17)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:11692:28)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:3603:18)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:11348:23)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:4776:20)
+    at FlowParserMixin.parseExprSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11098:23)
+    at FlowParserMixin.parseUpdate (/opt/distravel/node_modules/@babel/parser/lib/index.js:11083:21)
+    at FlowParserMixin.parseMaybeUnary (/opt/distravel/node_modules/@babel/parser/lib/index.js:11063:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/opt/distravel/node_modules/@babel/parser/lib/index.js:10916:61)
+    at FlowParserMixin.parseExprOps (/opt/distravel/node_modules/@babel/parser/lib/index.js:10921:23)
+    at FlowParserMixin.parseMaybeConditional (/opt/distravel/node_modules/@babel/parser/lib/index.js:10898:23)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:10848:21)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:3561:18)
+    at FlowParserMixin.parseExpressionBase (/opt/distravel/node_modules/@babel/parser/lib/index.js:10801:23)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:10797:39
+    at FlowParserMixin.allowInAnd (/opt/distravel/node_modules/@babel/parser/lib/index.js:12438:16)
+    at FlowParserMixin.parseExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:10797:17)
+    at FlowParserMixin.parseReturnStatement (/opt/distravel/node_modules/@babel/parser/lib/index.js:13159:28)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12815:21)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+ ERROR  [Error: TransformError SyntaxError: /opt/distravel/src/screens/HomeScreen.js: Unterminated string constant. (283:57)
+
+[0m [90m 281 |[39m               [33m<[39m[33mText[39m style[33m=[39m{styles[33m.[39mproBrandBadgeText}[33m>[39m[33mTARJETA[39m [33mDE[39m [33mDISCAPACIDAD[39m[33m<[39m[33m/[39m[33mText[39m[33m>[39m
+ [90m 282 |[39m             [33m<[39m[33m/[39m[33mView[39m[33m>[39m
+[31m[1m>[22m[39m[90m 283 |[39m             [33m<[39m[33mText[39m style[33m=[39m{styles[33m.[39mproHeroTitle}[33m>[39m[33mViaja[39m más[33m.[39m{[32m'[39m
+ [90m     |[39m                                                          [31m[1m^[22m[39m
+ [90m 284 |[39m [32m'}Gasta menos.</Text>[39m
+ [90m 285 |[39m             [33m<[39m[33mText[39m style[33m=[39m{styles[33m.[39mproHeroSub}[33m>[39m[33mDescubre[39m museos[33m,[39m monumentos y destinos donde tu certificado de discapacidad te da entrada gratis o descuento de hasta el [35m100[39m[33m%[39m[33m.[39m[33m<[39m[33m/[39m[33mText[39m[33m>[39m
+ [90m 286 |[39m             [0m]
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  HomeScreen: Iniciando servicios...
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  HomeScreen: Iniciando servicios...
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  HomeScreen: Iniciando servicios...
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  HomeScreen: Iniciando servicios...
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  HomeScreen: Iniciando servicios...
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  HomeScreen: Iniciando servicios...
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  HomeScreen: Iniciando servicios...
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ WARN  [expo-image-picker] `ImagePicker.MediaTypeOptions` have been deprecated. Use `ImagePicker.MediaType` or an array of `ImagePicker.MediaType` instead.
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 493ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  HomeScreen: Iniciando servicios...
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel AI: Iniciando análisis para Morella...
+ LOG  Distravel AI: Datos generados con éxito.
+ LOG  Usuario aceptó los datos de IA
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 83ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  HomeScreen: Iniciando servicios...
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel AI: Iniciando análisis para Morella...
+ LOG  Distravel AI: Datos generados con éxito.
+ LOG  Usuario aceptó los datos de IA
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 473ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ ERROR  [ReferenceError: Property 'place' doesn't exist]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 69ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ LOG  Distravel Debug: Alicante Key [alicante], Custom Image: NO
+ ERROR  [ReferenceError: Property 'place' doesn't exist]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundling failed 210ms index.js (1 module)
+Unable to resolve "../context/ThemeContext" from "src/screens/HomeScreen.js"
+[0m [90m 33 |[39m   [33mSparkles[39m
+ [90m 34 |[39m } [36mfrom[39m [32m'lucide-react-native'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 35 |[39m [36mimport[39m { useTheme } [36mfrom[39m [32m'../context/ThemeContext'[39m[33m;[39m
+ [90m    |[39m                           [31m[1m^[22m[39m
+ [90m 36 |[39m [36mimport[39m { useAuth } [36mfrom[39m [32m'../context/AuthContext'[39m[33m;[39m
+ [90m 37 |[39m [36mimport[39m { [33mMONUMENTOS[39m } [36mfrom[39m [32m'../data/monumentos'[39m[33m;[39m
+ [90m 38 |[39m [36mimport[39m { [33mCIUDADES_PREMIUM[39m } [36mfrom[39m [32m'../data/ciudades'[39m[33m;[39m[0m
+
+Import stack:
+
+ src/screens/HomeScreen.js
+ | import "../context/ThemeContext"
+
+ src/navigation/AppNavigator.js
+ | import "../screens/HomeScreen"
+
+ App.js
+ | import "./src/navigation/AppNavigator"
+
+ index.js
+ | import "./App"
+
+ 
+ | import "./index"
+
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundling failed 165ms index.js (1 module)
+Unable to resolve "../context/ThemeContext" from "src/screens/HomeScreen.js"
+[0m [90m 33 |[39m   [33mSparkles[39m
+ [90m 34 |[39m } [36mfrom[39m [32m'lucide-react-native'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 35 |[39m [36mimport[39m { useTheme } [36mfrom[39m [32m'../context/ThemeContext'[39m[33m;[39m
+ [90m    |[39m                           [31m[1m^[22m[39m
+ [90m 36 |[39m [36mimport[39m { useAuth } [36mfrom[39m [32m'../context/AuthContext'[39m[33m;[39m
+ [90m 37 |[39m [36mimport[39m { [33mMONUMENTOS[39m } [36mfrom[39m [32m'../data/monumentos'[39m[33m;[39m
+ [90m 38 |[39m [36mimport[39m { [33mCIUDADES_PREMIUM[39m } [36mfrom[39m [32m'../data/ciudades'[39m[33m;[39m[0m
+
+Import stack:
+
+ src/screens/HomeScreen.js
+ | import "../context/ThemeContext"
+
+ src/navigation/AppNavigator.js
+ | import "../screens/HomeScreen"
+
+ App.js
+ | import "./src/navigation/AppNavigator"
+
+ index.js
+ | import "./App"
+
+ 
+ | import "./index"
+
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 565ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  The action 'NAVIGATE' with payload {"name":"AdminValidations"} was not handled by any navigator.
+
+Do you have a screen named 'AdminValidations'?
+
+If you're trying to navigate to a screen in a nested navigator, see https://reactnavigation.org/docs/nesting-navigators#navigating-to-a-screen-in-a-nested-navigator.
+
+If you're using conditional rendering, navigation will happen automatically and you shouldn't navigate manually, see.
+
+This is a development-only warning and won't be shown in production.
+ ERROR  The action 'NAVIGATE' with payload {"name":"AdminValidations"} was not handled by any navigator.
+
+Do you have a screen named 'AdminValidations'?
+
+If you're trying to navigate to a screen in a nested navigator, see https://reactnavigation.org/docs/nesting-navigators#navigating-to-a-screen-in-a-nested-navigator.
+
+If you're using conditional rendering, navigation will happen automatically and you shouldn't navigate manually, see.
+
+This is a development-only warning and won't be shown in production.
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ ERROR  [ReferenceError: Property 'AlertTriangle' doesn't exist]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [ReferenceError: Property 'AlertTriangle' doesn't exist]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 65ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [ReferenceError: Property 'AlertTriangle' doesn't exist]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [ReferenceError: Property 'AlertTriangle' doesn't exist]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [ReferenceError: Property 'AlertTriangle' doesn't exist]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [ReferenceError: Property 'AlertTriangle' doesn't exist]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [ReferenceError: Property 'AlertTriangle' doesn't exist]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ WARN  [expo-image-picker] `ImagePicker.MediaTypeOptions` have been deprecated. Use `ImagePicker.MediaType` or an array of `ImagePicker.MediaType` instead.
+ WARN  Method getInfoAsync imported from "expo-file-system" is deprecated.
+You can migrate to the new filesystem API using "File" and "Directory" classes or import the legacy API from "expo-file-system/legacy".
+API reference and examples are available in the filesystem docs: https://docs.expo.dev/versions/v54.0.0/sdk/filesystem/
+ ERROR  Error al persistir imagen: [Error: Method getInfoAsync imported from "expo-file-system" is deprecated.
+You can migrate to the new filesystem API using "File" and "Directory" classes or import the legacy API from "expo-file-system/legacy".
+API reference and examples are available in the filesystem docs: https://docs.expo.dev/versions/v54.0.0/sdk/filesystem/]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 70ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 76ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  SyntaxError: /opt/distravel/src/screens/HomeScreen.js: Missing semicolon. (413:28)
+
+  411 | }
+  412 |
+> 413 | const styles = StyleSheet.cr  headerHero: {
+      |                             ^
+  414 |     height: 280,
+  415 |     marginBottom: 0,
+  416 |     zIndex: 2000,
+    at constructor (/opt/distravel/node_modules/@babel/parser/lib/index.js:365:19)
+    at FlowParserMixin.raise (/opt/distravel/node_modules/@babel/parser/lib/index.js:6616:19)
+    at FlowParserMixin.semicolon (/opt/distravel/node_modules/@babel/parser/lib/index.js:6912:10)
+    at FlowParserMixin.parseVarStatement (/opt/distravel/node_modules/@babel/parser/lib/index.js:13248:10)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12868:23)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseModuleItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12761:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:36)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseProgram (/opt/distravel/node_modules/@babel/parser/lib/index.js:12639:10)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:12629:25)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:3697:28)
+    at FlowParserMixin.parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14505:25)
+    at parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14518:26)
+    at parser (/opt/distravel/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/opt/distravel/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/opt/distravel/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/opt/distravel/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at evaluateSync (/opt/distravel/node_modules/gensync/index.js:251:28)
+    at sync (/opt/distravel/node_modules/gensync/index.js:89:14)
+    at stopHiding - secret - don't use this - v1 (/opt/distravel/node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:47:12)
+    at Object.transformSync (/opt/distravel/node_modules/@babel/core/lib/transform.js:40:76)
+    at parseWithBabel (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transformSync.js:75:18)
+    at transformSync (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transformSync.js:64:12)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/babel-transformer.js:127:58)
+    at transformJSWithBabel (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/metro-transform-worker.js:468:47)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/metro-transform-worker.js:583:12)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/transform-worker.js:178:19)
+    at transformFile (/opt/distravel/node_modules/metro/src/DeltaBundler/Worker.flow.js:67:36)
+    at Object.transform (/opt/distravel/node_modules/metro/src/DeltaBundler/Worker.flow.js:42:10)
+    at execFunction (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:149:17)
+    at execHelper (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:137:5)
+    at execMethod (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:140:5)
+    at process.messageListener (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:44:7)
+    at process.emit (node:events:517:28)
+    at emit (node:internal/child_process:944:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+ ERROR  [Error: TransformError SyntaxError: /opt/distravel/src/screens/HomeScreen.js: Missing semicolon. (413:28)
+
+[0m [90m 411 |[39m }
+ [90m 412 |[39m
+[31m[1m>[22m[39m[90m 413 |[39m [36mconst[39m styles [33m=[39m [33mStyleSheet[39m[33m.[39mcr  headerHero[33m:[39m {
+ [90m     |[39m                             [31m[1m^[22m[39m
+ [90m 414 |[39m     height[33m:[39m [35m280[39m[33m,[39m
+ [90m 415 |[39m     marginBottom[33m:[39m [35m0[39m[33m,[39m
+ [90m 416 |[39m     zIndex[33m:[39m [35m2000[39m[33m,[39m[0m]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 58ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [ReferenceError: Property 'allPlaces' doesn't exist]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [ReferenceError: Property 'allPlaces' doesn't exist]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [ReferenceError: Property 'allPlaces' doesn't exist]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [ReferenceError: Property 'Sparkles' doesn't exist]
+ ERROR  SyntaxError: /opt/distravel/src/screens/HomeScreen.js: Missing semicolon. (439:14)
+
+  437 |   adminBar: {
+  438 |     flexDirection: 'row',
+> 439 |     alignItems: 'center',
+      |               ^
+  440 |     justifyContent: 'center',
+  441 |     paddingVertical: 10,
+  442 |     gap: 8,
+    at constructor (/opt/distravel/node_modules/@babel/parser/lib/index.js:365:19)
+    at FlowParserMixin.raise (/opt/distravel/node_modules/@babel/parser/lib/index.js:6616:19)
+    at FlowParserMixin.semicolon (/opt/distravel/node_modules/@babel/parser/lib/index.js:6912:10)
+    at FlowParserMixin.parseExpressionStatement (/opt/distravel/node_modules/@babel/parser/lib/index.js:13302:10)
+    at FlowParserMixin.parseExpressionStatement (/opt/distravel/node_modules/@babel/parser/lib/index.js:2952:18)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12916:19)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseStatement (/opt/distravel/node_modules/@babel/parser/lib/index.js:12777:17)
+    at FlowParserMixin.parseLabeledStatement (/opt/distravel/node_modules/@babel/parser/lib/index.js:13295:95)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12914:19)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseStatementListItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12764:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:61)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseBlock (/opt/distravel/node_modules/@babel/parser/lib/index.js:13314:10)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12875:21)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseStatementOrSloppyAnnexBFunctionDeclaration (/opt/distravel/node_modules/@babel/parser/lib/index.js:12774:17)
+    at FlowParserMixin.parseLabeledStatement (/opt/distravel/node_modules/@babel/parser/lib/index.js:13295:34)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12914:19)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseModuleItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12761:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:36)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseProgram (/opt/distravel/node_modules/@babel/parser/lib/index.js:12639:10)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:12629:25)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:3697:28)
+    at FlowParserMixin.parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14505:25)
+    at parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14518:26)
+    at parser (/opt/distravel/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/opt/distravel/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/opt/distravel/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/opt/distravel/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at evaluateSync (/opt/distravel/node_modules/gensync/index.js:251:28)
+    at sync (/opt/distravel/node_modules/gensync/index.js:89:14)
+    at stopHiding - secret - don't use this - v1 (/opt/distravel/node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:47:12)
+    at Object.transformSync (/opt/distravel/node_modules/@babel/core/lib/transform.js:40:76)
+    at parseWithBabel (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transformSync.js:75:18)
+    at transformSync (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transformSync.js:64:12)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/babel-transformer.js:127:58)
+    at transformJSWithBabel (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/metro-transform-worker.js:468:47)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/metro-transform-worker.js:583:12)
+ ERROR  [Error: TransformError SyntaxError: /opt/distravel/src/screens/HomeScreen.js: Missing semicolon. (439:14)
+
+[0m [90m 437 |[39m   adminBar[33m:[39m {
+ [90m 438 |[39m     flexDirection[33m:[39m [32m'row'[39m[33m,[39m
+[31m[1m>[22m[39m[90m 439 |[39m     alignItems[33m:[39m [32m'center'[39m[33m,[39m
+ [90m     |[39m               [31m[1m^[22m[39m
+ [90m 440 |[39m     justifyContent[33m:[39m [32m'center'[39m[33m,[39m
+ [90m 441 |[39m     paddingVertical[33m:[39m [35m10[39m[33m,[39m
+ [90m 442 |[39m     gap[33m:[39m [35m8[39m[33m,[39m[0m]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [ReferenceError: Property 'Sparkles' doesn't exist]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [ReferenceError: Property 'Sparkles' doesn't exist]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [ReferenceError: Property 'Sparkles' doesn't exist]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [ReferenceError: Property 'allPlaces' doesn't exist]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 287ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  SyntaxError: /opt/distravel/src/screens/HomeScreen.js: Expected corresponding JSX closing tag for <Animated.ScrollView>. (510:6)
+
+  508 |
+  509 |         <View style={{ height: 100 }} />
+> 510 |       </ScrollView>
+      |       ^
+  511 |
+  512 |       {/* Expandable FAB Menu */}
+  513 |       <View style={styles.fabContainer}>
+    at constructor (/opt/distravel/node_modules/@babel/parser/lib/index.js:365:19)
+    at FlowParserMixin.raise (/opt/distravel/node_modules/@babel/parser/lib/index.js:6616:19)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4739:16)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4710:32)
+    at FlowParserMixin.jsxParseElement (/opt/distravel/node_modules/@babel/parser/lib/index.js:4761:17)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:4771:19)
+    at FlowParserMixin.parseExprSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11098:23)
+    at FlowParserMixin.parseUpdate (/opt/distravel/node_modules/@babel/parser/lib/index.js:11083:21)
+    at FlowParserMixin.parseMaybeUnary (/opt/distravel/node_modules/@babel/parser/lib/index.js:11063:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/opt/distravel/node_modules/@babel/parser/lib/index.js:10916:61)
+    at FlowParserMixin.parseExprOps (/opt/distravel/node_modules/@babel/parser/lib/index.js:10921:23)
+    at FlowParserMixin.parseMaybeConditional (/opt/distravel/node_modules/@babel/parser/lib/index.js:10898:23)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:10848:21)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:3510:39
+    at FlowParserMixin.tryParse (/opt/distravel/node_modules/@babel/parser/lib/index.js:6924:20)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:3510:18)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:10817:39
+    at FlowParserMixin.allowInAnd (/opt/distravel/node_modules/@babel/parser/lib/index.js:12443:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/opt/distravel/node_modules/@babel/parser/lib/index.js:10817:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/opt/distravel/node_modules/@babel/parser/lib/index.js:12510:17)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:11692:28)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:3603:18)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:11348:23)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:4776:20)
+    at FlowParserMixin.parseExprSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11098:23)
+    at FlowParserMixin.parseUpdate (/opt/distravel/node_modules/@babel/parser/lib/index.js:11083:21)
+    at FlowParserMixin.parseMaybeUnary (/opt/distravel/node_modules/@babel/parser/lib/index.js:11063:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/opt/distravel/node_modules/@babel/parser/lib/index.js:10916:61)
+    at FlowParserMixin.parseExprOps (/opt/distravel/node_modules/@babel/parser/lib/index.js:10921:23)
+    at FlowParserMixin.parseMaybeConditional (/opt/distravel/node_modules/@babel/parser/lib/index.js:10898:23)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:10848:21)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:3561:18)
+    at FlowParserMixin.parseExpressionBase (/opt/distravel/node_modules/@babel/parser/lib/index.js:10801:23)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:10797:39
+    at FlowParserMixin.allowInAnd (/opt/distravel/node_modules/@babel/parser/lib/index.js:12438:16)
+    at FlowParserMixin.parseExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:10797:17)
+    at FlowParserMixin.parseReturnStatement (/opt/distravel/node_modules/@babel/parser/lib/index.js:13159:28)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12815:21)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseStatementListItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12764:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:61)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseBlock (/opt/distravel/node_modules/@babel/parser/lib/index.js:13314:10)
+    at FlowParserMixin.parseFunctionBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:12117:24)
+    at FlowParserMixin.parseFunctionBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:2907:11)
+    at FlowParserMixin.parseFunctionBodyAndFinish (/opt/distravel/node_modules/@babel/parser/lib/index.js:12103:10)
+    at FlowParserMixin.parseFunctionBodyAndFinish (/opt/distravel/node_modules/@babel/parser/lib/index.js:2915:18)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:13462:12
+    at FlowParserMixin.withSmartMixTopicForbiddingContext (/opt/distravel/node_modules/@babel/parser/lib/index.js:12420:14)
+ ERROR  [Error: TransformError SyntaxError: /opt/distravel/src/screens/HomeScreen.js: Expected corresponding JSX closing tag for <Animated.ScrollView>. (510:6)
+
+[0m [90m 508 |[39m
+ [90m 509 |[39m         [33m<[39m[33mView[39m style[33m=[39m{{ height[33m:[39m [35m100[39m }} [33m/[39m[33m>[39m
+[31m[1m>[22m[39m[90m 510 |[39m       [33m<[39m[33m/[39m[33mScrollView[39m[33m>[39m
+ [90m     |[39m       [31m[1m^[22m[39m
+ [90m 511 |[39m
+ [90m 512 |[39m       {[90m/* Expandable FAB Menu */[39m}
+ [90m 513 |[39m       [33m<[39m[33mView[39m style[33m=[39m{styles[33m.[39mfabContainer}[33m>[39m[0m]
+ ERROR  [ReferenceError: Property 'Modal' doesn't exist]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [ReferenceError: Property 'Modal' doesn't exist]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [ReferenceError: Property 'showAboutModal' doesn't exist]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [ReferenceError: Property 'showAboutModal' doesn't exist]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [ReferenceError: Property 'showAboutModal' doesn't exist]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 192ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 73ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ ERROR  [ReferenceError: Property 'CreditCard' doesn't exist]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ WARN  Servidor no alcanzable, procediendo local
+ WARN  Servidor no alcanzable, procediendo local
+ WARN  Servidor no alcanzable, procediendo local
+ WARN  Servidor no alcanzable, procediendo local
+ WARN  Servidor no alcanzable, procediendo local
+ WARN  Servidor no alcanzable, procediendo local
+ WARN  Servidor no alcanzable, procediendo local
+ WARN  Sync servidor fallida en segundo plano
+ WARN  Sync servidor fallida en segundo plano
+ WARN  Sync servidor fallida en segundo plano
+ WARN  Sync servidor fallida en segundo plano
+ WARN  Sync servidor fallida en segundo plano
+ WARN  Sync servidor fallida en segundo plano
+ WARN  Sync servidor fallida en segundo plano
+ WARN  Servidor no alcanzable, procediendo local
+ WARN  Servidor no alcanzable, procediendo local
+ WARN  Servidor no alcanzable, procediendo local
+ WARN  Servidor no alcanzable, procediendo local
+ WARN  Servidor no alcanzable, procediendo local
+ WARN  Servidor no alcanzable, procediendo local
+ WARN  Servidor no alcanzable, procediendo local
+ WARN  Servidor no alcanzable, procediendo local
+ WARN  Servidor no alcanzable, procediendo local
+ WARN  Servidor no alcanzable, procediendo local
+ WARN  Servidor no alcanzable, procediendo local
+ ERROR  SyntaxError: /opt/distravel/src/screens/HomeScreen.js: Identifier 'Star' has already been declared. (32:2)
+
+  30 |   Coffee,
+  31 |   Waves,
+> 32 |   Star,
+     |   ^
+  33 |   Users,
+  34 |   PlusCircle,
+  35 |   AlertTriangle,
+    at constructor (/opt/distravel/node_modules/@babel/parser/lib/index.js:365:19)
+    at FlowParserMixin.raise (/opt/distravel/node_modules/@babel/parser/lib/index.js:6616:19)
+    at FlowScopeHandler.checkRedeclarationInScope (/opt/distravel/node_modules/@babel/parser/lib/index.js:1619:19)
+    at FlowScopeHandler.declareName (/opt/distravel/node_modules/@babel/parser/lib/index.js:1585:12)
+    at FlowScopeHandler.declareName (/opt/distravel/node_modules/@babel/parser/lib/index.js:1686:11)
+    at FlowParserMixin.declareNameFromIdentifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:7584:16)
+    at FlowParserMixin.checkIdentifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:7580:12)
+    at FlowParserMixin.checkLVal (/opt/distravel/node_modules/@babel/parser/lib/index.js:7517:12)
+    at FlowParserMixin.finishImportSpecifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:14283:10)
+    at FlowParserMixin.parseImportSpecifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:3468:17)
+    at FlowParserMixin.parseNamedImportSpecifiers (/opt/distravel/node_modules/@babel/parser/lib/index.js:14415:36)
+    at FlowParserMixin.parseImportSpecifiersAndAfter (/opt/distravel/node_modules/@babel/parser/lib/index.js:14259:37)
+    at FlowParserMixin.parseImport (/opt/distravel/node_modules/@babel/parser/lib/index.js:14252:17)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12893:27)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseModuleItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12761:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:36)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseProgram (/opt/distravel/node_modules/@babel/parser/lib/index.js:12639:10)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:12629:25)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:3697:28)
+    at FlowParserMixin.parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14505:25)
+    at parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14518:26)
+    at parser (/opt/distravel/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/opt/distravel/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/opt/distravel/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/opt/distravel/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at evaluateSync (/opt/distravel/node_modules/gensync/index.js:251:28)
+    at sync (/opt/distravel/node_modules/gensync/index.js:89:14)
+    at stopHiding - secret - don't use this - v1 (/opt/distravel/node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:47:12)
+    at Object.transformSync (/opt/distravel/node_modules/@babel/core/lib/transform.js:40:76)
+    at parseWithBabel (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transformSync.js:75:18)
+    at transformSync (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transformSync.js:64:12)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/babel-transformer.js:127:58)
+    at transformJSWithBabel (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/metro-transform-worker.js:468:47)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/metro-transform-worker.js:583:12)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/transform-worker.js:178:19)
+    at transformFile (/opt/distravel/node_modules/metro/src/DeltaBundler/Worker.flow.js:67:36)
+    at Object.transform (/opt/distravel/node_modules/metro/src/DeltaBundler/Worker.flow.js:42:10)
+    at execFunction (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:149:17)
+    at execHelper (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:137:5)
+    at execMethod (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:140:5)
+    at process.messageListener (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:44:7)
+    at process.emit (node:events:517:28)
+    at emit (node:internal/child_process:944:14)
+ ERROR  [Error: TransformError SyntaxError: /opt/distravel/src/screens/HomeScreen.js: Identifier 'Star' has already been declared. (32:2)
+
+[0m [90m 30 |[39m   [33mCoffee[39m[33m,[39m
+ [90m 31 |[39m   [33mWaves[39m[33m,[39m
+[31m[1m>[22m[39m[90m 32 |[39m   [33mStar[39m[33m,[39m
+ [90m    |[39m   [31m[1m^[22m[39m
+ [90m 33 |[39m   [33mUsers[39m[33m,[39m
+ [90m 34 |[39m   [33mPlusCircle[39m[33m,[39m
+ [90m 35 |[39m   [33mAlertTriangle[39m[33m,[39m[0m]
+ ERROR  SyntaxError: /opt/distravel/src/screens/HomeScreen.js: Identifier 'Star' has already been declared. (32:2)
+
+  30 |   Coffee,
+  31 |   Waves,
+> 32 |   Star,
+     |   ^
+  33 |   Users,
+  34 |   PlusCircle,
+  35 |   AlertTriangle,
+    at constructor (/opt/distravel/node_modules/@babel/parser/lib/index.js:365:19)
+    at FlowParserMixin.raise (/opt/distravel/node_modules/@babel/parser/lib/index.js:6616:19)
+    at FlowScopeHandler.checkRedeclarationInScope (/opt/distravel/node_modules/@babel/parser/lib/index.js:1619:19)
+    at FlowScopeHandler.declareName (/opt/distravel/node_modules/@babel/parser/lib/index.js:1585:12)
+    at FlowScopeHandler.declareName (/opt/distravel/node_modules/@babel/parser/lib/index.js:1686:11)
+    at FlowParserMixin.declareNameFromIdentifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:7584:16)
+    at FlowParserMixin.checkIdentifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:7580:12)
+    at FlowParserMixin.checkLVal (/opt/distravel/node_modules/@babel/parser/lib/index.js:7517:12)
+    at FlowParserMixin.finishImportSpecifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:14283:10)
+    at FlowParserMixin.parseImportSpecifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:3468:17)
+    at FlowParserMixin.parseNamedImportSpecifiers (/opt/distravel/node_modules/@babel/parser/lib/index.js:14415:36)
+    at FlowParserMixin.parseImportSpecifiersAndAfter (/opt/distravel/node_modules/@babel/parser/lib/index.js:14259:37)
+    at FlowParserMixin.parseImport (/opt/distravel/node_modules/@babel/parser/lib/index.js:14252:17)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12893:27)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseModuleItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12761:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:36)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseProgram (/opt/distravel/node_modules/@babel/parser/lib/index.js:12639:10)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:12629:25)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:3697:28)
+    at FlowParserMixin.parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14505:25)
+    at parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14518:26)
+    at parser (/opt/distravel/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/opt/distravel/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/opt/distravel/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/opt/distravel/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at evaluateSync (/opt/distravel/node_modules/gensync/index.js:251:28)
+    at sync (/opt/distravel/node_modules/gensync/index.js:89:14)
+    at stopHiding - secret - don't use this - v1 (/opt/distravel/node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:47:12)
+    at Object.transformSync (/opt/distravel/node_modules/@babel/core/lib/transform.js:40:76)
+    at parseWithBabel (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transformSync.js:75:18)
+    at transformSync (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transformSync.js:64:12)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/babel-transformer.js:127:58)
+    at transformJSWithBabel (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/metro-transform-worker.js:468:47)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/metro-transform-worker.js:583:12)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/transform-worker.js:178:19)
+    at transformFile (/opt/distravel/node_modules/metro/src/DeltaBundler/Worker.flow.js:67:36)
+    at Object.transform (/opt/distravel/node_modules/metro/src/DeltaBundler/Worker.flow.js:42:10)
+    at execFunction (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:149:17)
+    at execHelper (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:137:5)
+    at execMethod (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:140:5)
+    at process.messageListener (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:44:7)
+    at process.emit (node:events:517:28)
+    at emit (node:internal/child_process:944:14)
+ ERROR  [Error: TransformError SyntaxError: /opt/distravel/src/screens/HomeScreen.js: Identifier 'Star' has already been declared. (32:2)
+
+[0m [90m 30 |[39m   [33mCoffee[39m[33m,[39m
+ [90m 31 |[39m   [33mWaves[39m[33m,[39m
+[31m[1m>[22m[39m[90m 32 |[39m   [33mStar[39m[33m,[39m
+ [90m    |[39m   [31m[1m^[22m[39m
+ [90m 33 |[39m   [33mUsers[39m[33m,[39m
+ [90m 34 |[39m   [33mPlusCircle[39m[33m,[39m
+ [90m 35 |[39m   [33mAlertTriangle[39m[33m,[39m[0m]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundling failed 18ms index.js (1 module)
+ ERROR  SyntaxError: /opt/distravel/src/screens/HomeScreen.js: Identifier 'Star' has already been declared. (32:2)
+
+  30 |   Coffee,
+  31 |   Waves,
+> 32 |   Star,
+     |   ^
+  33 |   Users,
+  34 |   PlusCircle,
+  35 |   AlertTriangle,
+    at constructor (/opt/distravel/node_modules/@babel/parser/lib/index.js:365:19)
+    at FlowParserMixin.raise (/opt/distravel/node_modules/@babel/parser/lib/index.js:6616:19)
+    at FlowScopeHandler.checkRedeclarationInScope (/opt/distravel/node_modules/@babel/parser/lib/index.js:1619:19)
+    at FlowScopeHandler.declareName (/opt/distravel/node_modules/@babel/parser/lib/index.js:1585:12)
+    at FlowScopeHandler.declareName (/opt/distravel/node_modules/@babel/parser/lib/index.js:1686:11)
+    at FlowParserMixin.declareNameFromIdentifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:7584:16)
+    at FlowParserMixin.checkIdentifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:7580:12)
+    at FlowParserMixin.checkLVal (/opt/distravel/node_modules/@babel/parser/lib/index.js:7517:12)
+    at FlowParserMixin.finishImportSpecifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:14283:10)
+    at FlowParserMixin.parseImportSpecifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:3468:17)
+    at FlowParserMixin.parseNamedImportSpecifiers (/opt/distravel/node_modules/@babel/parser/lib/index.js:14415:36)
+    at FlowParserMixin.parseImportSpecifiersAndAfter (/opt/distravel/node_modules/@babel/parser/lib/index.js:14259:37)
+    at FlowParserMixin.parseImport (/opt/distravel/node_modules/@babel/parser/lib/index.js:14252:17)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12893:27)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseModuleItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12761:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:36)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseProgram (/opt/distravel/node_modules/@babel/parser/lib/index.js:12639:10)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:12629:25)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:3697:28)
+    at FlowParserMixin.parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14505:25)
+    at parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14518:26)
+    at parser (/opt/distravel/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/opt/distravel/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/opt/distravel/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/opt/distravel/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at evaluateSync (/opt/distravel/node_modules/gensync/index.js:251:28)
+    at sync (/opt/distravel/node_modules/gensync/index.js:89:14)
+    at stopHiding - secret - don't use this - v1 (/opt/distravel/node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:47:12)
+    at Object.transformSync (/opt/distravel/node_modules/@babel/core/lib/transform.js:40:76)
+    at parseWithBabel (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transformSync.js:75:18)
+    at transformSync (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transformSync.js:64:12)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/babel-transformer.js:127:58)
+    at transformJSWithBabel (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/metro-transform-worker.js:468:47)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/metro-transform-worker.js:583:12)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/transform-worker.js:178:19)
+    at transformFile (/opt/distravel/node_modules/metro/src/DeltaBundler/Worker.flow.js:67:36)
+    at Object.transform (/opt/distravel/node_modules/metro/src/DeltaBundler/Worker.flow.js:42:10)
+    at execFunction (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:149:17)
+    at execHelper (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:137:5)
+    at execMethod (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:140:5)
+    at process.messageListener (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:44:7)
+    at process.emit (node:events:517:28)
+    at emit (node:internal/child_process:944:14)
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundling failed 20ms index.js (1 module)
+ ERROR  SyntaxError: /opt/distravel/src/screens/HomeScreen.js: Identifier 'Star' has already been declared. (32:2)
+
+  30 |   Coffee,
+  31 |   Waves,
+> 32 |   Star,
+     |   ^
+  33 |   Users,
+  34 |   PlusCircle,
+  35 |   AlertTriangle,
+    at constructor (/opt/distravel/node_modules/@babel/parser/lib/index.js:365:19)
+    at FlowParserMixin.raise (/opt/distravel/node_modules/@babel/parser/lib/index.js:6616:19)
+    at FlowScopeHandler.checkRedeclarationInScope (/opt/distravel/node_modules/@babel/parser/lib/index.js:1619:19)
+    at FlowScopeHandler.declareName (/opt/distravel/node_modules/@babel/parser/lib/index.js:1585:12)
+    at FlowScopeHandler.declareName (/opt/distravel/node_modules/@babel/parser/lib/index.js:1686:11)
+    at FlowParserMixin.declareNameFromIdentifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:7584:16)
+    at FlowParserMixin.checkIdentifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:7580:12)
+    at FlowParserMixin.checkLVal (/opt/distravel/node_modules/@babel/parser/lib/index.js:7517:12)
+    at FlowParserMixin.finishImportSpecifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:14283:10)
+    at FlowParserMixin.parseImportSpecifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:3468:17)
+    at FlowParserMixin.parseNamedImportSpecifiers (/opt/distravel/node_modules/@babel/parser/lib/index.js:14415:36)
+    at FlowParserMixin.parseImportSpecifiersAndAfter (/opt/distravel/node_modules/@babel/parser/lib/index.js:14259:37)
+    at FlowParserMixin.parseImport (/opt/distravel/node_modules/@babel/parser/lib/index.js:14252:17)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12893:27)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseModuleItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12761:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:36)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseProgram (/opt/distravel/node_modules/@babel/parser/lib/index.js:12639:10)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:12629:25)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:3697:28)
+    at FlowParserMixin.parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14505:25)
+    at parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14518:26)
+    at parser (/opt/distravel/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/opt/distravel/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/opt/distravel/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/opt/distravel/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at evaluateSync (/opt/distravel/node_modules/gensync/index.js:251:28)
+    at sync (/opt/distravel/node_modules/gensync/index.js:89:14)
+    at stopHiding - secret - don't use this - v1 (/opt/distravel/node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:47:12)
+    at Object.transformSync (/opt/distravel/node_modules/@babel/core/lib/transform.js:40:76)
+    at parseWithBabel (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transformSync.js:75:18)
+    at transformSync (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transformSync.js:64:12)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/babel-transformer.js:127:58)
+    at transformJSWithBabel (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/metro-transform-worker.js:468:47)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/metro-transform-worker.js:583:12)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/transform-worker.js:178:19)
+    at transformFile (/opt/distravel/node_modules/metro/src/DeltaBundler/Worker.flow.js:67:36)
+    at Object.transform (/opt/distravel/node_modules/metro/src/DeltaBundler/Worker.flow.js:42:10)
+    at execFunction (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:149:17)
+    at execHelper (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:137:5)
+    at execMethod (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:140:5)
+    at process.messageListener (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:44:7)
+    at process.emit (node:events:517:28)
+    at emit (node:internal/child_process:944:14)
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundling failed 18ms index.js (1 module)
+ ERROR  SyntaxError: /opt/distravel/src/screens/HomeScreen.js: Identifier 'Star' has already been declared. (32:2)
+
+  30 |   Coffee,
+  31 |   Waves,
+> 32 |   Star,
+     |   ^
+  33 |   Users,
+  34 |   PlusCircle,
+  35 |   AlertTriangle,
+    at constructor (/opt/distravel/node_modules/@babel/parser/lib/index.js:365:19)
+    at FlowParserMixin.raise (/opt/distravel/node_modules/@babel/parser/lib/index.js:6616:19)
+    at FlowScopeHandler.checkRedeclarationInScope (/opt/distravel/node_modules/@babel/parser/lib/index.js:1619:19)
+    at FlowScopeHandler.declareName (/opt/distravel/node_modules/@babel/parser/lib/index.js:1585:12)
+    at FlowScopeHandler.declareName (/opt/distravel/node_modules/@babel/parser/lib/index.js:1686:11)
+    at FlowParserMixin.declareNameFromIdentifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:7584:16)
+    at FlowParserMixin.checkIdentifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:7580:12)
+    at FlowParserMixin.checkLVal (/opt/distravel/node_modules/@babel/parser/lib/index.js:7517:12)
+    at FlowParserMixin.finishImportSpecifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:14283:10)
+    at FlowParserMixin.parseImportSpecifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:3468:17)
+    at FlowParserMixin.parseNamedImportSpecifiers (/opt/distravel/node_modules/@babel/parser/lib/index.js:14415:36)
+    at FlowParserMixin.parseImportSpecifiersAndAfter (/opt/distravel/node_modules/@babel/parser/lib/index.js:14259:37)
+    at FlowParserMixin.parseImport (/opt/distravel/node_modules/@babel/parser/lib/index.js:14252:17)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12893:27)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseModuleItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12761:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:36)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseProgram (/opt/distravel/node_modules/@babel/parser/lib/index.js:12639:10)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:12629:25)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:3697:28)
+    at FlowParserMixin.parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14505:25)
+    at parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14518:26)
+    at parser (/opt/distravel/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/opt/distravel/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/opt/distravel/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/opt/distravel/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at evaluateSync (/opt/distravel/node_modules/gensync/index.js:251:28)
+    at sync (/opt/distravel/node_modules/gensync/index.js:89:14)
+    at stopHiding - secret - don't use this - v1 (/opt/distravel/node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:47:12)
+    at Object.transformSync (/opt/distravel/node_modules/@babel/core/lib/transform.js:40:76)
+    at parseWithBabel (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transformSync.js:75:18)
+    at transformSync (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transformSync.js:64:12)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/babel-transformer.js:127:58)
+    at transformJSWithBabel (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/metro-transform-worker.js:468:47)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/metro-transform-worker.js:583:12)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/transform-worker.js:178:19)
+    at transformFile (/opt/distravel/node_modules/metro/src/DeltaBundler/Worker.flow.js:67:36)
+    at Object.transform (/opt/distravel/node_modules/metro/src/DeltaBundler/Worker.flow.js:42:10)
+    at execFunction (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:149:17)
+    at execHelper (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:137:5)
+    at execMethod (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:140:5)
+    at process.messageListener (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:44:7)
+    at process.emit (node:events:517:28)
+    at emit (node:internal/child_process:944:14)
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 314ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ WARN  [expo-image-picker] `ImagePicker.MediaTypeOptions` have been deprecated. Use `ImagePicker.MediaType` or an array of `ImagePicker.MediaType` instead.
+ LOG  Distravel AI: Iniciando análisis para Alicante...
+ LOG  Distravel AI: Datos generados con éxito.
+ LOG  Usuario aceptó los datos de IA
+ ERROR  SyntaxError: /opt/distravel/src/screens/CityDetailScreen.js: Unterminated string constant. (313:54)
+
+  311 |     setTimeout(() => {
+  312 |       const cityName = tempCityData.name || city.name || 'esta ciudad';
+> 313 |       const isAlicante = normalize(cityName).includes('a      let aiGeneratedData = {
+      |                                                       ^
+  314 |         history: `La trayectoria histórica de ${cityName} es un periplo extraordinario que abarca múltiples milenios. Desde los primeros asentamientos del Calcolítico, pasando por la época romana y medieval, hasta su consolidación como polo cultural y turístico moderno.`,
+  315 |         geography: `${cityName} se ubica en un enclave geográfico de primer orden, caracterizado por una topografía diversa que combina llanuras fértiles con elevaciones estratégicas.`,
+  316 |         climate: `El régimen climatológico de ${cityName} se define por una variante predominantemente templada y muy estable a lo largo del año.`,
+    at constructor (/opt/distravel/node_modules/@babel/parser/lib/index.js:365:19)
+    at FlowParserMixin.raise (/opt/distravel/node_modules/@babel/parser/lib/index.js:6616:19)
+    at Object.unterminated (/opt/distravel/node_modules/@babel/parser/lib/index.js:5681:20)
+    at readStringContents (/opt/distravel/node_modules/@babel/parser/lib/index.js:5423:16)
+    at FlowParserMixin.readString (/opt/distravel/node_modules/@babel/parser/lib/index.js:6515:9)
+    at FlowParserMixin.getTokenFromCode (/opt/distravel/node_modules/@babel/parser/lib/index.js:6275:14)
+    at FlowParserMixin.getTokenFromCode (/opt/distravel/node_modules/@babel/parser/lib/index.js:4809:11)
+    at FlowParserMixin.getTokenFromCode (/opt/distravel/node_modules/@babel/parser/lib/index.js:3209:13)
+    at FlowParserMixin.nextToken (/opt/distravel/node_modules/@babel/parser/lib/index.js:5799:10)
+    at FlowParserMixin.next (/opt/distravel/node_modules/@babel/parser/lib/index.js:5709:10)
+    at FlowParserMixin.parseCoverCallAndAsyncArrowHead (/opt/distravel/node_modules/@babel/parser/lib/index.js:11186:10)
+    at FlowParserMixin.parseSubscript (/opt/distravel/node_modules/@babel/parser/lib/index.js:11137:19)
+    at FlowParserMixin.parseSubscript (/opt/distravel/node_modules/@babel/parser/lib/index.js:3662:18)
+    at FlowParserMixin.parseSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11111:19)
+    at FlowParserMixin.parseSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:3628:18)
+    at FlowParserMixin.parseExprSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11102:17)
+    at FlowParserMixin.parseUpdate (/opt/distravel/node_modules/@babel/parser/lib/index.js:11083:21)
+    at FlowParserMixin.parseMaybeUnary (/opt/distravel/node_modules/@babel/parser/lib/index.js:11063:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/opt/distravel/node_modules/@babel/parser/lib/index.js:10916:61)
+    at FlowParserMixin.parseExprOps (/opt/distravel/node_modules/@babel/parser/lib/index.js:10921:23)
+    at FlowParserMixin.parseMaybeConditional (/opt/distravel/node_modules/@babel/parser/lib/index.js:10898:23)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:10848:21)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:3561:18)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:10817:39
+    at FlowParserMixin.allowInAnd (/opt/distravel/node_modules/@babel/parser/lib/index.js:12438:16)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/opt/distravel/node_modules/@babel/parser/lib/index.js:10817:17)
+    at FlowParserMixin.parseVar (/opt/distravel/node_modules/@babel/parser/lib/index.js:13401:91)
+    at FlowParserMixin.parseVarStatement (/opt/distravel/node_modules/@babel/parser/lib/index.js:13247:10)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12868:23)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseStatementListItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12764:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:61)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseBlock (/opt/distravel/node_modules/@babel/parser/lib/index.js:13314:10)
+    at FlowParserMixin.parseFunctionBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:12117:24)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:2904:63
+    at FlowParserMixin.forwardNoArrowParamsConversionAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:3080:16)
+    at FlowParserMixin.parseFunctionBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:2904:12)
+    at FlowParserMixin.parseArrowExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:12092:10)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:11704:12)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:3603:18)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:11348:23)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:4776:20)
+    at FlowParserMixin.parseExprSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11098:23)
+    at FlowParserMixin.parseUpdate (/opt/distravel/node_modules/@babel/parser/lib/index.js:11083:21)
+    at FlowParserMixin.parseMaybeUnary (/opt/distravel/node_modules/@babel/parser/lib/index.js:11063:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/opt/distravel/node_modules/@babel/parser/lib/index.js:10916:61)
+    at FlowParserMixin.parseExprOps (/opt/distravel/node_modules/@babel/parser/lib/index.js:10921:23)
+    at FlowParserMixin.parseMaybeConditional (/opt/distravel/node_modules/@babel/parser/lib/index.js:10898:23)
+ ERROR  [Error: TransformError SyntaxError: /opt/distravel/src/screens/CityDetailScreen.js: Unterminated string constant. (313:54)
+
+[0m [90m 311 |[39m     setTimeout(() [33m=>[39m {
+ [90m 312 |[39m       [36mconst[39m cityName [33m=[39m tempCityData[33m.[39mname [33m||[39m city[33m.[39mname [33m||[39m [32m'esta ciudad'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 313 |[39m       [36mconst[39m isAlicante [33m=[39m normalize(cityName)[33m.[39mincludes([32m'a      let aiGeneratedData = {[39m
+ [90m     |[39m                                                       [31m[1m^[22m[39m
+ [90m 314 |[39m         history[33m:[39m [32m`La trayectoria histórica de ${cityName} es un periplo extraordinario que abarca múltiples milenios. Desde los primeros asentamientos del Calcolítico, pasando por la época romana y medieval, hasta su consolidación como polo cultural y turístico moderno.`[39m[33m,[39m
+ [90m 315 |[39m         geography[33m:[39m [32m`${cityName} se ubica en un enclave geográfico de primer orden, caracterizado por una topografía diversa que combina llanuras fértiles con elevaciones estratégicas.`[39m[33m,[39m
+ [90m 316 |[39m         climate[33m:[39m [32m`El régimen climatológico de ${cityName} se define por una variante predominantemente templada y muy estable a lo largo del año.`[39m[33m,[39m[0m]
+ LOG  Distravel AI: Iniciando análisis para Alicante...
+ LOG  Distravel AI: Datos generados con éxito.
+ LOG  Usuario aceptó los datos de IA
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 288ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [TypeError: constructor is not callable]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 573ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [TypeError: constructor is not callable]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 308ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [TypeError: constructor is not callable]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 82ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [TypeError: constructor is not callable]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 294ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 503ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ ERROR  [ReferenceError: Property 'CheckCircle2' doesn't exist]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 576ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ WARN  [expo-image-picker] `ImagePicker.MediaTypeOptions` have been deprecated. Use `ImagePicker.MediaType` or an array of `ImagePicker.MediaType` instead.
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 599ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  SyntaxError: /opt/distravel/src/screens/PlaceDetailScreen.js: Expected corresponding JSX closing tag for <ScrollView>. (1360:8)
+
+  1358 |             </View>
+  1359 |           </View>
+> 1360 |         </View>
+       |         ^
+  1361 |         <View style={{ height: 40 }} />
+  1362 |       </ScrollView>
+  1363 |     </View>
+    at constructor (/opt/distravel/node_modules/@babel/parser/lib/index.js:365:19)
+    at FlowParserMixin.raise (/opt/distravel/node_modules/@babel/parser/lib/index.js:6616:19)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4739:16)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4710:32)
+    at FlowParserMixin.jsxParseElement (/opt/distravel/node_modules/@babel/parser/lib/index.js:4761:17)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:4771:19)
+    at FlowParserMixin.parseExprSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11098:23)
+    at FlowParserMixin.parseUpdate (/opt/distravel/node_modules/@babel/parser/lib/index.js:11083:21)
+    at FlowParserMixin.parseMaybeUnary (/opt/distravel/node_modules/@babel/parser/lib/index.js:11063:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/opt/distravel/node_modules/@babel/parser/lib/index.js:10916:61)
+    at FlowParserMixin.parseExprOps (/opt/distravel/node_modules/@babel/parser/lib/index.js:10921:23)
+    at FlowParserMixin.parseMaybeConditional (/opt/distravel/node_modules/@babel/parser/lib/index.js:10898:23)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:10848:21)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:3510:39
+    at FlowParserMixin.tryParse (/opt/distravel/node_modules/@babel/parser/lib/index.js:6924:20)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:3510:18)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:10817:39
+    at FlowParserMixin.allowInAnd (/opt/distravel/node_modules/@babel/parser/lib/index.js:12443:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/opt/distravel/node_modules/@babel/parser/lib/index.js:10817:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/opt/distravel/node_modules/@babel/parser/lib/index.js:12510:17)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:11692:28)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:3603:18)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:11348:23)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:4776:20)
+    at FlowParserMixin.parseExprSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11098:23)
+    at FlowParserMixin.parseUpdate (/opt/distravel/node_modules/@babel/parser/lib/index.js:11083:21)
+    at FlowParserMixin.parseMaybeUnary (/opt/distravel/node_modules/@babel/parser/lib/index.js:11063:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/opt/distravel/node_modules/@babel/parser/lib/index.js:10916:61)
+    at FlowParserMixin.parseExprOps (/opt/distravel/node_modules/@babel/parser/lib/index.js:10921:23)
+    at FlowParserMixin.parseMaybeConditional (/opt/distravel/node_modules/@babel/parser/lib/index.js:10898:23)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:10848:21)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:3561:18)
+    at FlowParserMixin.parseExpressionBase (/opt/distravel/node_modules/@babel/parser/lib/index.js:10801:23)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:10797:39
+    at FlowParserMixin.allowInAnd (/opt/distravel/node_modules/@babel/parser/lib/index.js:12438:16)
+    at FlowParserMixin.parseExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:10797:17)
+    at FlowParserMixin.parseReturnStatement (/opt/distravel/node_modules/@babel/parser/lib/index.js:13159:28)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12815:21)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseStatementListItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12764:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:61)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseBlock (/opt/distravel/node_modules/@babel/parser/lib/index.js:13314:10)
+    at FlowParserMixin.parseFunctionBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:12117:24)
+    at FlowParserMixin.parseFunctionBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:2907:11)
+    at FlowParserMixin.parseFunctionBodyAndFinish (/opt/distravel/node_modules/@babel/parser/lib/index.js:12103:10)
+    at FlowParserMixin.parseFunctionBodyAndFinish (/opt/distravel/node_modules/@babel/parser/lib/index.js:2915:18)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:13462:12
+    at FlowParserMixin.withSmartMixTopicForbiddingContext (/opt/distravel/node_modules/@babel/parser/lib/index.js:12420:14)
+ ERROR  [Error: TransformError SyntaxError: /opt/distravel/src/screens/PlaceDetailScreen.js: Expected corresponding JSX closing tag for <ScrollView>. (1360:8)
+
+[0m [90m 1358 |[39m             [33m<[39m[33m/[39m[33mView[39m[33m>[39m
+ [90m 1359 |[39m           [33m<[39m[33m/[39m[33mView[39m[33m>[39m
+[31m[1m>[22m[39m[90m 1360 |[39m         [33m<[39m[33m/[39m[33mView[39m[33m>[39m
+ [90m      |[39m         [31m[1m^[22m[39m
+ [90m 1361 |[39m         [33m<[39m[33mView[39m style[33m=[39m{{ height[33m:[39m [35m40[39m }} [33m/[39m[33m>[39m
+ [90m 1362 |[39m       [33m<[39m[33m/[39m[33mScrollView[39m[33m>[39m
+ [90m 1363 |[39m     [33m<[39m[33m/[39m[33mView[39m[33m>[39m[0m]
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ ERROR  Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. s1
+ ERROR  Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. b2
+ ERROR  Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version. b1
+ ERROR  SyntaxError: /opt/distravel/src/screens/PlaceDetailScreen.js: Expected corresponding JSX closing tag for <ScrollView>. (1360:8)
+
+  1358 |             </View>
+  1359 |           </View>
+> 1360 |         </View>
+       |         ^
+  1361 |         <View style={{ height: 40 }} />
+  1362 |       </ScrollView>
+  1363 |     </View>
+    at constructor (/opt/distravel/node_modules/@babel/parser/lib/index.js:365:19)
+    at FlowParserMixin.raise (/opt/distravel/node_modules/@babel/parser/lib/index.js:6616:19)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4739:16)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4710:32)
+    at FlowParserMixin.jsxParseElement (/opt/distravel/node_modules/@babel/parser/lib/index.js:4761:17)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:4771:19)
+    at FlowParserMixin.parseExprSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11098:23)
+    at FlowParserMixin.parseUpdate (/opt/distravel/node_modules/@babel/parser/lib/index.js:11083:21)
+    at FlowParserMixin.parseMaybeUnary (/opt/distravel/node_modules/@babel/parser/lib/index.js:11063:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/opt/distravel/node_modules/@babel/parser/lib/index.js:10916:61)
+    at FlowParserMixin.parseExprOps (/opt/distravel/node_modules/@babel/parser/lib/index.js:10921:23)
+    at FlowParserMixin.parseMaybeConditional (/opt/distravel/node_modules/@babel/parser/lib/index.js:10898:23)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:10848:21)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:3510:39
+    at FlowParserMixin.tryParse (/opt/distravel/node_modules/@babel/parser/lib/index.js:6924:20)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:3510:18)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:10817:39
+    at FlowParserMixin.allowInAnd (/opt/distravel/node_modules/@babel/parser/lib/index.js:12443:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/opt/distravel/node_modules/@babel/parser/lib/index.js:10817:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/opt/distravel/node_modules/@babel/parser/lib/index.js:12510:17)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:11692:28)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:3603:18)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:11348:23)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:4776:20)
+    at FlowParserMixin.parseExprSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11098:23)
+    at FlowParserMixin.parseUpdate (/opt/distravel/node_modules/@babel/parser/lib/index.js:11083:21)
+    at FlowParserMixin.parseMaybeUnary (/opt/distravel/node_modules/@babel/parser/lib/index.js:11063:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/opt/distravel/node_modules/@babel/parser/lib/index.js:10916:61)
+    at FlowParserMixin.parseExprOps (/opt/distravel/node_modules/@babel/parser/lib/index.js:10921:23)
+    at FlowParserMixin.parseMaybeConditional (/opt/distravel/node_modules/@babel/parser/lib/index.js:10898:23)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:10848:21)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:3561:18)
+    at FlowParserMixin.parseExpressionBase (/opt/distravel/node_modules/@babel/parser/lib/index.js:10801:23)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:10797:39
+    at FlowParserMixin.allowInAnd (/opt/distravel/node_modules/@babel/parser/lib/index.js:12438:16)
+    at FlowParserMixin.parseExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:10797:17)
+    at FlowParserMixin.parseReturnStatement (/opt/distravel/node_modules/@babel/parser/lib/index.js:13159:28)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12815:21)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseStatementListItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12764:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:61)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseBlock (/opt/distravel/node_modules/@babel/parser/lib/index.js:13314:10)
+    at FlowParserMixin.parseFunctionBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:12117:24)
+    at FlowParserMixin.parseFunctionBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:2907:11)
+    at FlowParserMixin.parseFunctionBodyAndFinish (/opt/distravel/node_modules/@babel/parser/lib/index.js:12103:10)
+    at FlowParserMixin.parseFunctionBodyAndFinish (/opt/distravel/node_modules/@babel/parser/lib/index.js:2915:18)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:13462:12
+    at FlowParserMixin.withSmartMixTopicForbiddingContext (/opt/distravel/node_modules/@babel/parser/lib/index.js:12420:14)
+ ERROR  [Error: TransformError SyntaxError: /opt/distravel/src/screens/PlaceDetailScreen.js: Expected corresponding JSX closing tag for <ScrollView>. (1360:8)
+
+[0m [90m 1358 |[39m             [33m<[39m[33m/[39m[33mView[39m[33m>[39m
+ [90m 1359 |[39m           [33m<[39m[33m/[39m[33mView[39m[33m>[39m
+[31m[1m>[22m[39m[90m 1360 |[39m         [33m<[39m[33m/[39m[33mView[39m[33m>[39m
+ [90m      |[39m         [31m[1m^[22m[39m
+ [90m 1361 |[39m         [33m<[39m[33mView[39m style[33m=[39m{{ height[33m:[39m [35m40[39m }} [33m/[39m[33m>[39m
+ [90m 1362 |[39m       [33m<[39m[33m/[39m[33mScrollView[39m[33m>[39m
+ [90m 1363 |[39m     [33m<[39m[33m/[39m[33mView[39m[33m>[39m[0m]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 690ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 69ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.

@@ -1,0 +1,10 @@
+Starting project at /opt/distravel
+Starting Metro Bundler
+Tunnel connected.
+Tunnel ready.
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android ./index.js ▓▓▓▓▓░░░░░░░░░░░ 36.6% (338/581)
+Android ./index.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 91.7% (1441/2624)
+Android Bundled 9677ms index.js (2834 modules)

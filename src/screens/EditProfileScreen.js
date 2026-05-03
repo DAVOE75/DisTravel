@@ -9,7 +9,11 @@ import {
   ScrollView,
   StatusBar,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Modal, 
+  Image, 
+  Alert, 
+  ActivityIndicator
 } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
@@ -26,21 +30,54 @@ import {
   X, 
   Check,
   Calendar,
-  Map
+  Map,
+  Globe,
+  CreditCard
 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
-import { Modal, Image, Alert, ActivityIndicator } from 'react-native';
 import * as Location from 'expo-location';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { typography } from '../theme/typography';
 
-const InputField = ({ label, value, icon: Icon, onChangeText, keyboardType, theme, actionIcon: ActionIcon, onActionPress, isLoading }) => (
+const EU_COUNTRIES = [
+  { name: 'España', code: 'ES', prefix: '+34' },
+  { name: 'Francia', code: 'FR', prefix: '+33' },
+  { name: 'Italia', code: 'IT', prefix: '+39' },
+  { name: 'Alemania', code: 'DE', prefix: '+49' },
+  { name: 'Portugal', code: 'PT', prefix: '+351' },
+  { name: 'Bélgica', code: 'BE', prefix: '+32' },
+  { name: 'Holanda', code: 'NL', prefix: '+31' },
+  { name: 'Irlanda', code: 'IE', prefix: '+353' },
+  { name: 'Austria', code: 'AT', prefix: '+43' },
+  { name: 'Grecia', code: 'GR', prefix: '+30' },
+  { name: 'Suecia', code: 'SE', prefix: '+46' },
+  { name: 'Dinamarca', code: 'DK', prefix: '+45' },
+  { name: 'Finlandia', code: 'FI', prefix: '+358' },
+  { name: 'Polonia', code: 'PL', prefix: '+48' },
+  { name: 'República Checa', code: 'CZ', prefix: '+420' },
+  { name: 'Rumanía', code: 'RO', prefix: '+40' },
+  { name: 'Bulgaria', code: 'BG', prefix: '+359' },
+  { name: 'Hungría', code: 'HU', prefix: '+36' },
+];
+
+const InputField = ({ label, value, icon: Icon, onChangeText, keyboardType, theme, actionIcon: ActionIcon, onActionPress, isLoading, prefix, onPrefixPress }) => (
   <View style={styles.inputContainer}>
     <Text style={[styles.label, { color: theme.textSecondary }]}>{label}</Text>
     <View style={[styles.inputWrapper, { backgroundColor: theme.surface, borderColor: theme.border }]}>
       <Icon color={theme.primary} size={20} />
+      
+      {prefix !== undefined && (
+        <TouchableOpacity 
+          style={[styles.prefixSelector, { borderRightColor: theme.border }]}
+          onPress={onPrefixPress}
+        >
+          <Text style={[styles.prefixText, { color: theme.text }]}>{prefix || '+34'}</Text>
+          <Text style={{ color: theme.textSecondary, fontSize: 10 }}>▼</Text>
+        </TouchableOpacity>
+      )}
+
       <TextInput
-        style={[styles.input, { color: theme.text }]}
+        style={[styles.input, { color: theme.text, marginLeft: prefix ? 10 : 15 }]}
         value={value}
         onChangeText={onChangeText}
         keyboardType={keyboardType}
@@ -66,7 +103,7 @@ const InputField = ({ label, value, icon: Icon, onChangeText, keyboardType, them
 
 export function EditProfileScreen({ navigation }) {
   const { theme, isDarkMode } = useTheme();
-  const { userData, updateUserData } = useUser();
+  const { userData, updateUserData, persistImage } = useUser();
   
   // Usamos el estado local para la edición fluida
   const [localData, setLocalData] = useState({ ...userData });
@@ -76,6 +113,16 @@ export function EditProfileScreen({ navigation }) {
   const [scale, setScale] = useState(1);
   const [tempImage, setTempImage] = useState(null);
   const [isLocating, setIsLocating] = useState(false);
+  const [countryModalVisible, setCountryModalVisible] = useState(false);
+
+  const handleCountrySelect = (country) => {
+    setLocalData(prev => ({ 
+      ...prev, 
+      country: country.name, 
+      phonePrefix: country.prefix 
+    }));
+    setCountryModalVisible(false);
+  };
 
   const handleGeolocation = async () => {
     setIsLocating(true);
@@ -149,9 +196,19 @@ export function EditProfileScreen({ navigation }) {
     setEditModalVisible(false);
   };
 
-  const handleSave = () => {
-    updateUserData(localData);
-    navigation.goBack();
+  const handleSave = async () => {
+    try {
+      let finalData = { ...localData };
+      if (localData.profileImage && localData.profileImage.startsWith('file://') && localData.profileImage !== userData.profileImage) {
+        const permanentUri = await persistImage(localData.profileImage, `profile_${userData.id || 'user'}`);
+        finalData.profileImage = permanentUri;
+      }
+      updateUserData(finalData);
+      navigation.goBack();
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'No se pudieron guardar los cambios correctamente.');
+    }
   };
 
   return (
@@ -169,7 +226,7 @@ export function EditProfileScreen({ navigation }) {
           >
             <ChevronLeft color={theme.text} size={24} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: theme.text }, typography.h2]}>Mis Datos</Text>
+          <Text style={[styles.headerTitle, { color: theme.text }, typography.h2]}>Mis Datos v3.0.2</Text>
           <View style={{ width: 40 }} />
         </View>
 
@@ -247,12 +304,29 @@ export function EditProfileScreen({ navigation }) {
             keyboardType="email-address"
             onChangeText={(text) => setLocalData(prev => ({...prev, email: text}))}
           />
+
+          <TouchableOpacity 
+            style={styles.inputContainer} 
+            onPress={() => setCountryModalVisible(true)}
+          >
+            <Text style={[styles.label, { color: theme.textSecondary }]}>País (Código Europeo)</Text>
+            <View style={[styles.inputWrapper, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+              <Globe color={theme.primary} size={20} />
+              <Text style={[styles.input, { color: theme.text, lineHeight: 24, paddingTop: 14 }]}>
+                {localData.country || 'Seleccionar país'}
+              </Text>
+              <Text style={{ color: theme.textSecondary, marginRight: 10 }}>▼</Text>
+            </View>
+          </TouchableOpacity>
+
           <InputField 
             label="Teléfono de Contacto" 
             value={localData.phone} 
             icon={Phone}
             theme={theme}
             keyboardType="phone-pad"
+            prefix={localData.phonePrefix}
+            onPrefixPress={() => setCountryModalVisible(true)}
             onChangeText={(text) => setLocalData(prev => ({...prev, phone: text}))}
           />
           <InputField 
@@ -265,13 +339,21 @@ export function EditProfileScreen({ navigation }) {
             isLoading={isLocating}
             onChangeText={(text) => setLocalData(prev => ({...prev, address: text}))}
           />
+          <InputField 
+            label="Número de Tarjeta (EDC)" 
+            value={localData.cardNumber} 
+            icon={CreditCard}
+            theme={theme}
+            placeholder="ES-XXXXXXXXX"
+            onChangeText={(text) => setLocalData(prev => ({...prev, cardNumber: text.toUpperCase()}))}
+          />
 
           <TouchableOpacity 
             style={[styles.saveButton, { backgroundColor: theme.primary }]}
             onPress={handleSave}
           >
-            <Save color="#FFFFFF" size={20} />
-            <Text style={styles.saveButtonText}>Guardar Cambios</Text>
+            <Save color="#070B14" size={20} />
+            <Text style={[styles.saveButtonText, { color: '#070B14' }]}>Guardar Cambios</Text>
           </TouchableOpacity>
           
           <View style={{ height: 100 }} />
@@ -348,6 +430,47 @@ export function EditProfileScreen({ navigation }) {
             </View>
           </View>
         </View>
+      </Modal>
+
+      {/* Modal de Selección de País */}
+      <Modal
+        visible={countryModalVisible}
+        animationType="fade"
+        transparent={true}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay} 
+          activeOpacity={1} 
+          onPress={() => setCountryModalVisible(false)}
+        >
+          <View style={[styles.countryModal, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+            <View style={styles.countryModalHeader}>
+              <Text style={[styles.countryModalTitle, { color: theme.text }]}>Selecciona tu País</Text>
+              <TouchableOpacity onPress={() => setCountryModalVisible(false)}>
+                <X color={theme.text} size={24} />
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.countryList}>
+              {EU_COUNTRIES.map((country) => (
+                <TouchableOpacity 
+                  key={country.code} 
+                  style={[
+                    styles.countryItem, 
+                    { borderBottomColor: theme.border },
+                    localData.country === country.name && { backgroundColor: theme.primary + '10' }
+                  ]}
+                  onPress={() => handleCountrySelect(country)}
+                >
+                  <View style={styles.countryItemRow}>
+                    <Text style={[styles.countryName, { color: theme.text }]}>{country.name}</Text>
+                    <Text style={[styles.countryPrefix, { color: theme.primary }]}>{country.prefix}</Text>
+                  </View>
+                  {localData.country === country.name && <Check color={theme.primary} size={18} />}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
       </Modal>
     </SafeAreaView>
   );
@@ -452,7 +575,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   saveButtonText: {
-    color: '#FFFFFF',
+    color: '#070B14',
     fontSize: 16,
     fontWeight: '700',
     marginLeft: 12,
@@ -511,5 +634,75 @@ const styles = StyleSheet.create({
     fontSize: 10,
     fontWeight: '700',
     marginTop: 8,
+  },
+  prefixSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingRight: 10,
+    paddingLeft: 5,
+    borderRightWidth: 1,
+    height: '60%',
+    gap: 5,
+    marginLeft: 10,
+  },
+  prefixText: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  countryModal: {
+    width: '100%',
+    maxHeight: '60%',
+    borderRadius: 25,
+    borderWidth: 1,
+    padding: 20,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+  },
+  countryModalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+    paddingBottom: 10,
+  },
+  countryModalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  countryList: {
+    maxHeight: 400,
+  },
+  countryItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 15,
+    paddingHorizontal: 10,
+    borderBottomWidth: 0.5,
+    borderRadius: 12,
+  },
+  countryItemRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 15,
+  },
+  countryName: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  countryPrefix: {
+    fontSize: 14,
+    fontWeight: '800',
+    opacity: 0.8,
   },
 });

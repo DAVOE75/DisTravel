@@ -1,1274 +1,1238 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  ScrollView, 
-  TouchableOpacity, 
-  TextInput, 
-  Image, 
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Image,
   Dimensions,
   StatusBar,
-  Platform
+  Animated,
+  TextInput,
+  Modal,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { 
+  MapPin, 
+  Search, 
+  Accessibility, 
+  Star,
+  Clock,
+  Compass, 
+  ChevronRight, 
+  TrendingDown,
+  Zap,
+  ShieldCheck,
+  CreditCard,
+  X,
+  Palmtree,
+  Castle,
+  Coffee,
+  Waves,
+  Users,
+  PlusCircle,
+  AlertTriangle,
+  Sparkles,
+  Info,
+  Map as MapIcon,
+  MessageSquare
+} from 'lucide-react-native';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
-import { 
-  Search, 
-  Map as MapIcon, 
-  Star, 
-  ChevronRight,
-  MapPin, 
-  Filter, 
-  User, 
-  Sparkles,
-  Accessibility,
-  Info,
-  TrendingDown,
-  Building2,
-  Ear,
-  Brain,
-  Ticket,
-  Bus,
-  Plus,
-  Eye,
-  ShieldCheck,
-  Clock,
-  CreditCard,
-  Users,
-  Compass
-} from 'lucide-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import * as Location from 'expo-location';
-import { typography } from '../theme/typography';
-import { CIUDADES_PREMIUM } from '../data/ciudades';
-import { ProximityService } from '../services/ProximityService';
 import { MONUMENTOS } from '../data/monumentos';
+import { CIUDADES_PREMIUM } from '../data/ciudades';
+import { calculatePlaceSavings } from '../utils/savings';
+import { typography } from '../theme/typography';
+import MUNICIPIOS_DATA from '../data/municipios.json';
+import { INE_PROVINCES, PROVINCE_TO_REGION } from '../data/provinces';
 
 const { width } = Dimensions.get('window');
 
-const CategoryItem = ({ icon: Icon, title, theme, color }) => (
-  <TouchableOpacity style={styles.categoryCard}>
-    <View style={[styles.categoryIcon, { backgroundColor: color + '15' }]}>
-      <Icon color={color} size={26} />
-    </View>
-    <Text style={[styles.categoryText, { color: theme.textSecondary }]}>{title}</Text>
-  </TouchableOpacity>
-);
+// Pre-procesar todos los municipios para el buscador
+const ALL_MUNICIPIOS = MUNICIPIOS_DATA.map(m => {
+  const provinceName = INE_PROVINCES[m.parent_code] || 'Desconocida';
+  const regionName = PROVINCE_TO_REGION[provinceName] || 'España';
+  
+  // Si está en CIUDADES_PREMIUM, usamos esos datos enriquecidos
+  const premiumData = CIUDADES_PREMIUM[m.label];
+  
+  return {
+    ...m,
+    name: m.label,
+    province: provinceName,
+    region: regionName,
+    isCity: true,
+    ...(premiumData || {})
+  };
+});
 
-const CityCard = ({ city, onPress, theme, customImage }) => (
-  <TouchableOpacity style={styles.cityCard} onPress={onPress}>
-    <Image 
-      source={{ uri: customImage || city.image || 'https://images.unsplash.com/photo-1543731068-7e0f5beff43a' }} 
-      style={styles.cityImage} 
-    />
-    <View style={styles.cityOverlay}>
-      <View style={styles.glassContainer}>
-        <View>
-          <Text style={styles.cityName}>{city.name}</Text>
-          <View style={styles.accessBadge}>
-            <Accessibility color="#FFFFFF" size={10} />
-            <Text style={styles.accessText}>Alta Accesibilidad</Text>
-          </View>
-        </View>
-        <View style={styles.discountBadge}>
-          <Ticket color="#FFD700" size={14} />
-          <Text style={styles.discountText}>-50%</Text>
-        </View>
-      </View>
-    </View>
-  </TouchableOpacity>
-);
+const CATEGORIES = [
+  { id: '1', name: 'Playas', icon: Waves, color: '#3498DB' },
+  { id: '2', name: 'Castillos', icon: Castle, color: '#E67E22' },
+  { id: '3', name: 'Ocio', icon: Coffee, color: '#9B59B6' },
+  { id: '4', name: 'Cultura', icon: Star, color: '#F1C40F' },
+];
 
 export function HomeScreen({ navigation }) {
   const { theme, isDarkMode } = useTheme();
-  const { userData, updateUserData } = useUser();
-  const insets = useSafeAreaInsets();
+  const { userData } = useUser();
+  const scrollY = useRef(new Animated.Value(0)).current;
   const [searchQuery, setSearchQuery] = useState('');
-  const [location, setLocation] = useState(null);
-  const [errorMsg, setErrorMsg] = useState(null);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showAboutModal, setShowAboutModal] = useState(false);
+  const menuAnim = useRef(new Animated.Value(0)).current;
+  
+  const isAdmin = userData?.isAdmin || userData?.role === 'admin';
+  
+  const getOpeningStatus = (place) => {
+    if (!place) return 'Cerrado';
+    
+    const now = new Date();
+    const day = now.getDay(); // 0=Dom, 1=Lun...
+    const hour = now.getHours();
+    const minutes = now.getMinutes();
+    const currentTimeMinutes = hour * 60 + minutes;
 
-  useEffect(() => {
-    const initServices = async () => {
-      try {
-        console.log('HomeScreen: Iniciando servicios...');
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        if (status === 'granted') {
-          const loc = await Location.getCurrentPositionAsync({});
-          setLocation(loc);
-        }
-
-        // Delay de seguridad para el servicio de proximidad
-        setTimeout(() => {
-          try {
-            const allPlaces = Object.values(MONUMENTOS || {}).flat();
-            const userPlaces = userData?.contributions || [];
-            const combinedPlaces = [...allPlaces, ...userPlaces];
-
-            ProximityService.startWatching(combinedPlaces, (place) => {
-              console.log(`Distravel v3.0: Cerca de ${place.name}`);
-            });
-          } catch (e) {
-            console.log('Error en ProximityService:', e);
-          }
-        }, 3000);
-      } catch (err) {
-        console.log('Error en initServices:', err);
-      }
+    const parseTime = (timeStr) => {
+      if (!timeStr) return null;
+      const [h, m] = timeStr.split(':').map(Number);
+      return h * 60 + m;
     };
-    initServices();
-  }, []);
 
-  const normalize = (text) => {
-    if (!text) return '';
-    return text.toString().trim().toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/y/g, 'i');
+    // 1. New Structure: workingHours
+    if (place.workingHours) {
+      if (place.workingHours.is24h) return 'Abierto 24h';
+      
+      const isWeekend = day === 0 || day === 6;
+      const config = isWeekend ? place.workingHours.weekend : place.workingHours.weekday;
+      
+      if (config && config.open && config.close) {
+        const openTime = parseTime(config.open);
+        const closeTime = parseTime(config.close);
+        
+        if (currentTimeMinutes >= openTime && currentTimeMinutes < closeTime) {
+          return `Abierto (Cierra a las ${config.close})`;
+        }
+        
+        if (currentTimeMinutes < openTime) {
+          return `Cerrado (Abre hoy a las ${config.open})`;
+        }
+        
+        // Find next day it opens
+        let tomorrowDay = (day + 1) % 7;
+        let nextConfig = (tomorrowDay === 0 || tomorrowDay === 6) ? place.workingHours.weekend : place.workingHours.weekday;
+        
+        // Special case for Museums closed on Mondays
+        if (tomorrowDay === 1 && (place.category === 'Museos' || place.name.toLowerCase().includes('museo'))) {
+          return 'Cerrado (Abre el martes a las 10:00)';
+        }
+        
+        return `Cerrado (Mañana abre a las ${nextConfig.open || '10:00'})`;
+      }
+    }
+
+    // 2. Old Structure: seasons
+    const currentMonth = now.getMonth() + 1;
+    const activeSeason = (place.seasons || []).find(s => {
+      if (s.startMonth && s.endMonth) {
+        const start = Number(s.startMonth);
+        const end = Number(s.endMonth);
+        if (start <= end) return currentMonth >= start && currentMonth <= end;
+        return currentMonth >= start || currentMonth <= end; // Crosses year
+      }
+      return true;
+    });
+
+    if (activeSeason) {
+      const isSun = day === 0;
+      const isSat = day === 6;
+      let timeStr = activeSeason.weekday;
+      if (isSun) timeStr = activeSeason.festive || activeSeason.weekend;
+      else if (isSat) timeStr = activeSeason.weekend || activeSeason.weekday;
+
+      if (timeStr && timeStr.toLowerCase().includes('abierto')) return 'Abierto 24h';
+      if (timeStr && timeStr.toLowerCase().includes('siempre')) return 'Abierto 24h';
+
+      // Simple parser for "HH:MM - HH:MM" or "HH:MM a HH:MM"
+      const match = timeStr?.match(/(\d{1,2}:\d{2})\s*(?:-|a)\s*(\d{1,2}:\d{2})/);
+      if (match) {
+        const openTime = parseTime(match[1]);
+        const closeTime = parseTime(match[2]);
+        if (currentTimeMinutes >= openTime && currentTimeMinutes < closeTime) {
+          return `Abierto (Cierra a las ${match[2]})`;
+        }
+        if (currentTimeMinutes < openTime) {
+          return `Cerrado (Abre hoy a las ${match[1]})`;
+        }
+        return `Cerrado (Hasta mañana)`;
+      }
+    }
+
+    // Fallback
+    const closingHour = (day === 0 || day === 6) ? 14 : 20;
+    if (hour >= 10 && hour < closingHour) {
+      return 'Cerrado (Abre el martes a las 10:00)';
+    }
+
+    return 'Cerrado (Mañana abre a las 10:00)';
   };
 
-  // Unificar ciudades (Premium + Usuario)
-  const userCities = (userData?.contributions || []).map(p => ({
-    name: p.city,
-    province: p.province || p.city,
-    image: 'https://images.unsplash.com/photo-1543731068-7e0f5beff43a',
-    description: `Explora los lugares de ${p.city}`,
-    tags: ['Comunidad']
-  }));
+  const normalize = (text) => 
+    text?.toString().trim().toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/y/g, 'i') || '';
 
-  const uniqueCitiesMap = new Map();
-  
-  // 1. Añadir Ciudades Premium
-  Object.values(CIUDADES_PREMIUM).forEach(city => {
-    const cityKey = normalize(city.name);
-    const customImage = userData?.customCityData?.[cityKey]?.image;
-    
-    if (city.name === 'Alicante') {
-      console.log(`Distravel Debug: Alicante Key [${cityKey}], Custom Image: ${customImage ? 'SÍ' : 'NO'}`);
-    }
+  const mergedPlaces = useMemo(() => {
+    const staticPlaces = Object.entries(MONUMENTOS).flatMap(([cityName, list]) => 
+      list.map(m => ({ ...m, cityName, isPlace: true }))
+    );
+    const userPlaces = (userData?.contributions || []).map(c => ({ 
+      ...c, 
+      isPlace: true, 
+      cityName: c.city || c.cityName 
+    }));
 
-    uniqueCitiesMap.set(cityKey, {
-      ...city,
-      image: customImage || city.image
-    });
+    const map = new Map();
+    staticPlaces.forEach(p => map.set(p.id || p.name, p));
+    userPlaces.forEach(p => map.set(p.id || p.name, p));
+
+    return Array.from(map.values());
+  }, [userData?.contributions]);
+
+  const searchData = ALL_MUNICIPIOS;
+
+  const goToProfile = () => navigation.navigate('Profile');
+  const goToIA = () => navigation.navigate('DistravelAI');
+  const goToAdmin = () => navigation.navigate('AdminValidations');
+  const goToMap = () => navigation.navigate('Map');
+
+  const toggleMenu = () => {
+    const toValue = isMenuOpen ? 0 : 1;
+    Animated.spring(menuAnim, {
+      toValue,
+      friction: 5,
+      useNativeDriver: true,
+    }).start();
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const menuScale = menuAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.5, 1],
   });
 
-  // 2. Añadir/Sobrescribir con Ciudades de Usuario
-  (userData?.contributions || []).forEach(p => {
-    if (p.city) {
-      const cityKey = normalize(p.city);
-      if (!uniqueCitiesMap.has(cityKey)) {
-        const customImage = userData?.customCityData?.[cityKey]?.image;
-        uniqueCitiesMap.set(cityKey, {
-          name: p.city,
-          province: p.province || p.city,
-          image: customImage || 'https://images.unsplash.com/photo-1543731068-7e0f5beff43a',
-          description: `Explora los lugares de ${p.city}`,
-          tags: ['Comunidad']
-        });
-      }
-    }
+  const menuOpacity = menuAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
   });
 
-  const allCities = Array.from(uniqueCitiesMap.values()).reverse();
-  const filteredCities = searchQuery.trim() === '' 
-    ? allCities 
-    : allCities.filter(city => 
-        normalize(city.name).includes(normalize(searchQuery)) || 
-        (city.province && normalize(city.province).includes(normalize(searchQuery)))
-      );
+  const headerTranslateY = scrollY.interpolate({
+    inputRange: [0, 50],
+    outputRange: [0, -10],
+    extrapolate: 'clamp',
+  });
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.background, paddingTop: insets.top }]}>
-      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
       
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* PRO HERO SECTION */}
-        <View style={styles.proHero}>
-          <Image 
-            source={{ uri: 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1200&q=80' }} 
-            style={styles.proHeroImage} 
-          />
-          <View style={styles.proHeroOverlay} />
-
-          {/* Floating Header Actions */}
-          <View style={styles.proHeaderActions}>
-             <View style={styles.proBrandRow}>
-                <Image 
-                  source={require('../../assets/logo_official.png')} 
-                  style={styles.proHeroLogo} 
-                />
-                <View>
-                  <Text style={styles.proBrandText}>Distravel</Text>
-                  <View style={styles.levelBadge}>
-                    <Text style={styles.levelBadgeText}>NIVEL {userData?.level || 1}</Text>
-                  </View>
-                </View>
-             </View>
-             
-             <View style={{ flexDirection: 'row', gap: 10 }}>
-                {/* BOTON DE EMERGENCIA - SI NO VES ESTO, REINICIA LA APP */}
-                <TouchableOpacity 
-                  style={{ 
-                    backgroundColor: '#FF3B30', 
-                    paddingHorizontal: 12, 
-                    paddingVertical: 8, 
-                    borderRadius: 12, 
-                    flexDirection: 'row', 
-                    alignItems: 'center', 
-                    gap: 6,
-                    borderWidth: 2,
-                    borderColor: '#FFF'
-                  }}
-                  onPress={() => navigation.navigate('AdminValidations')}
-                >
-                  <ShieldCheck color="#FFF" size={18} />
-                  <Text style={{ color: '#FFF', fontWeight: '900', fontSize: 10 }}>ADMIN</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity 
-                  style={styles.proCircleBtn}
-                  onPress={() => navigation.navigate('DistravelAI')}
-                >
-                  <Sparkles color="#FFF" size={20} />
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={[styles.proCircleBtn, { backgroundColor: theme.primary }]}
-                  onPress={() => navigation.navigate('Profile')}
-                >
-                  {userData?.profileImage ? (
-                    <Image source={{ uri: userData.profileImage }} style={styles.proAvatar} />
-                  ) : (
-                    <User color="#FFF" size={20} />
-                  )}
-                </TouchableOpacity>
-             </View>
-          </View>
-          
-          <View style={styles.proHeroContent}>
-            <View style={styles.proBrandBadge}>
-              <Accessibility color="#FFF" size={14} />
-              <Text style={styles.proBrandBadgeText}>TURISMO SIN BARRERAS</Text>
+      {/* About Distravel Modal */}
+      <Modal
+        visible={showAboutModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowAboutModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: theme.surface }]}>
+            <View style={[styles.modalIconCircle, { backgroundColor: '#3498DB20' }]}>
+              <Info color="#3498DB" size={32} />
             </View>
-            <Text style={styles.proHeroTitle}>Explora el mundo a tu medida</Text>
-            <Text style={styles.proHeroSub}>Plataforma líder en turismo accesible. Encuentra destinos, monumentos y rutas validadas.</Text>
-            
-            <View style={styles.proHeroStats}>
-              <View style={styles.proStat}>
-                <Text style={styles.proStatValue}>{Math.round(userData?.totalSavings || 0)}€</Text>
-                <Text style={styles.proStatLabel}>Ahorrados</Text>
-              </View>
-              <View style={styles.proStatDivider} />
-              <View style={styles.proStat}>
-                <Text style={styles.proStatValue}>{userData?.visitedPlaces?.length || 0}</Text>
-                <Text style={styles.proStatLabel}>Visitados</Text>
-              </View>
-              <View style={styles.proStatDivider} />
-              <View style={styles.proStat}>
-                <Text style={styles.proStatValue}>{userData?.experience || 0}</Text>
-                <Text style={styles.proStatLabel}>XP</Text>
-              </View>
-            </View>
+            <Text style={[styles.modalTitle, { color: theme.text }]}>¿Qué es Distravel?</Text>
+            <Text style={[styles.modalBody, { color: theme.textSecondary }]}>
+              Distravel es la plataforma líder en turismo accesible. Ayudamos a personas con discapacidad a encontrar destinos, monumentos y rutas validadas por la comunidad y expertos.{"\n\n"}
+              Nuestra misión es que todos puedan viajar con total confianza y seguridad.
+            </Text>
+            <TouchableOpacity 
+              style={[styles.modalCloseBtn, { backgroundColor: theme.primary }]}
+              onPress={() => setShowAboutModal(false)}
+            >
+              <Text style={styles.modalCloseBtnText}>Entendido</Text>
+            </TouchableOpacity>
           </View>
         </View>
+      </Modal>
 
-        {/* MISSION CARDS */}
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false} 
-          contentContainerStyle={styles.missionScroll}
-        >
-          <TouchableOpacity 
-            style={[styles.missionCard, { backgroundColor: theme.primary, borderColor: theme.primary }]}
-            onPress={() => navigation.navigate('Map')}
-          >
-            <View style={[styles.missionIcon, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
-              <Sparkles color="#FFFFFF" size={24} />
-            </View>
-            <Text style={[styles.missionTitle, { color: '#FFFFFF' }]}>Misión del Día 🏆</Text>
-            <Text style={[styles.missionDesc, { color: 'rgba(255,255,255,0.9)' }]}>Verifica la accesibilidad de un lugar cercano para ganar +200 XP.</Text>
-            <View style={styles.missionXP}>
-               <Text style={styles.missionXPText}>+200 XP</Text>
-            </View>
-          </TouchableOpacity>
-
-          <View style={[styles.missionCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-            <View style={[styles.missionIcon, { backgroundColor: '#3498DB15' }]}>
-              <Info color="#3498DB" size={24} />
-            </View>
-            <Text style={[styles.missionTitle, { color: theme.text }]}>¿Qué es Distravel?</Text>
-            <Text style={[styles.missionDesc, { color: theme.textSecondary }]}>Tu guía inteligente para viajar con total confianza y accesibilidad garantizada.</Text>
+      <Animated.ScrollView 
+        showsVerticalScrollIndicator={false}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true }
+        )}
+        scrollEventThrottle={16}
+      >
+        {/* Header Layer (Profile, AI, Admin) */}
+        <View style={styles.topActionsRow}>
+          <View style={styles.topActionsLeft}>
+            {/* Logo removed here as it is now in the Greeting Box */}
           </View>
-
-          <View style={[styles.missionCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-            <View style={[styles.missionIcon, { backgroundColor: '#F1C40F15' }]}>
-              <TrendingDown color="#F1C40F" size={24} />
-            </View>
-            <Text style={[styles.missionTitle, { color: theme.text }]}>Maximiza tu Ahorro</Text>
-            <Text style={[styles.missionDesc, { color: theme.textSecondary }]}>Calculamos automáticamente tus descuentos en cada monumento y museo.</Text>
-          </View>
-
-          <TouchableOpacity 
-            style={[styles.missionCard, { backgroundColor: theme.primary + '15', borderColor: theme.primary }]}
-            onPress={() => navigation.navigate('AddLocation')}
-          >
-            <View style={[styles.missionIcon, { backgroundColor: theme.primary }]}>
-              <Plus color="#FFF" size={24} />
-            </View>
-            <Text style={[styles.missionTitle, { color: theme.text }]}>¡Contribuye!</Text>
-            <Text style={[styles.missionDesc, { color: theme.textSecondary }]}>Ayúdanos a crecer añadiendo nuevos lugares y validando su accesibilidad real.</Text>
-          </TouchableOpacity>
-        </ScrollView>
-
-        {/* Search Bar - INTEGRADA CON EL FLOW */}
-        <View style={styles.searchSection}>
-          <Text style={[styles.searchLabel, { color: theme.text }]}>¿A dónde quieres ir hoy?</Text>
-          
-          {/* Contenedor relativo para anclar el dropdown */}
-          <View style={{ position: 'relative', zIndex: 9999 }}>
-            <View style={[styles.searchBar, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-              <Search color={theme.textSecondary} size={20} />
-              <TextInput 
-                placeholder="Busca ciudad o monumento..."
-                placeholderTextColor={theme.textSecondary}
-                style={[styles.searchInput, { color: theme.text }]}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
+          <View style={styles.topActionsRight}>
+            <TouchableOpacity onPress={goToProfile} style={styles.profileBtn}>
+              <Image 
+                source={{ uri: userData?.profileImage || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde' }} 
+                style={styles.fullImage} 
               />
-            </View>
+            </TouchableOpacity>
 
-            {/* Resultados de búsqueda UNIFICADOS con IMÁGENES */}
-            {searchQuery.length > 0 && (
-              <View style={[styles.searchResultsDropdown, { backgroundColor: theme.surface, borderColor: theme.border, top: 60, left: 0, right: 0 }]}>
-                <ScrollView style={{ maxHeight: 400 }} keyboardShouldPersistTaps="handled">
-                  {/* Ciudades */}
-                  {filteredCities.length > 0 && (
-                    <View>
-                      <Text style={[styles.dropdownSectionTitle, { color: theme.primary }]}>CIUDADES</Text>
-                      {filteredCities.slice(0, 3).map((city, index) => (
-                        <TouchableOpacity 
-                          key={`city-${index}`} 
-                          style={[styles.searchResultItem, { borderBottomColor: theme.border }]}
-                          onPress={() => {
-                            setSearchQuery('');
-                            navigation.navigate('CityDetail', { city });
-                          }}
-                        >
-                          <View style={styles.searchResultLeft}>
-                            <Image 
-                              key={userData?.customCityData?.[normalize(city.name)]?.image || city.image}
-                              source={{ 
-                                uri: userData?.customCityData?.[normalize(city.name)]?.image || 
-                                     city.image || 
-                                     'https://images.unsplash.com/photo-1543731068-7e0f5beff43a' 
-                              }} 
-                              style={styles.resultImageSmall} 
-                            />
-                            <View style={{ marginLeft: 12 }}>
-                              <Text style={[styles.searchResultName, { color: theme.text }]}>{city.name}</Text>
-                              <Text style={[styles.searchResultProvince, { color: theme.textSecondary }]}>{city.province}</Text>
-                            </View>
-                          </View>
-                          <ChevronRight color={theme.textSecondary} size={16} />
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  )}
-
-                  {/* Monumentos / Lugares */}
-                  {(() => {
-                    const allMonuments = Object.entries(MONUMENTOS).flatMap(([cityName, list]) => 
-                      list.map(m => ({ ...m, cityName }))
-                    );
-                    const filteredMonuments = allMonuments.filter(m => 
-                      normalize(m.name).includes(normalize(searchQuery))
-                    );
-
-                    if (filteredMonuments.length > 0) {
-                      return (
-                        <View>
-                          <Text style={[styles.dropdownSectionTitle, { color: theme.primary }]}>LUGARES Y MONUMENTOS</Text>
-                          {filteredMonuments.slice(0, 5).map((place, index) => (
-                            <TouchableOpacity 
-                              key={`place-${index}`} 
-                              style={[styles.searchResultItem, { borderBottomColor: theme.border }]}
-                              onPress={() => {
-                                setSearchQuery('');
-                                navigation.navigate('PlaceDetail', { place });
-                              }}
-                            >
-                              <View style={styles.searchResultLeft}>
-                                <Image 
-                                  source={{ 
-                                    uri: place.image || 
-                                         userData?.customCityData?.[normalize(place.cityName || place.city)]?.image || 
-                                         (CIUDADES_PREMIUM[place.cityName] || CIUDADES_PREMIUM[place.city])?.image 
-                                  }} 
-                                  style={styles.resultImageSmall} 
-                                />
-                                <View style={{ marginLeft: 12 }}>
-                                  <Text style={[styles.searchResultName, { color: theme.text }]}>{place.name}</Text>
-                                  <Text style={[styles.searchResultProvince, { color: theme.textSecondary }]}>{place.cityName}</Text>
-                                </View>
-                              </View>
-                              <ChevronRight color={theme.textSecondary} size={16} />
-                            </TouchableOpacity>
-                          ))}
-                        </View>
-                      );
-                    }
-                    return null;
-                  })()}
-
-                  {filteredCities.length === 0 && (
-                    <View style={styles.noResultsContainer}>
-                      <Text style={{ color: theme.textSecondary }}>No se encontraron resultados</Text>
-                    </View>
-                  )}
-                </ScrollView>
-              </View>
+            <TouchableOpacity onPress={goToIA} style={[styles.actionBtn, { backgroundColor: '#6366f1' }]}>
+              <Zap color="#FFF" size={20} fill="#FFF" />
+            </TouchableOpacity>
+            
+            {isAdmin && (
+              <TouchableOpacity onPress={goToAdmin} style={[styles.actionBtn, { backgroundColor: '#EFBF04' }]}>
+                <ShieldCheck color="#0A192F" size={20} />
+              </TouchableOpacity>
             )}
           </View>
         </View>
 
-        {/* Disability Filter Tabs */}
-        <View style={styles.filterTabsContainer}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterTabs}>
-            {[
-              { id: 'MOTOR', label: 'Física', icon: Accessibility },
-              { id: 'VISUAL', label: 'Visual', icon: Eye },
-              { id: 'AUDITORY', label: 'Auditiva', icon: Ear },
-              { id: 'COGNITIVE', label: 'Cognitiva', icon: Brain }
-            ].map(type => {
-              const IconComponent = type.icon;
-              return (
-                <TouchableOpacity 
-                  key={type.id}
-                  style={[
-                    styles.filterTab, 
-                    { backgroundColor: userData?.disabilityType === type.id ? theme.primary : theme.surface, borderColor: theme.border }
-                  ]}
-                  onPress={() => updateUserData({ disabilityType: type.id })}
-                >
-                  <IconComponent color={userData?.disabilityType === type.id ? '#FFFFFF' : theme.primary} size={16} />
-                  <Text style={[styles.filterTabText, { color: userData?.disabilityType === type.id ? '#FFFFFF' : theme.text }]}>{type.label}</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </View>
+        {/* Header Section with Background */}
+        <View style={[styles.headerHero, { height: 350 }]}>
+          <Image 
+            source={require('../../assets/hero_bg.png')} 
+            style={styles.heroBg}
+            blurRadius={1.5}
+          />
+          <View style={[styles.heroOverlay, { backgroundColor: 'rgba(7, 11, 20, 0.5)' }]} />
+          
+          <View style={styles.heroContentMain}>
+            <View style={styles.heroGreetingBox}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 5 }}>
+                <Image 
+                  source={require('../../assets/logo_dark.png')} 
+                  style={styles.heroLogo} 
+                  resizeMode="contain"
+                />
+                <View>
+                  <Text style={styles.heroBrandText}>Distravel</Text>
+                  <Text style={styles.heroGreeting}>Hola, {userData?.name || 'Viajero'}</Text>
+                </View>
+              </View>
+            </View>
 
-        <View style={styles.sectionContainer}>
-          <View style={styles.sectionHeader}>
-            <View>
-              <Text style={[styles.sectionTitle, { color: theme.text, marginBottom: 4 }, typography.h2]}>Herramientas de Élite</Text>
-              <Text style={[styles.sectionSub, { color: theme.textSecondary }]}>Acceso rápido a servicios críticos</Text>
+            <Text style={[styles.heroTitle, { 
+              color: '#FFF',
+              textShadowColor: 'rgba(0, 0, 0, 0.5)',
+              textShadowOffset: { width: 0, height: 2 },
+              textShadowRadius: 4
+            }]}>Ahorra con tu tarjeta de discapacidad</Text>
+            <Text style={[styles.heroSub, { color: 'rgba(255,255,255,0.8)' }]}>
+              Aprovéchala en tus viajes con la guía definitiva para el turismo accesible y beneficios exclusivos.
+            </Text>
+
+            <View style={styles.statsRow}>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>0€</Text>
+                <Text style={styles.statLabel}>AHORROS</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>0</Text>
+                <Text style={styles.statLabel}>VISITAS</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>0</Text>
+                <Text style={styles.statLabel}>XP</Text>
+              </View>
             </View>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoriesList}>
-            {[
-              { id: 'Emergency', label: 'SOS', icon: ShieldCheck, color: '#FF3B30' },
-              { id: 'DigitalWallet', label: 'Billetera', icon: Ticket, color: '#007AFF' },
-              { id: 'Toilets', label: 'Baños', icon: MapPin, color: '#34C759' },
-              { id: 'Report', label: 'Incidencias', icon: Star, color: '#FF9500' },
-              { id: 'SavingsSimulator', label: 'Ahorro', icon: TrendingDown, color: '#5856D6' },
-              { id: 'AddLocation', label: 'Añadir', icon: Plus, color: '#32ADE6' }
-            ].map((tool, idx) => {
-              const ToolIcon = tool.icon;
+        </View>
+
+        {/* Mission Cards Section */}
+        <View style={[styles.missionCardsContainer, { marginTop: 10 }]}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.missionListPadding}>
+            <TouchableOpacity 
+              onPress={goToMap}
+              style={[
+                styles.missionCard, 
+                { 
+                  backgroundColor: '#F1C40F', 
+                  width: 160, 
+                  height: 160,
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowRadius: 3,
+                  shadowOpacity: 0.03,
+                  elevation: 1
+                }
+              ]}
+            >
+              <View style={styles.missionIconBox}>
+                <Sparkles color="#070B14" size={24} />
+              </View>
+              <View style={[styles.xpBadge, { top: 10, right: 10 }]}>
+                <Text style={[styles.xpBadgeText, { fontSize: 10 }]}>+200 XP</Text>
+              </View>
+              <Text style={[styles.missionTitle, { color: '#070B14', fontSize: 15, marginTop: 4 }]}>Misión del Día</Text>
+              <Text style={[styles.missionDesc, { color: '#070B14', fontSize: 11, lineHeight: 14 }]}>
+                Verifica la accesibilidad y gana puntos.
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              onPress={() => setShowAboutModal(true)}
+              style={[
+                styles.missionCard, 
+                { 
+                  backgroundColor: isDarkMode ? '#1E293B' : '#F8FAFC', 
+                  borderWidth: 1, 
+                  borderColor: theme.border, 
+                  width: 160, 
+                  height: 160,
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowRadius: 3,
+                  shadowOpacity: 0.03,
+                  elevation: 1
+                }
+              ]}
+            >
+              <View style={[styles.missionIconBox, { backgroundColor: '#3498DB20' }]}>
+                <Info color="#3498DB" size={24} />
+              </View>
+              <Text style={[styles.missionTitle, { color: theme.text, fontSize: 15, marginTop: 4 }]}>¿Qué es Distravel?</Text>
+              <Text style={[styles.missionDesc, { color: theme.textSecondary, fontSize: 11, lineHeight: 14 }]}>
+                Tu guía inteligente para viajar con confianza.
+              </Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+
+        <View style={{ paddingHorizontal: 20, marginTop: 30 }}>
+          <Text style={[styles.searchTitle, { color: theme.textSecondary, fontSize: 18 }]}>¿A dónde quieres ir hoy?</Text>
+        </View>
+
+        {/* Search Section (Ahora integrado en el flujo) */}
+        <View style={[styles.searchOuter, { paddingHorizontal: 20, marginTop: 10 }]}>
+          <View style={[styles.searchBar, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+            <Search color={theme.textSecondary} size={20} />
+            <TextInput
+              style={[styles.searchInput, { color: theme.text }]}
+              placeholder="Buscar ciudades..."
+              placeholderTextColor={theme.textSecondary}
+              value={searchQuery}
+              onChangeText={(text) => {
+                setSearchQuery(text);
+                setShowSearchResults(text.length > 1);
+              }}
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={() => { setSearchQuery(''); setShowSearchResults(false); }}>
+                <X color={theme.textSecondary} size={18} />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {showSearchResults && (
+            <View style={[styles.searchResults, { backgroundColor: theme.surface, borderColor: theme.border, shadowColor: isDarkMode ? '#000' : '#475569' }]}>
+              {searchData
+                .filter(p => {
+                  const query = normalize(searchQuery);
+                  const name = normalize(p.name);
+                  const prov = normalize(p.province || '');
+                  return name.includes(query) || prov.includes(query);
+                })
+                .sort((a, b) => {
+                  const query = normalize(searchQuery);
+                  const aName = normalize(a.name);
+                  const bName = normalize(b.name);
+                  
+                  // Exact matches first
+                  if (aName === query) return -1;
+                  if (bName === query) return 1;
+                  
+                  // Starts with query next
+                  if (aName.startsWith(query) && !bName.startsWith(query)) return -1;
+                  if (bName.startsWith(query) && !aName.startsWith(query)) return 1;
+                  
+                  return 0;
+                })
+                .slice(0, 10)
+                .map((item, idx, arr) => (
+                  <TouchableOpacity 
+                    key={idx} 
+                    style={[
+                      styles.searchItem, 
+                      { borderBottomColor: theme.border, borderBottomWidth: idx === arr.length - 1 ? 0 : 0.5 }
+                    ]}
+                    onPress={() => {
+                      setShowSearchResults(false);
+                      setSearchQuery('');
+                      navigation.navigate('CityDetail', { city: item });
+                    }}
+                  >
+                    <View style={[styles.searchIconCircle, { backgroundColor: '#3498DB20' }]}>
+                      <MapPin color="#3498DB" size={18} />
+                    </View>
+                    <View style={{ marginLeft: 12, flex: 1 }}>
+                      <Text style={[styles.itemName, { color: theme.text }]}>{item.name}</Text>
+                      <Text style={[styles.itemCity, { color: theme.textSecondary }]}>
+                        {item.province}, {item.region}
+                      </Text>
+                    </View>
+                    <ChevronRight color={theme.textSecondary} size={16} />
+                  </TouchableOpacity>
+                ))}
+            </View>
+          )}
+        </View>
+
+        {/* Servicios de Asistencia (Quick Actions) */}
+        <View style={styles.section}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.listPadding}>
+            <TouchableOpacity 
+              style={[styles.serviceCard, { backgroundColor: '#FF3B30' }]} 
+              onPress={() => navigation.navigate('Emergency')}
+            >
+              <AlertTriangle color="#FFF" size={24} />
+              <Text style={styles.serviceText}>SOS</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.serviceCard, { backgroundColor: '#3498DB' }]} 
+              onPress={() => navigation.navigate('Toilets')}
+            >
+              <Users color="#FFF" size={24} />
+              <Text style={styles.serviceText}>BAÑOS</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.serviceCard, { backgroundColor: '#F1C40F' }]} 
+              onPress={() => navigation.navigate('Report')}
+            >
+              <ShieldCheck color="#070B14" size={24} />
+              <Text style={[styles.serviceText, { color: '#070B14' }]}>REPORTAR</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[
+                styles.serviceCard, 
+                { 
+                  backgroundColor: isDarkMode ? '#000' : theme.primary,
+                  borderWidth: isDarkMode ? 1 : 0,
+                  borderColor: isDarkMode ? '#444' : 'transparent'
+                }
+              ]} 
+              onPress={() => navigation.navigate('Map')}
+            >
+              <Compass color="#FFF" size={24} />
+              <Text style={styles.serviceText}>MAPA</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+
+        {/* Elite/Verificados Section */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>Top Verificados</Text>
+            <View style={styles.eliteStatus}>
+              <Users color={theme.primary} size={14} />
+              <Text style={{ color: theme.primary, fontSize: 11, fontWeight: '700', marginLeft: 4 }}>+4k Usuarios</Text>
+            </View>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.listPadding}>
+            {mergedPlaces.filter(p => p.verified || p.verifiedStatus === 'Verificado' || p.verifiedByCommunity?.status === 'Alta Confianza').slice(0, 10).map((place, idx) => {
+              const savings = calculatePlaceSavings(place);
               return (
                 <TouchableOpacity 
-                  key={idx}
-                  onPress={() => navigation.navigate(tool.id)}
-                  activeOpacity={0.7}
+                  key={idx} 
+                  style={[styles.recentCard, { backgroundColor: theme.surface }]} 
+                  onPress={() => navigation.navigate('PlaceDetail', { place })}
                 >
-                  <LinearGradient
-                    colors={isDarkMode ? ['#2C2C2E', '#1C1C1E'] : ['#FFFFFF', '#F2F2F7']}
-                    style={[styles.eliteCard, { borderColor: isDarkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' }]}
-                  >
-                    <View style={[styles.eliteIconContainer, { backgroundColor: tool.color + (isDarkMode ? '25' : '15'), borderWidth: 1, borderColor: tool.color + '30' }]}>
-                      <ToolIcon color={tool.color} size={26} />
+                  <Image source={{ uri: place.image }} style={styles.recentImage} />
+                  <View style={styles.recentInfo}>
+                    <Text style={[styles.placeName, { color: theme.text }]} numberOfLines={1}>{place.name}</Text>
+                    
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 4 }}>
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star key={s} size={10} color="#F1C40F" fill="#F1C40F" />
+                      ))}
+                      <Text style={{ fontSize: 10, color: theme.textSecondary, marginLeft: 4, fontWeight: '700' }}>5.0</Text>
                     </View>
-                    <Text style={[styles.eliteText, { color: isDarkMode ? 'rgba(255,255,255,0.9)' : '#1C1C1E' }]}>{tool.label}</Text>
-                  </LinearGradient>
+
+                    <View style={styles.placeMeta}>
+                      <Text style={[styles.placeCity, { color: theme.textSecondary }]}>{place.city || place.cityName}</Text>
+                      {savings > 0 && (
+                        <View style={styles.savingsBadge}>
+                          <TrendingDown color="#2ECC71" size={12} />
+                          <Text style={styles.savingsText}>-{savings}€</Text>
+                        </View>
+                      )}
+                    </View>
+
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
+                      <Clock size={12} color={theme.primary} />
+                      <Text style={{ fontSize: 11, color: theme.primary, fontWeight: '700', marginLeft: 4 }}>
+                        {getOpeningStatus(place)}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={[styles.eliteStatusDot, { 
+                    position: 'absolute', 
+                    top: 10, 
+                    right: 10, 
+                    backgroundColor: '#2ECC71', 
+                    width: 12, 
+                    height: 12, 
+                    borderRadius: 6,
+                    borderWidth: 2, 
+                    borderColor: theme.surface 
+                  }]} />
                 </TouchableOpacity>
               );
             })}
           </ScrollView>
         </View>
 
-        {/* ÚLTIMOS LUGARES DESCUBIERTOS - AHORA CON CONTRIBUCIONES REALES */}
-        <View style={styles.sectionContainer}>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: theme.text, marginBottom: 0 }, typography.h2]}>Últimos Descubrimientos</Text>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.featuredList}>
-            {(() => {
-              // Fusionar monumentos estáticos con las contribuciones del usuario (Mezcla Inteligente)
-              const staticPlaces = Object.entries(MONUMENTOS).flatMap(([city, list]) => 
-                list.map(m => ({ ...m, cityName: city }))
-              );
-              const userPlaces = (userData?.contributions || []).map(p => ({ ...p, cityName: p.city }));
-              
-              // Crear mapa de nombres para sobrescribir estáticos con contribuciones
-              const userPlaceMap = new Map();
-              userPlaces.forEach(p => userPlaceMap.set(`${p.name.toLowerCase()}-${(p.cityName || p.city).toLowerCase()}`, p));
-
-              const merged = [...userPlaces.reverse()];
-              staticPlaces.forEach(p => {
-                const key = `${p.name.toLowerCase()}-${p.cityName.toLowerCase()}`;
-                if (!userPlaceMap.has(key)) {
-                  merged.push(p);
-                }
-              });
-
-              return merged.slice(0, 6).map((place, index) => (
-                <TouchableOpacity 
-                  key={`recent-${index}`} 
-                  style={styles.recentPlaceCard}
-                  onPress={() => navigation.navigate('PlaceDetail', { place })}
-                >
-                  <Image 
-                    source={{ uri: place.image || (CIUDADES_PREMIUM[place.cityName] || CIUDADES_PREMIUM[place.city])?.image }} 
-                    style={styles.recentPlaceImage} 
-                  />
-                  <View style={styles.recentPlaceInfo}>
-                    <Text style={[styles.recentPlaceName, { color: theme.text }]} numberOfLines={1}>{place.name}</Text>
-                    <Text style={[styles.recentPlaceCity, { color: theme.textSecondary }]}>{place.cityName || place.city}</Text>
-                  </View>
-                </TouchableOpacity>
-              ));
-            })()}
+        <View style={styles.section}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.listPadding}>
+            {CATEGORIES.map((cat) => (
+              <TouchableOpacity key={cat.id} style={styles.categoryCard}>
+                <View style={[styles.categoryIcon, { backgroundColor: theme.surface, borderColor: cat.color + '40' }]}>
+                  <View style={[styles.categoryGlow, { backgroundColor: cat.color }]} />
+                  <cat.icon color={cat.color} size={28} strokeWidth={2.5} />
+                </View>
+                <Text style={[styles.categoryText, { color: theme.textSecondary }]}>{cat.name.toUpperCase()}</Text>
+              </TouchableOpacity>
+            ))}
           </ScrollView>
         </View>
 
-        {/* Featured Places - EXPLORA LUGARES CON SUS FOTOS (FUSIONADO) */}
-        <View style={styles.sectionContainer}>
+        {/* Discoveries */}
+        <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: theme.text, marginBottom: 0 }, typography.h2]}>Explora Lugares Increíbles</Text>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>Descubrimientos Recientes</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Map')}>
+              <Text style={{ color: theme.primary, fontWeight: '700' }}>Ver Mapa</Text>
+            </TouchableOpacity>
           </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.featuredList}>
-            {(() => {
-              const staticPlaces = Object.entries(MONUMENTOS).flatMap(([cityName, list]) => 
-                list.map(m => ({ ...m, cityName }))
-              );
-              const userPlaces = (userData?.contributions || []).map(p => ({ ...p, cityName: p.city }));
-              
-              // Mezcla Inteligente: Priorizar versiones del usuario
-              const userPlaceMap = new Map();
-              userPlaces.forEach(p => userPlaceMap.set(`${p.name.toLowerCase()}-${(p.cityName || p.city).toLowerCase()}`, p));
-
-              const merged = [...userPlaces];
-              staticPlaces.forEach(p => {
-                const key = `${p.name.toLowerCase()}-${p.cityName.toLowerCase()}`;
-                if (!userPlaceMap.has(key)) {
-                  merged.push(p);
-                }
-              });
-
-              return merged.slice(0, 10).map((place, index) => (
-                <TouchableOpacity 
-                  key={`featured-place-${index}`} 
-                  style={styles.cityCard} 
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.listPadding}>
+            {mergedPlaces.slice(0, 10).map((place, index) => {
+              const savings = calculatePlaceSavings(place);
+              return (
+                <TouchableOpacity
+                  key={index}
+                  style={[styles.recentCard, { backgroundColor: theme.surface }]}
                   onPress={() => navigation.navigate('PlaceDetail', { place })}
                 >
-                  <Image 
-                    source={{ uri: place.image || (CIUDADES_PREMIUM[place.cityName] || CIUDADES_PREMIUM[place.city])?.image }} 
-                    style={styles.cityImage} 
-                  />
-                  <View style={styles.cityOverlay}>
+                  <Image source={{ uri: place.image }} style={styles.recentImage} />
+                  <View style={styles.recentInfo}>
+                    <Text style={[styles.placeName, { color: theme.text }]} numberOfLines={1}>{place.name}</Text>
+                    <View style={styles.placeMeta}>
+                      <Text style={[styles.placeCity, { color: theme.textSecondary }]}>{place.cityName}</Text>
+                      {savings > 0 && (
+                        <View style={styles.savingsBadge}>
+                          <TrendingDown color="#2ECC71" size={12} />
+                          <Text style={styles.savingsText}>-{savings}€</Text>
+                        </View>
+                      )}
+                    </View>
+                    
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star key={s} size={10} color="#F1C40F" fill={s <= (place.rating || 5) ? "#F1C40F" : "transparent"} />
+                      ))}
+                      <Text style={{ fontSize: 10, color: theme.textSecondary, marginLeft: 4, fontWeight: '700' }}>{place.rating ? place.rating.toFixed(1) : '5.0'}</Text>
+                    </View>
+
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                      <Clock size={10} color={theme.primary} />
+                      <Text style={{ fontSize: 10, color: theme.primary, fontWeight: '700', marginLeft: 4 }}>
+                        {getOpeningStatus(place)}
+                      </Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+
+        {/* Premium Destinations */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>Destinos Destacados</Text>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.listPadding}>
+            {Object.entries(CIUDADES_PREMIUM).map(([name, city], index) => {
+              const cityKey = normalize(name);
+              const customData = userData?.customCityData?.[cityKey] || {};
+              const displayImage = customData.image || city.image;
+              const displayCity = { ...city, name, image: displayImage };
+              
+              return (
+                <TouchableOpacity 
+                  key={index}
+                  style={[styles.featuredCityCard, { backgroundColor: theme.surface }]}
+                  onPress={() => navigation.navigate('CityDetail', { city: displayCity })}
+                >
+                  <Image source={{ uri: displayImage }} style={styles.featuredCityImage} />
+                  <View style={styles.featuredCityOverlay}>
                     <View style={styles.glassContainer}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={styles.cityName} numberOfLines={1}>{place.name}</Text>
+                      <View>
+                        <Text style={styles.cityName}>{name}</Text>
                         <View style={styles.accessBadge}>
-                          <MapPin color="rgba(255,255,255,0.7)" size={10} />
-                          <Text style={styles.accessText}>{place.cityName || place.city}</Text>
+                          <Accessibility color="#2ECC71" size={12} />
+                          <Text style={styles.accessText}>ACCESIBLE</Text>
                         </View>
                       </View>
-                      <View style={styles.discountBadge}>
-                        <Accessibility color="#FFD700" size={14} />
-                        <Text style={styles.discountText}>{place.isUserAdded ? 'NUEVO' : 'PRO'}</Text>
-                      </View>
+                      <ChevronRight color="#FFF" size={20} />
                     </View>
                   </View>
                 </TouchableOpacity>
-              ));
-            })()}
+              );
+            })}
           </ScrollView>
         </View>
 
-        {/* Featured Destinations */}
-        <View style={styles.sectionContainer}>
-          <View style={styles.sectionHeader}>
-            <Text style={[styles.sectionTitle, { color: theme.text, marginBottom: 0 }, typography.h2]}>Destinos por Descubrir</Text>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.featuredList}>
-                {allCities.slice(0, 6).map((city, index) => (
-                  <CityCard 
-                    key={index} 
-                    city={city} 
-                    customImage={userData?.customCityData?.[normalize(city.name)]?.image}
-                    onPress={() => navigation.navigate('CityDetail', { city })}
-                    theme={theme}
-                  />
-                ))}</ScrollView>
-        </View>
-
-        {/* Mission-Critical Banner: Digital ID */}
-        <TouchableOpacity 
-          style={[styles.credentialBanner, { backgroundColor: theme.primary }]}
+        {/* Digital ID Banner */}
+        <TouchableOpacity
+          style={[styles.banner, { backgroundColor: theme.primary }]}
           onPress={() => navigation.navigate('DigitalWallet')}
         >
-          <View style={styles.bannerContent}>
-            <View style={styles.bannerIconContainer}>
-              <CreditCard color="#FFFFFF" size={24} />
+          <View style={styles.bannerRow}>
+            <View style={styles.bannerIcon}>
+              <CreditCard color="#FFF" size={24} />
             </View>
-            <View style={styles.bannerTextContainer}>
-              <Text style={styles.bannerTitle}>Billetera Digital Activa</Text>
-              <Text style={styles.bannerSub}>Acceso rápido a tu tarjeta europea</Text>
+            <View style={{ marginLeft: 15 }}>
+              <Text style={styles.bannerTitle}>Billetera Digital</Text>
+              <Text style={styles.bannerSub}>Acceso rápido a tu tarjeta PCD</Text>
             </View>
           </View>
-          <ChevronRight color="#FFFFFF" size={24} />
+          <ChevronRight color="#FFF" size={24} />
         </TouchableOpacity>
 
         <View style={{ height: 100 }} />
-      </ScrollView>
+      </Animated.ScrollView>
 
-      {/* Floating Compass Button (Fixed Position) */}
-      <TouchableOpacity 
-        style={[styles.floatingMapButton, { backgroundColor: isDarkMode ? 'rgba(44, 44, 46, 0.9)' : 'rgba(255, 255, 255, 0.9)' }]}
-        onPress={() => navigation.navigate('Map')}
-        activeOpacity={0.8}
-      >
-        <Compass color={theme.primary} size={28} />
-      </TouchableOpacity>
+      {/* Expandable FAB Menu */}
+      <View style={styles.fabContainer}>
+        {isMenuOpen && (
+          <Animated.View style={[styles.expandedMenu, { opacity: menuOpacity, transform: [{ scale: menuScale }] }]}>
+            <TouchableOpacity 
+              style={[styles.miniFab, { backgroundColor: '#FF3B30' }]} 
+              onPress={() => { toggleMenu(); navigation.navigate('Emergency'); }}
+            >
+              <AlertTriangle color="#FFF" size={20} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.miniFab, { backgroundColor: '#3498DB' }]} 
+              onPress={() => { toggleMenu(); navigation.navigate('Toilets'); }}
+            >
+              <Users color="#FFF" size={20} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.miniFab, { backgroundColor: theme.primary }]} 
+              onPress={() => { toggleMenu(); navigation.navigate('Map'); }}
+            >
+              <MapPin color="#FFF" size={20} />
+            </TouchableOpacity>
+          </Animated.View>
+        )}
+        <TouchableOpacity
+          style={[styles.fab, { backgroundColor: theme.primary }]}
+          onPress={toggleMenu}
+        >
+          <Animated.View style={{ transform: [{ rotate: menuAnim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '45deg'] }) }] }}>
+            {isMenuOpen ? <X color="#FFF" size={32} /> : <PlusCircle color="#FFF" size={32} />}
+          </Animated.View>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  floatingMapButton: {
-    position: 'absolute',
-    bottom: 30,
-    right: 20,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    justifyContent: 'center',
+  container: { flex: 1 },
+  adminBar: {
+    flexDirection: 'row',
     alignItems: 'center',
-    // Premium shadow for floating effect
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    elevation: 8,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    gap: 8,
   },
-  proHeaderActions: {
+  adminBarText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  headerHero: {
+    width: '100%',
+    overflow: 'hidden',
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
+    height: 350,
+  },
+  heroBg: {
     position: 'absolute',
-    top: 20,
-    left: 20,
-    right: 20,
+    width: '100%',
+    height: '100%',
+  },
+  heroOverlay: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+  },
+  topActionsRow: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    zIndex: 999,
-    elevation: 10,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 15,
   },
-  proBrandRow: {
+  topActionsLeft: {
     flexDirection: 'row',
+    alignItems: 'center',
+  },
+  topActionsRight: {
+    flexDirection: 'column',
     alignItems: 'center',
     gap: 8,
   },
-  proHeroLogo: {
-    width: 28,
-    height: 28,
+  headerLogoSmall: {
+    width: 35,
+    height: 35,
   },
-  proBrandText: {
-    color: '#FFF',
-    fontSize: 18,
-    fontWeight: '900',
-    letterSpacing: 0.5,
+  actionBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 5,
+    elevation: 1,
   },
-  levelBadge: {
-    backgroundColor: '#FFD700',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    marginTop: 2,
-    alignSelf: 'flex-start',
-  },
-  levelBadgeText: {
-    color: '#000',
-    fontSize: 8,
-    fontWeight: '900',
-  },
-  proCircleBtn: {
+  profileBtn: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  proAvatar: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 20,
-  },
-  proHero: {
-    height: 400,
-    width: '100%',
-    position: 'relative',
     overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: '#FFF',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 5,
+    elevation: 1,
   },
-  proHeroImage: {
+  fullImage: {
     width: '100%',
     height: '100%',
   },
-  proHeroOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(15, 23, 42, 0.7)',
+  heroGreetingBox: {
+    marginBottom: 20,
   },
-  proHeroContent: {
-    position: 'absolute',
-    bottom: 40,
-    left: 20,
-    right: 20,
-  },
-  proBrandBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  proBrandBadgeText: {
-    color: '#FFF',
-    fontSize: 10,
-    fontWeight: '900',
-    marginLeft: 6,
-    letterSpacing: 1,
-  },
-  proHeroTitle: {
-    color: '#FFF',
-    fontSize: 34,
-    fontWeight: '900',
-    marginBottom: 12,
-    lineHeight: 40,
-  },
-  proHeroSub: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 15,
-    lineHeight: 22,
-    marginBottom: 25,
-  },
-  proHeroStats: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  proStat: {
-    alignItems: 'center',
-  },
-  proStatValue: {
-    color: '#FFF',
-    fontSize: 18,
-    fontWeight: '900',
-  },
-  proStatLabel: {
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontSize: 10,
-    fontWeight: '700',
-    textTransform: 'uppercase',
+  heroGreeting: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: 16,
+    fontWeight: '600',
     marginTop: 2,
   },
-  proStatDivider: {
-    width: 1,
-    height: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    marginHorizontal: 25,
+  heroBrandText: {
+    color: '#FFF',
+    fontSize: 28,
+    fontWeight: '900',
+    letterSpacing: -0.5,
   },
-  missionScroll: {
-    paddingHorizontal: 20,
-    paddingTop: 25,
-    paddingBottom: 5,
+  heroTitle: {
+    fontSize: 32,
+    fontWeight: '800',
+    lineHeight: 40,
+    marginBottom: 10,
+    letterSpacing: -0.5,
+  },
+  heroSub: {
+    fontSize: 15,
+    fontWeight: '500',
+    lineHeight: 22,
+    marginBottom: 15,
+  },
+  missionCardsContainer: {
+    zIndex: 10,
   },
   missionCard: {
-    width: 220,
-    padding: 20,
-    borderRadius: 24,
-    borderWidth: 1,
+    width: 160,
+    borderRadius: 16,
+    padding: 15,
+    marginRight: 12,
+    height: 160,
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 5,
+    elevation: 1,
+    marginBottom: 15,
+  },
+  heroContentMain: {
+    flex: 1,
+    justifyContent: 'center',
+    paddingHorizontal: 25,
+    paddingTop: 60,
+  },
+  heroBrandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 20,
+    gap: 15,
+  },
+  heroLogo: {
+    width: 70,
+    height: 70,
     marginRight: 15,
   },
-  missionIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    marginTop: -5,
+  },
+  statItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  statValue: {
+    color: '#FFF',
+    fontSize: 20,
+    fontWeight: '900',
+  },
+  statLabel: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 10,
+    fontWeight: '800',
+    marginTop: 4,
+  },
+  statDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  missionCardsContainer: {
+    marginTop: -40,
+    zIndex: 10,
+  },
+  missionListPadding: {
+    paddingHorizontal: 20,
+    paddingBottom: 10,
+  },
+  // Removed duplicate missionCard
+  missionIconBox: {
+    width: 50,
+    height: 50,
+    borderRadius: 18,
+    backgroundColor: 'rgba(0,0,0,0.05)',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 15,
   },
-  missionTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    marginBottom: 8,
-  },
-  missionDesc: {
-    fontSize: 13,
-    lineHeight: 18,
-    fontWeight: '500',
-  },
-  missionXP: {
+  xpBadge: {
     position: 'absolute',
     top: 20,
     right: 20,
-    backgroundColor: 'rgba(0,0,0,0.2)',
+    backgroundColor: 'rgba(0,0,0,0.1)',
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
   },
-  missionXPText: {
-    color: '#FFFFFF',
+  xpBadgeText: {
     fontSize: 10,
-    fontWeight: '800',
+    fontWeight: '900',
   },
-  searchLabel: {
-    fontSize: 18,
+  missionTitle: {
+    fontSize: 14,
+    fontWeight: '900',
+    marginBottom: 2,
+  },
+  missionDesc: {
+    fontSize: 11,
+    fontWeight: '600',
+    lineHeight: 14,
+  },
+  searchTitle: {
+    fontSize: 22,
     fontWeight: '800',
     marginBottom: 15,
   },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingTop: 10,
-    paddingBottom: 20,
-  },
-  greeting: {
-    fontSize: 14,
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  userName: {
-    fontSize: 28,
-  },
-  profileButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    overflow: 'hidden',
-  },
-  headerAvatar: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 22,
-  },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  aiButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-    borderWidth: 1,
-  },
-  searchSection: {
-    paddingHorizontal: 20,
-    marginTop: 30,
-    marginBottom: 10,
-    zIndex: 100, 
-    position: 'relative', // Para posicionar el dropdown correctamente
+  searchOuter: {
+    zIndex: 1,
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 15,
     height: 55,
-    borderRadius: 15,
+    borderRadius: 16,
+    paddingHorizontal: 15,
     borderWidth: 1,
-  },
-  searchResultsDropdown: {
-    position: 'absolute',
-    top: 90, // Ajustado para quedar bajo la barra (Label + Margin + Bar)
-    left: 20,
-    right: 20,
-    borderRadius: 15,
-    borderWidth: 1,
-    elevation: 5,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    zIndex: 1000,
-  },
-  searchResultItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 15,
-    borderBottomWidth: 0.5,
-  },
-  searchResultLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  searchResultName: {
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  searchResultProvince: {
-    fontSize: 12,
-  },
-  noResultsContainer: {
-    padding: 20,
-    alignItems: 'center',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 5,
+    elevation: 1,
   },
   searchInput: {
     flex: 1,
     marginLeft: 10,
     fontSize: 16,
+    fontWeight: '600',
   },
-  filterTabsContainer: {
-    marginTop: 15,
+  searchResults: {
+    position: 'absolute',
+    top: 60,
+    left: 0,
+    right: 0,
+    borderRadius: 12,
+    borderWidth: 1,
+    zIndex: 4000,
+    overflow: 'hidden',
   },
-  filterTabs: {
-    paddingHorizontal: 20,
-    paddingBottom: 5,
-  },
-  filterTab: {
+  searchItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 12,
-    marginRight: 10,
-    borderWidth: 1,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    padding: 14,
+    borderBottomWidth: 0.5,
   },
-  filterTabText: {
-    fontSize: 13,
-    fontWeight: '700',
-    marginLeft: 8,
+  searchIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  sectionContainer: {
-    marginBottom: 30,
-  },
+  itemName: { fontWeight: '700', fontSize: 15 },
+  itemCity: { fontSize: 12, fontWeight: '500' },
+  section: { marginBottom: 35, marginTop: 25 },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    paddingHorizontal: 20,
-    marginBottom: 20,
-  },
-  brandContainer: {
-    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
-  },
-  headerLogo: {
-    width: 32,
-    height: 32,
-    marginRight: 8,
-  },
-  brandText: {
-    fontSize: 18,
-    fontWeight: '900',
-    letterSpacing: 0.5,
-  },
-  sectionTitle: {
     paddingHorizontal: 20,
     marginBottom: 15,
-    fontSize: 18,
-    fontWeight: '800',
   },
-  categoriesList: {
-    paddingLeft: 20,
-    paddingRight: 10,
-  },
+  sectionTitle: { fontSize: 20, fontWeight: '800', letterSpacing: -0.5 },
+  listPadding: { paddingLeft: 20, paddingRight: 10 },
   categoryCard: {
     alignItems: 'center',
-    marginRight: 25,
+    marginRight: 22,
+    width: 75,
   },
   categoryIcon: {
-    width: 65,
-    height: 65,
-    borderRadius: 22,
+    width: 70,
+    height: 70,
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 10,
+    elevation: 6,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 5,
+    elevation: 1,
+    borderWidth: 1,
   },
   categoryText: {
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 12,
+    fontWeight: '800',
+    letterSpacing: -0.2,
+    textAlign: 'center',
   },
-  eliteCard: {
-    width: 100,
-    height: 105,
-    borderRadius: 22,
-    borderWidth: 1,
-    padding: 12,
-    marginRight: 15,
+  serviceCard: {
+    width: 80,
+    height: 80,
+    borderRadius: 20,
+    marginRight: 12,
     justifyContent: 'center',
     alignItems: 'center',
+    elevation: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 5,
+    elevation: 1,
   },
-  eliteIconContainer: {
+  serviceText: {
+    color: '#FFF',
+    fontSize: 10,
+    fontWeight: '900',
+    marginTop: 5,
+    letterSpacing: 0.5,
+  },
+  recentCard: {
+    width: 240,
+    height: 290,
+    borderRadius: 28,
+    marginRight: 18,
+    overflow: 'hidden',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 5,
+    elevation: 1,
+    marginBottom: 15,
+  },
+  recentImage: { width: '100%', height: 170 },
+  recentInfo: { padding: 18 },
+  placeName: { fontSize: 17, fontWeight: '800', marginBottom: 4 },
+  placeMeta: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  placeCity: { fontSize: 12, fontWeight: '600' },
+  savingsBadge: { flexDirection: 'row', alignItems: 'center', gap: 2 },
+  savingsText: { color: '#2ECC71', fontSize: 11, fontWeight: '900' },
+  featuredCityCard: {
+    width: width * 0.78,
+    height: 400,
+    marginRight: 20,
+    borderRadius: 36,
+    overflow: 'hidden',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.03,
+    shadowRadius: 5,
+    elevation: 1,
+  },
+  featuredCityImage: { width: '100%', height: '100%' },
+  featuredCityOverlay: {
+    position: 'absolute',
+    bottom: 25,
+    left: 20,
+    right: 20,
+  },
+  glassContainer: {
+    backgroundColor: 'rgba(15, 23, 42, 0.78)',
+    padding: 20,
+    borderRadius: 24,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
+  },
+  cityName: { color: '#FFF', fontSize: 22, fontWeight: '800' },
+  accessBadge: { flexDirection: 'row', alignItems: 'center', marginTop: 4 },
+  accessText: { color: '#2ECC71', fontSize: 11, fontWeight: '900', marginLeft: 4 },
+  banner: {
+    marginHorizontal: 20,
+    borderRadius: 32,
+    padding: 28,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+  },
+  bannerRow: { flexDirection: 'row', alignItems: 'center' },
+  bannerIcon: {
+    width: 60,
+    height: 60,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  bannerTitle: { color: '#FFF', fontSize: 20, fontWeight: '800' },
+  bannerSub: { color: 'rgba(255, 255, 255, 0.85)', fontSize: 14, marginTop: 4 },
+  fabContainer: {
+    position: 'absolute',
+    bottom: 30,
+    right: 20,
+    alignItems: 'center',
+  },
+  expandedMenu: {
+    marginBottom: 15,
+    gap: 12,
+    alignItems: 'center',
+  },
+  miniFab: {
     width: 50,
     height: 50,
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    elevation: 5,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
   },
-  eliteText: {
-    fontSize: 11,
-    fontWeight: '800',
-    letterSpacing: 0.3,
-    textAlign: 'center',
-    textTransform: 'uppercase',
-  },
-  eliteStatusDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    marginTop: 4,
-  },
-  sectionSub: {
-    fontSize: 13,
-    fontWeight: '500',
-    marginTop: 2,
-  },
-  featuredList: {
-    paddingLeft: 20,
-    paddingRight: 10,
-  },
-  cityCard: {
-    width: width * 0.75,
-    height: 400,
-    marginRight: 20,
-    borderRadius: 30,
-    overflow: 'hidden',
-    position: 'relative',
-    backgroundColor: '#000',
-  },
-  cityImage: {
-    width: '100%',
-    height: '100%',
-    opacity: 0.85,
-  },
-  cityOverlay: {
-    position: 'absolute',
-    bottom: 20,
-    left: 20,
-    right: 20,
-  },
-  glassContainer: {
-    backgroundColor: 'rgba(15, 23, 42, 0.6)',
-    padding: 16,
-    borderRadius: 22,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  fab: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.35,
+    shadowRadius: 15,
+    elevation: 15,
   },
-  cityName: {
-    color: '#FFFFFF',
-    fontSize: 20,
-    fontWeight: '800',
-  },
-  accessBadge: {
-    flexDirection: 'row',
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 4,
-  },
-  accessText: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 10,
-    fontWeight: '700',
-    marginLeft: 4,
-    textTransform: 'uppercase',
-  },
-  discountBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 215, 0, 0.2)',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 215, 0, 0.3)',
-  },
-  discountText: {
-    color: '#FFD700',
-    fontSize: 13,
-    fontWeight: '900',
-    marginLeft: 4,
-  },
-  credentialBanner: {
-    marginHorizontal: 20,
-    marginTop: 10,
-    borderRadius: 24,
     padding: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
   },
-  featuresScroll: {
-    paddingHorizontal: 20,
-    paddingBottom: 25,
-    paddingTop: 5,
-  },
-  featureCard: {
-    width: 140,
-    padding: 15,
-    borderRadius: 20,
-    borderWidth: 1,
-    marginRight: 12,
-    alignItems: 'center',
-  },
-  featureIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  featureName: {
-    fontSize: 13,
-    fontWeight: '700',
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  featureStatus: {
-    fontSize: 9,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-  },
-  bannerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  bannerIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 14,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  bannerTextContainer: {
-    marginLeft: 15,
-  },
-  bannerTitle: {
-    color: '#FFFFFF',
-    fontSize: 17,
-    fontWeight: '800',
-  },
-  bannerSub: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: 12,
-    fontWeight: '500',
-    marginTop: 2,
-  },
-  dropdownSectionTitle: {
-    fontSize: 10,
-    fontWeight: '900',
-    letterSpacing: 1,
-    paddingHorizontal: 15,
-    paddingTop: 15,
-    paddingBottom: 5,
-  },
-  resultImageSmall: {
-    width: 44,
-    height: 44,
-    borderRadius: 10,
-    backgroundColor: '#000',
-  },
-  recentPlaceCard: {
-    width: 200,
-    height: 240,
+  modalContent: {
+    width: '90%',
     borderRadius: 24,
-    marginRight: 15,
-    overflow: 'hidden',
-    position: 'relative',
-    backgroundColor: '#000',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
+    padding: 25,
+    alignItems: 'center',
   },
-  recentPlaceImage: {
+  modalIconCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  modalBody: {
+    fontSize: 15,
+    lineHeight: 22,
+    textAlign: 'center',
+    marginBottom: 25,
+  },
+  modalCloseBtn: {
     width: '100%',
-    height: '100%',
-    opacity: 0.9,
+    height: 50,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  recentPlaceOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: 15,
-    paddingTop: 30,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-  },
-  recentPlaceName: {
+  modalCloseBtnText: {
     color: '#FFF',
     fontSize: 16,
-    fontWeight: '800',
-    marginBottom: 4,
-  },
-  recentPlaceMeta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  recentPlaceCity: {
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: 10,
     fontWeight: '700',
-    textTransform: 'uppercase',
   },
 });

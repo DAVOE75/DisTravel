@@ -21,7 +21,7 @@ import {
   Lock,
   Sparkles,
   MapPin,
-  CheckCircle2
+  CheckCircle
 } from 'lucide-react-native';
 import { typography } from '../theme/typography';
 
@@ -108,7 +108,7 @@ export function MedalsScreen({ navigation }) {
           </View>
 
           <View style={styles.titleContainer}>
-             <Sparkles color="#FFD700" size={14} />
+             <Sparkles color="#EFBF04" size={14} />
              <Text style={styles.titleText}>{userData.unlockedTitles?.[userData.unlockedTitles.length - 1] || 'Viajero Novel'}</Text>
           </View>
         </View>
@@ -145,7 +145,7 @@ export function MedalsScreen({ navigation }) {
                 </Text>
                 {isUnlocked && (
                    <View style={styles.unlockedTag}>
-                      <CheckCircle2 color="#2ECC71" size={12} />
+                      <CheckCircle color="#2ECC71" size={12} />
                       <Text style={styles.unlockedText}>DESBLOQUEADO</Text>
                    </View>
                 )}

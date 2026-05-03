@@ -81,7 +81,7 @@ export const AutonomousCommunityMap = ({ regionName, cityCoords, width = 120, he
       cx={getX(cityCoords.longitude)} 
       cy={getY(cityCoords.latitude)} 
       r="12" 
-      fill="#FFD700" 
+      fill="#EFBF04" 
       stroke="#FFFFFF"
       strokeWidth="3"
     />

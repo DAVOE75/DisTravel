@@ -24,7 +24,7 @@ import * as Location from 'expo-location';
 import { typography } from '../theme/typography';
 
 export function EmergencyScreen({ navigation }) {
-  const { theme } = useTheme();
+  const { theme, isDarkMode } = useTheme();
   const [location, setLocation] = useState('Localizando...');
   const [coords, setCoords] = useState(null);
 
@@ -115,8 +115,8 @@ export function EmergencyScreen({ navigation }) {
           </View>
           <Text style={[styles.addressText, { color: theme.text }]}>{location}</Text>
           <TouchableOpacity style={[styles.shareBtn, { backgroundColor: theme.primary }]} onPress={shareLocation}>
-            <Share2 color="#FFFFFF" size={20} />
-            <Text style={styles.shareBtnText}>Compartir con contacto</Text>
+            <Share2 color="#070B14" size={20} />
+            <Text style={[styles.shareBtnText, { color: '#070B14' }]}>Compartir con contacto</Text>
           </TouchableOpacity>
         </View>
 
@@ -229,7 +229,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
   },
   shareBtnText: {
-    color: '#FFFFFF',
+    color: '#070B14',
     fontWeight: '700',
     marginLeft: 10,
   },
