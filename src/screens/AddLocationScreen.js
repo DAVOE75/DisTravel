@@ -73,6 +73,10 @@ export function AddLocationScreen({ route, navigation }) {
     afternoonClose: '20:00',
     closedHolidays: true,
     image: null,
+    history: '',
+    geography: '',
+    climate: '',
+    landscape: '',
   });
 
   const [accessibilityFeatures, setAccessibilityFeatures] = useState({
@@ -145,31 +149,73 @@ export function AddLocationScreen({ route, navigation }) {
           category: "Museo",
           city: "Madrid",
           province: "Madrid",
-          description: "La pinacoteca más importante de España. Alberga obras de Velázquez, Goya y El Bosco.",
-          touristTip: "Visita gratuita de 18:00 a 20:00 (L-S) y 17:00 a 19:00 (D).",
+          description: "La pinacoteca más importante de España. Alberga obras de Velázquez, Goya y El Bosco. Completamente accesible para sillas de ruedas.",
+          touristTip: "Visita gratuita de 18:00 a 20:00 (L-S). Acceso por Puerta de Jerónimos.",
           website: "www.museodelprado.es",
           phone: "+34 913 30 28 00",
           tags: "Arte, Historia, Cultura",
-          freeInfo: "Gratis para PCD + Acompañante con acreditación.",
-          importantNotices: [
-            "Recomendamos reservar la entrada online incluso para el horario gratuito.",
-            "El acceso para personas con movilidad reducida se realiza por la Puerta de Jerónimos."
-          ],
-          seasons: [
-            {
-              name: 'Horario General',
-              period: 'Todo el año',
-              weekday: '10:00 a 20:00',
-              weekend: '10:00 a 19:00 (Domingos)'
-            }
-          ],
-          image: "https://images.unsplash.com/photo-1543731068-7e0f5beff43a",
+          freeInfo: "Gratis para PCD + Acompañante.",
+          importantNotices: ["Reserva online obligatoria.", "Préstamo gratuito de sillas de ruedas disponible."],
+          seasons: [{ name: 'Anual', period: 'Todo el año', weekday: '10:00 a 20:00', weekend: '10:00 a 19:00' }],
+          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Museo_del_Prado_2016_%2825185969599%29.jpg/1200px-Museo_del_Prado_2016_%2825185969599%29.jpg",
           location: { latitude: 40.4137, longitude: -3.6921, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [
-            { id: 1, label: 'Entrada General', price: '15' },
-            { id: 2, label: 'PCD / Discapacidad', price: '0' }
-          ],
-          accessibility: { physical: true, visual: true, auditory: true, cognitive: false }
+          tariffs: [{ id: 1, label: 'General', price: '15' }, { id: 2, label: 'PCD', price: '0' }],
+          accessibility: { physical: true, visual: true, auditory: true, cognitive: true },
+          history: "El Museo del Prado fue diseñado por Juan de Villanueva en 1785. Originalmente concebido como Gabinete de Historia Natural, se convirtió en museo de arte en 1819.",
+          geography: "Situado en el Paseo del Prado de Madrid, forma parte del 'Paisaje de la Luz', declarado Patrimonio de la Humanidad.",
+          climate: "Madrid tiene un clima mediterráneo continentalizado, con inviernos fríos y veranos calurosos.",
+          landscape: "Entorno urbano monumental rodeado de jardines históricos y el cercano Parque del Retiro."
+        };
+      } else if (nameNorm.includes('lucentum') || nameNorm.includes('tossal de manises')) {
+        aiData = {
+          name: "Lucentum (Yacimiento Arqueológico)",
+          category: "Monumento",
+          city: "Alicante",
+          province: "Alicante",
+          description: "Antigua ciudad romana de Lucentum, uno de los yacimientos más importantes de la Comunidad Valenciana. Dispone de pasarelas de madera adaptadas para el recorrido.",
+          touristTip: "Ideal para visitar al atardecer. Muy cerca de la parada de TRAM (L3, L4 y L5).",
+          website: "www.marqalicante.com",
+          phone: "+34 965 14 90 00",
+          tags: "Arqueología, Romano, Historia",
+          freeInfo: "Entrada reducida para personas con discapacidad.",
+          importantNotices: ["El recorrido es al aire libre, se recomienda protección solar.", "Accesible casi en su totalidad por rampas y pasarelas."],
+          seasons: [{ name: 'Horario MARQ', period: 'Todo el año', weekday: '10:00 a 14:00 y 16:00 a 19:00', weekend: '10:00 a 14:00' }],
+          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Lucentum_%282%29.jpg/1200px-Lucentum_%282%29.jpg",
+          location: { latitude: 38.3619, longitude: -0.4439, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+          tariffs: [{ id: 1, label: 'General', price: '2' }, { id: 2, label: 'PCD', price: '1.20' }],
+          accessibility: { physical: true, visual: false, auditory: false, cognitive: false }
+        };
+      } else if (nameNorm.includes('alhambra')) {
+        aiData = {
+          name: "La Alhambra y el Generalife",
+          category: "Monumento",
+          city: "Granada",
+          province: "Granada",
+          description: "Ciudad palatina andalusí, joya de la arquitectura islámica. Patrimonio de la Humanidad.",
+          touristTip: "Existe un itinerario específico para personas con movilidad reducida (PMR). Solicite plano especial.",
+          website: "alhambra-patronato.es",
+          importantNotices: ["Es imprescindible llevar el DNI.", "Las entradas se agotan con meses de antelación."],
+          seasons: [{ name: 'Diurna', period: 'Anual', weekday: '08:30 a 20:00', weekend: '08:30 a 20:00' }],
+          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/View_of_Alhambra_from_Mirador_de_San_Nicol%C3%A1s.jpg/1200px-View_of_Alhambra_from_Mirador_de_San_Nicol%C3%A1s.jpg",
+          location: { latitude: 37.1769, longitude: -3.5897, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+          tariffs: [{ id: 1, label: 'General', price: '14' }, { id: 2, label: 'PCD', price: '8' }],
+          accessibility: { physical: true, visual: true, auditory: false, cognitive: false }
+        };
+      } else if (nameNorm.includes('mezquita') || nameNorm.includes('cordoba')) {
+        aiData = {
+          name: "Mezquita-Catedral de Córdoba",
+          category: "Iglesia",
+          city: "Córdoba",
+          province: "Córdoba",
+          description: "Único en el mundo, este monumento combina el arte omeya con el gótico, renacentista y barroco.",
+          touristTip: "Acceso gratuito de 8:30 a 9:30 h (L-S). Impresionante bosque de columnas.",
+          website: "mezquita-catedraldecordoba.es",
+          importantNotices: ["No se permite el uso de trípodes.", "Acceso nivelado en gran parte del recinto."],
+          seasons: [{ name: 'Invierno', period: 'Anual', weekday: '10:00 a 18:00', weekend: '08:30 a 18:00' }],
+          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Mezquita_C%C3%B3rdoba_Interieur.jpg/1200px-Mezquita_C%C3%B3rdoba_Interieur.jpg",
+          location: { latitude: 37.8792, longitude: -4.7794, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+          tariffs: [{ id: 1, label: 'General', price: '11' }, { id: 2, label: 'PCD', price: '0' }],
+          accessibility: { physical: true, visual: true, auditory: false, cognitive: false }
         };
       } else if (nameNorm.includes('sagrada familia')) {
         aiData = {
@@ -226,7 +272,11 @@ export function AddLocationScreen({ route, navigation }) {
             { id: 1, label: 'Entrada General', price: '10' },
             { id: 2, label: 'Reducida (PCD)', price: '5' }
           ],
-          accessibility: { physical: true, visual: false, auditory: false, cognitive: false }
+          accessibility: { physical: true, visual: false, auditory: false, cognitive: false },
+          history: "Mandado construir por don Juan Pacheco, Marqués de Villena, en 1456, este castillo es una joya única de la arquitectura gótico-mudéjar. Su planta estrellada y su patio de armas renacentista lo convierten en uno de los castillos mejor conservados de España. Ha servido como prisión y residencia señorial, albergando a personajes históricos clave durante la Guerra de Sucesión Castellana.",
+          geography: "Se alza majestuoso sobre el cerro de San Cristóbal, ofreciendo un control visual absoluto sobre la llanura manchega. Su estructura se adapta perfectamente al terreno elevado, con fosos excavados directamente en la roca que servían como defensa inexpugnable ante posibles asedios medievales.",
+          climate: "Situado en el corazón de la Mancha, experimenta un clima mediterráneo continentalizado. Los veranos son secos y calurosos, ideales para disfrutar de la brisa en sus almenas, mientras que los inviernos pueden ser fríos y ventosos, otorgando al castillo un aire místico y solitario bajo los cielos despejados de Cuenca.",
+          landscape: "Desde sus torres, el paisaje se extiende en un tapiz de campos de cereal, olivares y viñedos típicos de la región. El entorno conserva el aire medieval de la villa de Belmonte, con molinos de viento en el horizonte que completan una estampa icónica de la literatura cervantina."
         };
       } else if (nameNorm.includes('mota') || nameNorm.includes('medina')) {
         aiData = {
@@ -262,12 +312,19 @@ export function AddLocationScreen({ route, navigation }) {
           accessibility: { physical: true, visual: false, auditory: false, cognitive: false }
         };
       } else {
+        // Fallback inteligente para lugares desconocidos
         aiData = {
           category: "Atracción",
-          description: "Un lugar de interés turístico y cultural.",
-          importantNotices: ["Consultar web oficial para horarios actualizados."],
-          seasons: [{ name: 'Estándar', period: 'Todo el año', weekday: '10:00 a 18:00', weekend: '10:00 a 14:00' }],
-          accessibility: { physical: true, visual: false, auditory: false, cognitive: false }
+          description: `Un rincón especial descubierto por la comunidad en ${formData.city || 'este destino'}. Pendiente de validación detallada por la IA.`,
+          importantNotices: ["Verificar accesibilidad física al llegar."],
+          seasons: [{ name: 'Estándar', period: 'Anual', weekday: '10:00 a 19:00', weekend: '10:00 a 14:00' }],
+          accessibility: { physical: true, visual: false, auditory: false, cognitive: false },
+          // Imagen genérica de patrimonio de Wikipedia como fallback
+          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Vista_general_de_Alicante.jpg/1200px-Vista_general_de_Alicante.jpg",
+          history: `Este enclave posee un legado histórico que se remonta a varios siglos atrás, habiendo sido testigo de transformaciones culturales y sociales clave en la región de ${formData.city || 'la provincia'}. Sus muros y estructuras conservan la huella de distintas épocas, desde sus orígenes fundacionales hasta su consolidación como punto de interés patrimonial, desempeñando un papel fundamental en la identidad local y el desarrollo de la comunidad a lo largo del tiempo.`,
+          geography: `Situado en una posición geográfica privilegiada, este lugar presenta una orografía característica que combina elementos naturales con intervenciones arquitectónicas respetuosas. La zona se encuentra integrada en un ecosistema diverso, con accesos que han sido estudiados para garantizar la fluidez de movimiento, manteniendo un equilibrio entre la preservación del terreno original y la infraestructura necesaria para la visita pública y la accesibilidad universal.`,
+          climate: "El clima predominante se encuadra dentro de las variantes mediterráneas continentales, caracterizado por una marcada estacionalidad. Los veranos suelen ser cálidos y secos, mientras que los inviernos presentan temperaturas más frescas con precipitaciones moderadas. Esta dinámica climática influye directamente en la conservación de los materiales del monumento y en el ciclo biológico de la vegetación circundante, creando un microclima particular en este emplazamiento.",
+          landscape: "El paisaje ofrece una panorámica visual de gran impacto, donde la arquitectura se funde con el horizonte en una composición armónica. La vegetación autóctona aporta matices cromáticos que cambian con las estaciones, ofreciendo desde verdes intensos en primavera hasta tonos ocres en otoño. El entorno visual ha sido preservado para evitar la contaminación paisajística, permitiendo al visitante disfrutar de una experiencia estética única y una conexión profunda con el ambiente natural y monumental."
         };
       }
 
@@ -275,7 +332,8 @@ export function AddLocationScreen({ route, navigation }) {
         ...prev,
         ...aiData,
         city: aiData.city || prev.city,
-        name: aiData.name || prev.name
+        name: aiData.name || prev.name,
+        image: aiData.image // Asegurar que la imagen se inyecta siempre
       }));
       
       if (aiData.tariffs) setTariffs(aiData.tariffs);
@@ -318,6 +376,12 @@ export function AddLocationScreen({ route, navigation }) {
   };
 
   const pickImage = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permissionResult.granted === false) {
+      Alert.alert("Permiso denegado", "Necesitamos acceso a tu galería para subir la foto.");
+      return;
+    }
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -375,27 +439,37 @@ export function AddLocationScreen({ route, navigation }) {
       return;
     }
 
+    if (!formData.image) {
+      Alert.alert("Foto necesaria", "Es obligatorio incluir una fotografía (puedes usar la IA para buscarla en Wikipedia).");
+      return;
+    }
+
     setIsUploading(true);
     
     setTimeout(() => {
+      // Crear el objeto del nuevo lugar asegurando que la imagen de Wikipedia o Cámara se guarda
       const newPlace = {
         id: Date.now().toString(),
-        ...formData,
+        ...formData, // Incluye name, city, description, image, etc.
         location,
         tariffs,
         openingDays,
         accessibility: accessibilityFeatures,
         isUserAdded: true,
         rating: 5.0,
-        reviews: 0
+        reviews: 0,
+        verifiedStatus: 'Pendiente'
       };
 
+      // Guardar en las contribuciones del usuario
       updateUserData('contributions', (prev) => [...(prev || []), newPlace]);
       
       setIsUploading(false);
-      Alert.alert("¡Enhorabuena!", "El lugar ha sido añadido y será visible tras la validación administrativa.", [
-        { text: "Genial", onPress: () => navigation.goBack() }
-      ]);
+      Alert.alert(
+        "¡Lugar Registrado!", 
+        "Los datos y la fotografía se han guardado correctamente. Estará visible tras la validación.", 
+        [{ text: "Entendido", onPress: () => navigation.goBack() }]
+      );
     }, 1500);
   };
 
@@ -421,7 +495,11 @@ export function AddLocationScreen({ route, navigation }) {
         {/* Photo Upload Section */}
         <TouchableOpacity style={[styles.photoUpload, { backgroundColor: theme.surface, borderColor: theme.border }]} onPress={pickImage}>
           {formData.image ? (
-            <Image source={{ uri: formData.image }} style={styles.previewImage} />
+            <Image 
+              key={formData.image}
+              source={{ uri: formData.image }} 
+              style={styles.previewImage} 
+            />
           ) : (
             <View style={styles.photoPlaceholder}>
               <Camera color={theme.textSecondary} size={40} />
@@ -445,7 +523,7 @@ export function AddLocationScreen({ route, navigation }) {
                 placeholder="Nombre del monumento o lugar"
                 placeholderTextColor={theme.textSecondary}
                 value={formData.name}
-                onChangeText={(text) => setFormData({...formData, name: text})}
+                onChangeText={(text) => setFormData(prev => ({...prev, name: text}))}
               />
               <TouchableOpacity onPress={handleAIAutoFill} disabled={isRecognizing}>
                 {isRecognizing ? (
@@ -463,7 +541,7 @@ export function AddLocationScreen({ route, navigation }) {
                 placeholder="Ciudad"
                 placeholderTextColor={theme.textSecondary}
                 value={formData.city}
-                onChangeText={(text) => setFormData({...formData, city: text})}
+                onChangeText={(text) => setFormData(prev => ({...prev, city: text}))}
               />
             </View>
 
@@ -475,7 +553,7 @@ export function AddLocationScreen({ route, navigation }) {
                 placeholderTextColor={theme.textSecondary}
                 multiline
                 value={formData.description}
-                onChangeText={(text) => setFormData({...formData, description: text})}
+                onChangeText={(text) => setFormData(prev => ({...prev, description: text}))}
               />
             </View>
 
@@ -487,7 +565,7 @@ export function AddLocationScreen({ route, navigation }) {
                 placeholderTextColor={theme.textSecondary}
                 multiline
                 value={formData.touristTip}
-                onChangeText={(text) => setFormData({...formData, touristTip: text})}
+                onChangeText={(text) => setFormData(prev => ({...prev, touristTip: text}))}
               />
             </View>
 
@@ -499,33 +577,7 @@ export function AddLocationScreen({ route, navigation }) {
                   placeholder="Web"
                   placeholderTextColor={theme.textSecondary}
                   value={formData.website}
-                  onChangeText={(text) => setFormData({...formData, website: text})}
-                />
-              </View>
-              <View style={styles.inputContainer}>
-                <View style={styles.inputIcon}>
-                  <MapPin color={theme.primary} size={20} />
-                </View>
-                <TextInput
-                  style={[styles.input, { color: theme.text }]}
-                  placeholder="Dirección exacta (Calle, número...)"
-                  placeholderTextColor={theme.textSecondary}
-                  value={formData.address}
-                  onChangeText={(text) => setFormData({ ...formData, address: text })}
-                />
-              </View>
-
-              <View style={styles.inputContainer}>
-                <View style={styles.inputIcon}>
-                  <Phone color={theme.primary} size={20} />
-                </View>
-                <TextInput
-                  style={[styles.input, { color: theme.text }]}
-                  placeholder="Teléfono de Reservas"
-                  placeholderTextColor={theme.textSecondary}
-                  value={formData.phone}
-                  onChangeText={(text) => setFormData({ ...formData, phone: text })}
-                  keyboardType="phone-pad"
+                  onChangeText={(text) => setFormData(prev => ({...prev, website: text}))}
                 />
               </View>
             </View>
@@ -537,7 +589,7 @@ export function AddLocationScreen({ route, navigation }) {
                 placeholder="Etiquetas (separadas por comas)"
                 placeholderTextColor={theme.textSecondary}
                 value={formData.tags}
-                onChangeText={(text) => setFormData({...formData, tags: text})}
+                onChangeText={(text) => setFormData(prev => ({...prev, tags: text}))}
               />
             </View>
             
@@ -545,7 +597,7 @@ export function AddLocationScreen({ route, navigation }) {
               {CATEGORIES.map(cat => (
                 <TouchableOpacity 
                   key={cat}
-                  onPress={() => setFormData({...formData, category: cat})}
+                  onPress={() => setFormData(prev => ({...prev, category: cat}))}
                   style={[
                     styles.categoryBtn, 
                     { backgroundColor: formData.category === cat ? theme.primary : theme.surface, borderColor: theme.border }
@@ -555,6 +607,64 @@ export function AddLocationScreen({ route, navigation }) {
                 </TouchableOpacity>
               ))}
             </ScrollView>
+          </View>
+        </View>
+
+        {/* AI Augmented Experience Section */}
+        <View style={styles.formSection}>
+          <View style={styles.sectionHeader}>
+            <Sparkles color="#A29BFE" size={20} />
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>Experiencia Aumentada (IA)</Text>
+          </View>
+          
+          <View style={styles.inputGroup}>
+            <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, height: 80, alignItems: 'flex-start', paddingTop: 12 }]}>
+              <Languages color="#A29BFE" size={20} style={{ marginTop: 2 }} />
+              <TextInput
+                style={[styles.input, { color: theme.text, height: 60, textAlignVertical: 'top' }]}
+                placeholder="Historia y Origen..."
+                placeholderTextColor={theme.textSecondary}
+                multiline
+                value={formData.history}
+                onChangeText={(text) => setFormData(prev => ({...prev, history: text}))}
+              />
+            </View>
+
+            <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 10, height: 80, alignItems: 'flex-start', paddingTop: 12 }]}>
+              <MapPin color="#A29BFE" size={20} style={{ marginTop: 2 }} />
+              <TextInput
+                style={[styles.input, { color: theme.text, height: 60, textAlignVertical: 'top' }]}
+                placeholder="Geografía y Ubicación..."
+                placeholderTextColor={theme.textSecondary}
+                multiline
+                value={formData.geography}
+                onChangeText={(text) => setFormData(prev => ({...prev, geography: text}))}
+              />
+            </View>
+
+            <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 10, height: 80, alignItems: 'flex-start', paddingTop: 12 }]}>
+              <Zap color="#A29BFE" size={20} style={{ marginTop: 2 }} />
+              <TextInput
+                style={[styles.input, { color: theme.text, height: 60, textAlignVertical: 'top' }]}
+                placeholder="Clima y Meteorología..."
+                placeholderTextColor={theme.textSecondary}
+                multiline
+                value={formData.climate}
+                onChangeText={(text) => setFormData(prev => ({...prev, climate: text}))}
+              />
+            </View>
+
+            <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 10, height: 80, alignItems: 'flex-start', paddingTop: 12 }]}>
+              <Globe color="#A29BFE" size={20} style={{ marginTop: 2 }} />
+              <TextInput
+                style={[styles.input, { color: theme.text, height: 60, textAlignVertical: 'top' }]}
+                placeholder="Paisaje y Entorno..."
+                placeholderTextColor={theme.textSecondary}
+                multiline
+                value={formData.landscape}
+                onChangeText={(text) => setFormData(prev => ({...prev, landscape: text}))}
+              />
+            </View>
           </View>
         </View>
 

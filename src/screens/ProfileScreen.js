@@ -160,6 +160,24 @@ export function ProfileScreen({ navigation }) {
           )}
         </View>
 
+        {/* Administration Section - EMERGENCY VISIBILITY */}
+        {(userData?.isAdmin || userData?.role === 'admin') && (
+          <View style={styles.menuSection}>
+            <Text style={[styles.sectionTitle, { color: '#E67E22' }]}>Centro de Control Admin</Text>
+            <View style={[styles.menuList, { backgroundColor: theme.surface, borderColor: '#E67E22' + '60', borderWidth: 1.5 }]}>
+              <ProfileItem 
+                icon={ShieldCheck} 
+                title="Validaciones Pendientes" 
+                value="Gestionar propuestas de nuevos lugares"
+                color="#E67E22"
+                isLast={true}
+                theme={theme}
+                onPress={() => navigation.navigate('AdminValidations')}
+              />
+            </View>
+          </View>
+        )}
+
         {/* Disability Card Preview Section */}
         <View style={styles.cardSection}>
           <View style={styles.sectionHeader}>

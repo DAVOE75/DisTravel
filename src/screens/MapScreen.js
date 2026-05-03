@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   StyleSheet, 
   View, 
@@ -11,7 +11,7 @@ import {
 import MapView, { Marker, Callout, Polyline } from 'react-native-maps';
 import { colors } from '../theme/colors';
 import { MONUMENTOS } from '../data/monumentos';
-import { ChevronLeft, Info, Sun, Moon, MapPin } from 'lucide-react-native';
+import { ChevronLeft, Info, Sun, Moon, MapPin, LocateFixed } from 'lucide-react-native';
 import { mapStyles } from '../theme/mapStyles';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
@@ -20,6 +20,7 @@ export function MapScreen({ route, navigation }) {
   const { city } = route.params || {};
   const { theme } = useTheme();
   const { userData } = useUser();
+  const mapRef = useRef(null);
   const [mapTheme, setMapTheme] = useState('dark');
   const [selectedMonument, setSelectedMonument] = useState(null);
   const [showRoutes, setShowRoutes] = useState(true);
@@ -38,40 +39,35 @@ export function MapScreen({ route, navigation }) {
     }
   ];
   
-  // Obtener monumentos: FUSIONAR estáticos con contribuciones (semillas de Alicante, etc)
+  // Obtener monumentos: FUSIONAR estáticos con contribuciones
   const officialMonuments = city ? (MONUMENTOS[city.name] || []) : Object.values(MONUMENTOS).flat();
   const userContributions = (userData?.contributions || []).filter(p => {
     if (!city) return true;
     return p.city.toLowerCase() === city.name.toLowerCase();
   });
 
-  // Evitar duplicados si un monumento está en ambas listas (usando nombre + ciudad como clave)
   const mergedMonumentsMap = new Map();
   officialMonuments.forEach(m => mergedMonumentsMap.set(`${m.name}-${m.city || city?.name}`, m));
   userContributions.forEach(m => mergedMonumentsMap.set(`${m.name}-${m.city}`, m));
 
   const displayMonuments = Array.from(mergedMonumentsMap.values());
 
-  // Calcular color del marcador basado en beneficios reales (Gratis, Descuento o General)
   const getMarkerColor = (monument) => {
     try {
       const benefit = (monument.disabilityBenefit || monument.freeInfo || '').toLowerCase();
       let isFree = benefit.includes('gratis') || benefit.includes('gratuita');
-      
-      // Si no es gratis por descripción, mirar en la tabla de tarifas
       if (!isFree && monument.tariffs && Array.isArray(monument.tariffs)) {
         isFree = monument.tariffs.some(t => 
           (t.label?.toLowerCase().includes('pcd') || t.label?.toLowerCase().includes('reducida')) && 
           t.price?.toLowerCase().includes('gratis')
         );
       }
-
       const isDiscounted = benefit.includes('reducida') || benefit.includes('descuento') || 
                           (monument.tariffs && Array.isArray(monument.tariffs) && monument.tariffs.some(t => t.label?.toLowerCase().includes('pcd')));
 
-      if (isFree) return '#2ECC71'; // Verde: Gratis
-      if (isDiscounted) return '#3498db'; // Azul: Beneficio/Descuento
-      return '#E67E22'; // Naranja: General
+      if (isFree) return '#2ECC71'; 
+      if (isDiscounted) return '#3498db'; 
+      return '#E67E22'; 
     } catch (e) {
       return '#E67E22';
     }
@@ -81,28 +77,27 @@ export function MapScreen({ route, navigation }) {
     setMapTheme(mapTheme === 'dark' ? 'light' : 'dark');
   };
 
-  // Región inicial: Centrar en la ciudad seleccionada, en el primer monumento o en Madrid
   const initialRegion = React.useMemo(() => {
     if (city && city.location) {
       return {
         ...city.location,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
+        latitudeDelta: 0.01, // Más zoom (antes 0.05)
+        longitudeDelta: 0.01,
       };
     }
     if (displayMonuments.length > 0) {
       return {
         latitude: displayMonuments[0].location?.latitude || 40.4168,
         longitude: displayMonuments[0].location?.longitude || -3.7038,
-        latitudeDelta: 0.1,
-        longitudeDelta: 0.1,
+        latitudeDelta: 0.02, // Más zoom (antes 0.1)
+        longitudeDelta: 0.02,
       };
     }
     return {
       latitude: 40.4168,
       longitude: -3.7038,
-      latitudeDelta: 10,
-      longitudeDelta: 10,
+      latitudeDelta: 8, // Vista general un poco más cerrada
+      longitudeDelta: 8,
     };
   }, [city, displayMonuments]);
 
@@ -111,11 +106,11 @@ export function MapScreen({ route, navigation }) {
       <StatusBar barStyle={mapTheme === 'dark' ? "light-content" : "dark-content"} />
       
       <MapView
+        ref={mapRef}
         style={styles.map}
         initialRegion={initialRegion}
         customMapStyle={mapTheme === 'dark' ? mapStyles.dark : mapStyles.light}
       >
-        {/* Safe Corridors Layer */}
         {showRoutes && safeCorridors.map(route => (
           <Polyline
             key={route.id}
@@ -152,7 +147,6 @@ export function MapScreen({ route, navigation }) {
         ))}
       </MapView>
 
-      {/* UI Overlay */}
       <SafeAreaView style={styles.overlay}>
         <View style={styles.header}>
           <TouchableOpacity 
@@ -174,7 +168,16 @@ export function MapScreen({ route, navigation }) {
           </TouchableOpacity>
         </View>
 
-        {/* Legend */}
+        {/* Recenter Button */}
+        <TouchableOpacity 
+          style={[styles.recenterButton, { backgroundColor: mapTheme === 'dark' ? 'rgba(15, 23, 42, 0.9)' : '#FFFFFF' }]}
+          onPress={() => {
+            mapRef.current?.animateToRegion(initialRegion, 1000);
+          }}
+        >
+          <LocateFixed color={colors.primary} size={24} />
+        </TouchableOpacity>
+
         <View style={[styles.legend, { backgroundColor: mapTheme === 'dark' ? 'rgba(15, 23, 42, 0.95)' : '#FFFFFF' }]}>
           <Text style={[styles.legendTitle, { color: mapTheme === 'dark' ? colors.text : '#0f172a' }]}>Tus Beneficios en el Mapa</Text>
           
@@ -249,8 +252,20 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 4,
   },
-  customMarker: {
-    padding: 5,
+  recenterButton: {
+    position: 'absolute',
+    bottom: 240, // Encima de la leyenda
+    right: 20,
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 6,
   },
   callout: {
     width: 220,

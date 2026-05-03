@@ -20,17 +20,47 @@ import {
   Hospital,
   AlertTriangle
 } from 'lucide-react-native';
+import * as Location from 'expo-location';
 import { typography } from '../theme/typography';
 
 export function EmergencyScreen({ navigation }) {
   const { theme } = useTheme();
   const [location, setLocation] = useState('Localizando...');
+  const [coords, setCoords] = useState(null);
 
-  // Simulamos la obtención de la dirección (en un entorno real usaríamos expo-location)
   useEffect(() => {
-    setTimeout(() => {
-      setLocation('Calle Mayor, 1, 28013 Madrid, España');
-    }, 2000);
+    const getLocation = async () => {
+      try {
+        let { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          setLocation('Permiso denegado');
+          return;
+        }
+
+        // Intentar obtener ubicación rápida
+        let loc = await Location.getLastKnownPositionAsync({});
+        if (!loc) {
+          loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+        }
+        
+        if (loc) {
+          setCoords(loc.coords);
+          let address = await Location.reverseGeocodeAsync({
+            latitude: loc.coords.latitude,
+            longitude: loc.coords.longitude
+          });
+
+          if (address && address.length > 0) {
+            const item = address[0];
+            const fullAddress = `${item.street || ''} ${item.name || ''}, ${item.city || ''}`;
+            setLocation(fullAddress.trim() || `Lat: ${loc.coords.latitude.toFixed(3)}`);
+          }
+        }
+      } catch (error) {
+        setLocation('GPS no disponible');
+      }
+    };
+    getLocation();
   }, []);
 
   const callEmergency = () => {
@@ -40,8 +70,9 @@ export function EmergencyScreen({ navigation }) {
 
   const shareLocation = async () => {
     try {
+      const mapsUrl = coords ? `https://www.google.com/maps/search/?api=1&query=${coords.latitude},${coords.longitude}` : '';
       await Share.share({
-        message: `¡Necesito ayuda! Mi ubicación actual es: ${location}. Coordenadas: 40.4168, -3.7038`,
+        message: `¡Necesito ayuda! Mi ubicación actual es: ${location}. \n\nMapa: ${mapsUrl}`,
       });
     } catch (error) {
       Alert.alert('Error', 'No se pudo compartir la ubicación');
@@ -91,11 +122,17 @@ export function EmergencyScreen({ navigation }) {
 
         {/* Nearby Services */}
         <View style={styles.servicesGrid}>
-          <TouchableOpacity style={[styles.serviceItem, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <TouchableOpacity 
+            style={[styles.serviceItem, { backgroundColor: theme.surface, borderColor: theme.border }]}
+            onPress={() => Linking.openURL(`https://www.google.com/maps/search/hospital+cerca+de+mi/@${coords?.latitude},${coords?.longitude},15z`)}
+          >
             <Hospital color={theme.primary} size={24} />
             <Text style={[styles.serviceLabel, { color: theme.text }]}>Hospitales</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.serviceItem, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <TouchableOpacity 
+            style={[styles.serviceItem, { backgroundColor: theme.surface, borderColor: theme.border }]}
+            onPress={() => Linking.openURL(`https://www.google.com/maps/search/comisaria+cerca+de+mi/@${coords?.latitude},${coords?.longitude},15z`)}
+          >
             <AlertTriangle color="#F1C40F" size={24} />
             <Text style={[styles.serviceLabel, { color: theme.text }]}>Comisarías</Text>
           </TouchableOpacity>

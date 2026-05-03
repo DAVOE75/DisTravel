@@ -348,6 +348,8 @@ const SEED_DATA = [
 
 const INITIAL_USER_DATA = {
   name: '',
+  lastName: '',
+  birthDate: '',
   email: '',
   phone: '',
   address: '',
@@ -395,9 +397,21 @@ export const UserProvider = ({ children }) => {
             currentContributions.push(seed);
           } else {
             const existing = currentContributions[idx];
-            if (seed.image && seed.image.includes('wikipedia')) existing.image = seed.image;
-            if (seed.location) existing.location = seed.location;
-            currentContributions[idx] = { ...existing, ...seed, id: seed.id }; // Forzar actualización de datos oficiales
+            // IMPORTANTE: Solo actualizar campos si el usuario NO los ha modificado
+            // Si la imagen actual es diferente a la de la semilla y no es la por defecto de Unsplash,
+            // asumimos que el usuario la ha personalizado y la respetamos.
+            const userHasCustomImage = existing.image && existing.image !== seed.image && !existing.image.includes('unsplash.com');
+            
+            currentContributions[idx] = { 
+              ...seed, 
+              ...existing, // Lo que ya tiene el usuario (sus fotos) prevalece sobre la semilla
+              id: seed.id 
+            };
+            
+            // Si la semilla tiene una imagen mejor (Wikipedia) y el usuario no ha puesto una propia, actualizamos
+            if (!userHasCustomImage && seed.image && seed.image.includes('wikipedia')) {
+              currentContributions[idx].image = seed.image;
+            }
           }
         });
 
@@ -430,9 +444,18 @@ export const UserProvider = ({ children }) => {
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
   };
 
-  const updateUserData = (newData) => {
+  const updateUserData = (arg1, arg2) => {
     setUserData(prev => {
-      const updated = { ...prev, ...newData };
+      let updated;
+      if (typeof arg1 === 'string' && typeof arg2 === 'function') {
+        // Soporte para updateUserData('key', (prevVal) => newVal)
+        updated = { ...prev, [arg1]: arg2(prev[arg1]) };
+      } else if (typeof arg1 === 'object' && arg1 !== null) {
+        // Soporte para updateUserData({ key: value })
+        updated = { ...prev, ...arg1 };
+      } else {
+        return prev;
+      }
       saveData(updated);
       return updated;
     });

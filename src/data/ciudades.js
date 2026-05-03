@@ -66,7 +66,7 @@ export const CIUDADES_PREMIUM = {
     climate: 'Mediterráneo continental con Cierzo frecuente.',
     geography: 'Valle del Ebro.',
     landscape: 'Basílica del Pilar y Palacio de la Aljafería.',
-    image: 'https://images.unsplash.com/photo-1559121010-447efdd92824?auto=format&fit=crop&w=800&q=80',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c9/Basilica_del_Pilar_desde_el_Ebro.jpg/800px-Basilica_del_Pilar_desde_el_Ebro.jpg',
     tags: ['Ebro', 'Mudéjar', 'Historia']
   },
   'Granada': {
@@ -76,7 +76,7 @@ export const CIUDADES_PREMIUM = {
     climate: 'Mediterráneo continentalizado de montaña.',
     geography: 'Pie de Sierra Nevada, en la Vega de Granada.',
     landscape: 'Alhambra y Generalife.',
-    image: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=800&q=80',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Alhambra_View.jpg/800px-Alhambra_View.jpg',
     tags: ['Alhambra', 'Nieve', 'Historia']
   },
   'Vitoria-Gasteiz': {
@@ -86,7 +86,7 @@ export const CIUDADES_PREMIUM = {
     climate: 'Oceánico continentalizado.',
     geography: 'Llanada Alavesa.',
     landscape: 'Casco histórico en forma de almendra y anillo verde.',
-    image: 'https://images.unsplash.com/photo-1549893072-4bc678117f45?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1621695277150-137b79e2f9d7?auto=format&fit=crop&w=800&q=80',
     tags: ['Ecológica', 'Medieval', 'Paz']
   },
   'A Coruña': {
@@ -96,7 +96,7 @@ export const CIUDADES_PREMIUM = {
     climate: 'Oceánico suave.',
     geography: 'En una península gallega abierta al Atlántico.',
     landscape: 'Galerías de cristal, Torre de Hércules y paseo marítimo.',
-    image: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=800&q=80',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/dc/Coruna-Torre_de_Hercules.jpg/800px-Coruna-Torre_de_Hercules.jpg',
     tags: ['Mar', 'Faro', 'Cristal']
   },
   'Toledo': {
@@ -106,7 +106,7 @@ export const CIUDADES_PREMIUM = {
     climate: 'Mediterráneo continentalizado.',
     geography: 'Promontorio sobre el río Tajo.',
     landscape: 'Catedral Primada y Alcázar.',
-    image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Toledo_City_View.jpg/800px-Toledo_City_View.jpg',
     tags: ['Cultura', 'Tajo', 'Imperial']
   },
   'Salamanca': {
@@ -116,7 +116,7 @@ export const CIUDADES_PREMIUM = {
     climate: 'Mediterráneo continentalizado riguroso.',
     geography: 'Junto al río Tormes en la meseta norte.',
     landscape: 'Plaza Mayor y fachadas platerescas de piedra dorada.',
-    image: 'https://images.unsplash.com/photo-1543783230-22e030303030?auto=format&fit=crop&w=800&q=80',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Salamanca_Plaza_Mayor.jpg/800px-Salamanca_Plaza_Mayor.jpg',
     tags: ['Estudiantes', 'Dorada', 'Saber']
   },
   'Burgos': {
@@ -126,7 +126,7 @@ export const CIUDADES_PREMIUM = {
     climate: 'Continental, inviernos largos y fríos.',
     geography: 'Valle del río Arlanzón.',
     landscape: 'Catedral gótica Patrimonio de la Humanidad.',
-    image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Catedral_de_Burgos.jpg/800px-Catedral_de_Burgos.jpg',
     tags: ['Gótico', 'El Cid', 'Frío']
   },
   'Santander': {
@@ -136,7 +136,7 @@ export const CIUDADES_PREMIUM = {
     climate: 'Oceánico, suave y húmedo.',
     geography: 'Bahía de Santander.',
     landscape: 'Palacio de la Magdalena y playa de El Sardinero.',
-    image: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=800&q=80',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Palacio_de_la_Magdalena_Santander.jpg/800px-Palacio_de_la_Magdalena_Santander.jpg',
     tags: ['Bahía', 'Señorial', 'Verde']
   },
   'San Sebastián': {
@@ -146,7 +146,7 @@ export const CIUDADES_PREMIUM = {
     climate: 'Oceánico templado.',
     geography: 'Bahía de la Concha.',
     landscape: 'Playa de la Concha y Peine del Viento.',
-    image: 'https://images.unsplash.com/photo-1549893072-4bc678117f45?auto=format&fit=crop&w=800&q=80',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b2/Playa_de_la_Concha_Donostia.jpg/800px-Playa_de_la_Concha_Donostia.jpg',
     tags: ['Gourmet', 'Cine', 'Playa']
   },
   'Pamplona': {
@@ -156,7 +156,7 @@ export const CIUDADES_PREMIUM = {
     climate: 'Oceánico continentalizado.',
     geography: 'Cuenca de Pamplona sobre el río Arga.',
     landscape: 'Murallas renacentistas y plaza del Castillo.',
-    image: 'https://images.unsplash.com/photo-1559121010-447efdd92824?auto=format&fit=crop&w=800&q=80',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Pamplona_-_Plaza_del_Castillo_01.jpg/800px-Pamplona_-_Plaza_del_Castillo_01.jpg',
     tags: ['Fueros', 'Historia', 'San Fermín']
   },
   'Logroño': {
@@ -166,7 +166,7 @@ export const CIUDADES_PREMIUM = {
     climate: 'Mediterráneo continentalizado suave.',
     geography: 'Valle del Ebro.',
     landscape: 'Calle Laurel y Concatedral de la Redonda.',
-    image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&w=800&q=80',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Logro%C3%B1o_-_Concatedral_de_Santa_Mar%C3%ADa_de_la_Redonda.jpg/800px-Logro%C3%B1o_-_Concatedral_de_Santa_Mar%C3%ADa_de_la_Redonda.jpg',
     tags: ['Vino', 'Tapeo', 'Hospitalidad']
   },
   'Murcia': {
@@ -176,7 +176,7 @@ export const CIUDADES_PREMIUM = {
     climate: 'Mediterráneo seco, muy caluroso en verano.',
     geography: 'Valle del río Segura.',
     landscape: 'Catedral de Murcia y Real Casino.',
-    image: 'https://images.unsplash.com/photo-1512753360425-076135899661?auto=format&fit=crop&w=800&q=80',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Catedral_de_Murcia_desde_la_Plaza_del_Cardenal_Belluga.jpg/800px-Catedral_de_Murcia_desde_la_Plaza_del_Cardenal_Belluga.jpg',
     tags: ['Huerta', 'Sol', 'Barroco']
   },
   'Palma de Mallorca': {
@@ -186,7 +186,7 @@ export const CIUDADES_PREMIUM = {
     climate: 'Mediterráneo marítimo.',
     geography: 'Bahía de Palma.',
     landscape: 'La Seu (Catedral) y Castillo de Bellver.',
-    image: 'https://images.unsplash.com/photo-1512753360425-076135899661?auto=format&fit=crop&w=800&q=80',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d8/Catedral_de_Palma_de_Mallorca.jpg/800px-Catedral_de_Palma_de_Mallorca.jpg',
     tags: ['Mar', 'Isla', 'Gótico']
   },
   'Las Palmas de Gran Canaria': {
@@ -196,7 +196,7 @@ export const CIUDADES_PREMIUM = {
     climate: 'Subtropical oceánico (primavera eterna).',
     geography: 'Litoral canario.',
     landscape: 'Playa de Las Canteras y barrio de Vegueta.',
-    image: 'https://images.unsplash.com/photo-1544281679-5357151b483c?auto=format&fit=crop&w=800&q=80',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Catedral_de_Santa_Ana_Las_Palmas.jpg/800px-Catedral_de_Santa_Ana_Las_Palmas.jpg',
     tags: ['Playa', 'Colonial', 'Eterno Verano']
   },
   'Santa Cruz de Tenerife': {
@@ -206,7 +206,7 @@ export const CIUDADES_PREMIUM = {
     climate: 'Subtropical oceánico.',
     geography: 'Bahía de Santa Cruz.',
     landscape: 'Auditorio de Tenerife y Parque García Sanabria.',
-    image: 'https://images.unsplash.com/photo-1590424564245-8173400d3839?auto=format&fit=crop&w=800&q=80',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Auditorio_de_Tenerife_Pilar_de_la_Esperanza.jpg/800px-Auditorio_de_Tenerife_Pilar_de_la_Esperanza.jpg',
     tags: ['Carnaval', 'Diseño', 'Puerto']
   },
   'Valladolid': {
@@ -216,7 +216,7 @@ export const CIUDADES_PREMIUM = {
     climate: 'Mediterráneo continentalizado seco.',
     geography: 'Confluencia del Pisuerga y el Esgueva.',
     landscape: 'Plaza Mayor y Museo Nacional de Escultura.',
-    image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?auto=format&fit=crop&w=800&q=80',
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Plaza_Mayor_de_Valladolid_01.jpg/800px-Plaza_Mayor_de_Valladolid_01.jpg',
     tags: ['Historia', 'Literatura', 'Corte']
   },
   'Alicante': {
@@ -226,7 +226,7 @@ export const CIUDADES_PREMIUM = {
     climate: 'Mediterráneo seco y soleado.',
     geography: 'Costa Blanca.',
     landscape: 'Explanada de España y Castillo de Santa Bárbara.',
-    image: 'https://images.unsplash.com/photo-1512753360425-076135899661?auto=format&fit=crop&w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1515088911046-30ea4741b6c9?auto=format&fit=crop&w=800&q=80',
     tags: ['Sol', 'Hogueras', 'Mar']
   },
   'Córdoba': {

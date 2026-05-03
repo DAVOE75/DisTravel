@@ -43,7 +43,9 @@ import {
   MinusCircle,
   TrendingDown,
   ShieldCheck,
-  Construction
+  Construction,
+  Languages,
+  Zap
 } from 'lucide-react-native';
 import { typography } from '../theme/typography';
 import * as ImagePicker from 'expo-image-picker';
@@ -82,7 +84,6 @@ export function PlaceDetailScreen({ route, navigation }) {
   const insets = useSafeAreaInsets();
   const isAdmin = userData?.role === 'admin' || userData?.isAdmin;
 
-  // Buscar la versión más fresca del lugar en las contribuciones (por ID o nombre+ciudad)
   const placeFromContext = (userData?.contributions || []).find(p => 
     p.id === navigationPlace.id || (p.name === navigationPlace.name && p.city === navigationPlace.city)
   );
@@ -93,7 +94,6 @@ export function PlaceDetailScreen({ route, navigation }) {
   const [place, setPlace] = useState(initialPlace);
   const [image, setImage] = useState(place.image || 'https://images.unsplash.com/photo-1543731068-7e0f5beff43a');
 
-  // Actualizar el estado local si el contexto cambia (por ejemplo, tras la migración de semillas)
   useEffect(() => {
     if (placeFromContext && !isEditing) {
       setPlace(placeFromContext);
@@ -147,13 +147,11 @@ export function PlaceDetailScreen({ route, navigation }) {
   };
 
   const handleVerifyAccessibility = () => {
-    // Actualizar el estado local para feedback inmediato
     setPlace(prev => ({
       ...prev,
       verifications: (prev.verifications || 0) + 1
     }));
 
-    // Persistir la verificación en el perfil del usuario
     const isAlreadyVerified = userData.verifiedPlaces?.includes(place.id);
     if (!isAlreadyVerified) {
       updateUserData({
@@ -166,19 +164,22 @@ export function PlaceDetailScreen({ route, navigation }) {
   };
 
   const category = place.category || 'Monumento';
-  const schedule = place.schedule || (place.morningOpen ? `${place.morningOpen} - ${place.morningClose}` : 'Consultar horario');
   
   const handleSave = () => {
-    updateUserData('contributions', (prev) => {
-      const existing = prev || [];
-      const index = existing.findIndex(p => p.id === place.id || (p.name === initialPlace.name && p.city === initialPlace.city));
-      if (index !== -1) {
-        const updated = [...existing];
-        updated[index] = { ...place, image };
-        return updated;
-      }
-      return [...existing, { ...place, image }];
-    });
+    const existing = userData.contributions || [];
+    // Asegurar que tenemos 'city' para consistencia con el sistema de contribuciones
+    const normalizedPlace = { ...place, city: place.city || place.cityName, image };
+    const index = existing.findIndex(p => p.id === place.id || (p.name === initialPlace.name && (p.city === initialPlace.city || p.city === initialPlace.cityName)));
+    
+    let updatedContributions;
+    if (index !== -1) {
+      updatedContributions = [...existing];
+      updatedContributions[index] = normalizedPlace;
+    } else {
+      updatedContributions = [...existing, normalizedPlace];
+    }
+
+    updateUserData({ contributions: updatedContributions });
     setIsEditing(false);
     Alert.alert("Éxito", "Cambios guardados correctamente.");
   };
@@ -194,18 +195,21 @@ export function PlaceDetailScreen({ route, navigation }) {
     if (!result.canceled) {
       const newUri = result.assets[0].uri;
       setImage(newUri);
+      
       if (!isEditing) {
-        // Si no está en modo edición, guardar solo la imagen
-        updateUserData('contributions', (prev) => {
-          const existing = prev || [];
-          const index = existing.findIndex(p => p.id === place.id || (p.name === initialPlace.name && p.city === initialPlace.city));
-          if (index !== -1) {
-            const updated = [...existing];
-            updated[index] = { ...updated[index], image: newUri };
-            return updated;
-          }
-          return [...existing, { ...place, image: newUri }];
-        });
+        const existing = userData.contributions || [];
+        const normalizedPlace = { ...place, city: place.city || place.cityName, image: newUri };
+        const index = existing.findIndex(p => p.id === place.id || (p.name === initialPlace.name && (p.city === initialPlace.city || p.city === initialPlace.cityName)));
+        
+        let updatedContributions;
+        if (index !== -1) {
+          updatedContributions = [...existing];
+          updatedContributions[index] = { ...updatedContributions[index], image: newUri };
+        } else {
+          updatedContributions = [...existing, normalizedPlace];
+        }
+
+        updateUserData({ contributions: updatedContributions });
         Alert.alert("Éxito", "Imagen actualizada.");
       }
     }
@@ -281,7 +285,7 @@ export function PlaceDetailScreen({ route, navigation }) {
   const effectiveRegion = React.useMemo(() => {
     if (place.region) return place.region;
     if (place.province) return PROVINCE_TO_REGION[place.province] || place.province;
-    return 'Castilla-La Mancha'; // Fallback por defecto si no hay datos
+    return 'Castilla-La Mancha';
   }, [place.region, place.province]);
 
   return (
@@ -289,7 +293,6 @@ export function PlaceDetailScreen({ route, navigation }) {
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
       
       <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
-        {/* Hero Image */}
         <View style={styles.heroContainer}>
           <Image source={{ uri: image }} style={styles.heroImage} />
           <View style={styles.overlay} />
@@ -410,6 +413,98 @@ export function PlaceDetailScreen({ route, navigation }) {
               </Text>
             )}
           </View>
+
+          {/* AI Augmented Experience Section */}
+          {(place.history || place.geography || place.climate || place.landscape || isEditing) && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Sparkles color="#A29BFE" size={22} />
+                <Text style={[styles.sectionTitle, { color: theme.text, marginLeft: 10, marginBottom: 0 }]}>Exploración Aumentada (IA)</Text>
+              </View>
+              
+              <View style={styles.augmentedGrid}>
+                {/* Historia */}
+                {(place.history || isEditing) && (
+                  <View style={[styles.augmentedCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                    <View style={styles.augmentedCardHeader}>
+                      <Languages color="#A29BFE" size={20} />
+                      <Text style={[styles.augmentedCardTitle, { color: theme.text }]}>Historia y Origen</Text>
+                    </View>
+                    {isEditing ? (
+                      <TextInput
+                        style={[styles.augmentedTextEdit, { color: theme.textSecondary }]}
+                        value={place.history}
+                        onChangeText={(v) => setPlace({...place, history: v})}
+                        multiline
+                      />
+                    ) : (
+                      <Text style={[styles.augmentedText, { color: theme.textSecondary }]}>{place.history}</Text>
+                    )}
+                  </View>
+                )}
+
+                {/* Geografía */}
+                {(place.geography || isEditing) && (
+                  <View style={[styles.augmentedCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                    <View style={styles.augmentedCardHeader}>
+                      <MapPin color="#A29BFE" size={20} />
+                      <Text style={[styles.augmentedCardTitle, { color: theme.text }]}>Geografía</Text>
+                    </View>
+                    {isEditing ? (
+                      <TextInput
+                        style={[styles.augmentedTextEdit, { color: theme.textSecondary }]}
+                        value={place.geography}
+                        onChangeText={(v) => setPlace({...place, geography: v})}
+                        multiline
+                      />
+                    ) : (
+                      <Text style={[styles.augmentedText, { color: theme.textSecondary }]}>{place.geography}</Text>
+                    )}
+                  </View>
+                )}
+
+                {/* Clima */}
+                {(place.climate || isEditing) && (
+                  <View style={[styles.augmentedCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                    <View style={styles.augmentedCardHeader}>
+                      <Zap color="#A29BFE" size={20} />
+                      <Text style={[styles.augmentedCardTitle, { color: theme.text }]}>Clima</Text>
+                    </View>
+                    {isEditing ? (
+                      <TextInput
+                        style={[styles.augmentedTextEdit, { color: theme.textSecondary }]}
+                        value={place.climate}
+                        onChangeText={(v) => setPlace({...place, climate: v})}
+                        multiline
+                      />
+                    ) : (
+                      <Text style={[styles.augmentedText, { color: theme.textSecondary }]}>{place.climate}</Text>
+                    )}
+                  </View>
+                )}
+
+                {/* Paisaje */}
+                {(place.landscape || isEditing) && (
+                  <View style={[styles.augmentedCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                    <View style={styles.augmentedCardHeader}>
+                      <Globe color="#A29BFE" size={20} />
+                      <Text style={[styles.augmentedCardTitle, { color: theme.text }]}>Paisaje y Entorno</Text>
+                    </View>
+                    {isEditing ? (
+                      <TextInput
+                        style={[styles.augmentedTextEdit, { color: theme.textSecondary }]}
+                        value={place.landscape}
+                        onChangeText={(v) => setPlace({...place, landscape: v})}
+                        multiline
+                      />
+                    ) : (
+                      <Text style={[styles.augmentedText, { color: theme.textSecondary }]}>{place.landscape}</Text>
+                    )}
+                  </View>
+                )}
+              </View>
+            </View>
+          )}
 
           {/* Tourist Tip */}
           {(place.touristTip || isEditing) && (
@@ -563,7 +658,7 @@ export function PlaceDetailScreen({ route, navigation }) {
                     {isEditing ? (
                       <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                         <TouchableOpacity onPress={() => {
-                          const newNotices = [...place.importantNotices];
+                          const newNotices = [...(place.importantNotices || [])];
                           newNotices.splice(idx, 1);
                           setPlace({...place, importantNotices: newNotices});
                         }}>
@@ -573,7 +668,7 @@ export function PlaceDetailScreen({ route, navigation }) {
                           style={[styles.noticeTextEdit, { color: '#C0392B' }]}
                           value={notice}
                           onChangeText={(v) => {
-                            const newNotices = [...place.importantNotices];
+                            const newNotices = [...(place.importantNotices || [])];
                             newNotices[idx] = v;
                             setPlace({...place, importantNotices: newNotices});
                           }}
@@ -752,13 +847,13 @@ export function PlaceDetailScreen({ route, navigation }) {
               )}
             </View>
             <View style={[styles.tariffsContainer, { backgroundColor: theme.surface }]}>
-              {place.tariffs && place.tariffs.length > 0 ? (
-                place.tariffs.map((tariff, idx) => (
+              {(place.tariffs || []).length > 0 ? (
+                (place.tariffs || []).map((tariff, idx) => (
                   <View key={tariff.id || idx} style={styles.tariffRow}>
                     {isEditing ? (
                       <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                         <TouchableOpacity onPress={() => {
-                          const newTariffs = [...place.tariffs];
+                          const newTariffs = [...(place.tariffs || [])];
                           newTariffs.splice(idx, 1);
                           setPlace({...place, tariffs: newTariffs});
                         }}>
@@ -768,7 +863,7 @@ export function PlaceDetailScreen({ route, navigation }) {
                           style={[styles.tariffLabel, { color: theme.text, borderBottomWidth: 1, borderBottomColor: theme.border }]}
                           value={tariff.label}
                           onChangeText={(v) => {
-                            const newTariffs = [...place.tariffs];
+                            const newTariffs = [...(place.tariffs || [])];
                             newTariffs[idx] = { ...tariff, label: v };
                             setPlace({...place, tariffs: newTariffs});
                           }}
@@ -784,7 +879,7 @@ export function PlaceDetailScreen({ route, navigation }) {
                           style={[styles.priceEditInput, { color: theme.primary }]}
                           value={tariff.price}
                           onChangeText={(v) => {
-                            const newTariffs = [...place.tariffs];
+                            const newTariffs = [...(place.tariffs || [])];
                             newTariffs[idx] = { ...tariff, price: v };
                             setPlace({...place, tariffs: newTariffs});
                           }}
@@ -1280,5 +1375,43 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 14,
     fontWeight: '700',
+  },
+  augmentedGrid: {
+    gap: 15,
+    marginTop: 5,
+  },
+  augmentedCard: {
+    padding: 15,
+    borderRadius: 20,
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  augmentedCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 8,
+  },
+  augmentedCardTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  augmentedText: {
+    fontSize: 14,
+    lineHeight: 22,
+  },
+  augmentedTextEdit: {
+    fontSize: 14,
+    lineHeight: 22,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    borderRadius: 10,
+    padding: 10,
+    minHeight: 80,
+    textAlignVertical: 'top',
   }
 });

@@ -4,7 +4,7 @@ export const MONUMENTOS = {
       id: 'm1',
       name: 'Museo Nacional del Prado',
       category: 'Museos',
-      image: 'https://images.unsplash.com/photo-1543783230-22e030303030?auto=format&fit=crop&w=800&q=80',
+      image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Museo_del_Prado_2016_%2825185969599%29.jpg/1200px-Museo_del_Prado_2016_%2825185969599%29.jpg',
       description: 'Una de las pinacotecas más importantes del mundo, con obras de Velázquez, Goya y El Greco.',
       schedule: 'Lunes a sábado: 10:00 - 20:00. Domingos y festivos: 10:00 - 19:00.',
       price: 'General: 15€. Reducida: 7.50€.',
@@ -30,7 +30,7 @@ export const MONUMENTOS = {
       id: 'm2',
       name: 'Palacio Real de Madrid',
       category: 'Monumentos',
-      image: 'https://images.unsplash.com/photo-1539037116277-4db20889f2d4?auto=format&fit=crop&w=800&q=80',
+      image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Palacio_Real_de_Madrid_%2801%29.jpg/1200px-Palacio_Real_de_Madrid_%2801%29.jpg',
       description: 'Residencia oficial del Rey de España, aunque solo se usa para actos de Estado.',
       schedule: 'Invierno: 10:00 - 18:00. Verano: 10:00 - 19:00.',
       price: 'General: 12€. Reducida: 6€.',
@@ -57,7 +57,7 @@ export const MONUMENTOS = {
       id: 'g1',
       name: 'La Alhambra y el Generalife',
       category: 'Monumentos',
-      image: 'https://images.unsplash.com/photo-1544013919-455b81a176ee?auto=format&fit=crop&w=800&q=80',
+      image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/View_of_Alhambra_from_Mirador_de_San_Nicol%C3%A1s.jpg/1200px-View_of_Alhambra_from_Mirador_de_San_Nicol%C3%A1s.jpg',
       description: 'Palacio y fortaleza andalusí, joya de la arquitectura nazarí.',
       schedule: '8:30 - 20:00 (Verano) / 8:30 - 18:00 (Invierno).',
       price: 'General: 19€.',
@@ -84,7 +84,7 @@ export const MONUMENTOS = {
       id: 'b1',
       name: 'Sagrada Família',
       category: 'Monumentos',
-      image: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=800&q=80',
+      image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ee/Sagrada_Familia_01.jpg/1200px-Sagrada_Familia_01.jpg',
       description: 'La obra maestra de Gaudí, templo expiatorio en construcción desde 1882.',
       schedule: '9:00 - 18:00 (Invierno) / 9:00 - 20:00 (Verano).',
       price: 'General: 26€.',
@@ -109,7 +109,7 @@ export const MONUMENTOS = {
       id: 'b2',
       name: 'Park Güell',
       category: 'Monumentos',
-      image: 'https://images.unsplash.com/photo-1523531294919-4bcd7c65e216?auto=format&fit=crop&w=800&q=80',
+      image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Park_Guell_BCN.jpg/1200px-Park_Guell_BCN.jpg',
       description: 'Parque público con jardines y elementos arquitectónicos singulares.',
       schedule: '9:30 - 19:30.',
       price: 'General: 10€.',
@@ -135,7 +135,7 @@ export const MONUMENTOS = {
       id: 's1',
       name: 'Catedral de Sevilla y Giralda',
       category: 'Monumentos',
-      image: 'https://images.unsplash.com/photo-1559564484-e48b3e040ff4?auto=format&fit=crop&w=800&q=80',
+      image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Sevilla_Cathedral_Exterior.jpg/1200px-Sevilla_Cathedral_Exterior.jpg',
       description: 'La catedral gótica más grande del mundo y su famosa torre campanario.',
       schedule: '10:45 - 17:00.',
       price: 'General: 11€.',
@@ -161,7 +161,7 @@ export const MONUMENTOS = {
       id: 'bi1',
       name: 'Museo Guggenheim Bilbao',
       category: 'Museos',
-      image: 'https://images.unsplash.com/photo-1518684079-3c830dcef090?auto=format&fit=crop&w=800&q=80',
+      image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Guggenheim_Museum_Bilbao_June_2015.jpg/1200px-Guggenheim_Museum_Bilbao_June_2015.jpg',
       description: 'Icono de la arquitectura contemporánea diseñado por Frank Gehry.',
       schedule: '10:00 - 19:00 (Cerrado lunes en invierno).',
       price: 'General: 16€.',
@@ -187,7 +187,7 @@ export const MONUMENTOS = {
       id: 'v1',
       name: 'Ciudad de las Artes y las Ciencias',
       category: 'Monumentos',
-      image: 'https://images.unsplash.com/photo-1558913650-847ba8491823?auto=format&fit=crop&w=800&q=80',
+      image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/07/City_of_Arts_and_Sciences_Valencia_Spain.jpg/1200px-City_of_Arts_and_Sciences_Valencia_Spain.jpg',
       description: 'Complejo arquitectónico, cultural y de entretenimiento.',
       schedule: '10:00 - 18:00 (Varía según edificio).',
       price: 'Completa: 38.60€.',
@@ -206,6 +206,56 @@ export const MONUMENTOS = {
         userCount: 45
       },
       location: { latitude: 39.4582, longitude: -0.3503 }
+    }
+  ],
+  'Alicante': [
+    {
+      id: 'ali1',
+      name: 'Castillo de Santa Bárbara',
+      category: 'Monumentos',
+      image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Castillo_de_Santa_B%C3%A1rbara_desde_el_Postiguet.jpg/1200px-Castillo_de_Santa_B%C3%A1rbara_desde_el_Postiguet.jpg',
+      description: 'Fortaleza medieval sobre el monte Benacantil con vistas al Mediterráneo.',
+      schedule: '10:00 - 20:00.',
+      price: 'Acceso GRATIS (Ascensor: 2.70€).',
+      disabilityBenefit: 'Ascensor GRATIS para personas con discapacidad acreditada.',
+      technicalSpecs: {
+        doorWidth: 'Acceso adaptado',
+        turningSpace: 'Sí',
+        magneticLoop: 'No',
+        brailleSignage: 'Sí',
+        adaptedAudio: 'App móvil',
+        adaptedToilet: 'Sí, en el patio'
+      },
+      verifiedByCommunity: {
+        status: 'Excelente (Uso de Ascensor)',
+        lastCheck: 'Hace 1 día',
+        userCount: 52
+      },
+      location: { latitude: 38.3489, longitude: -0.4777 }
+    },
+    {
+      id: 'ali2',
+      name: 'Mercado Central de Alicante',
+      category: 'Mercados',
+      image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/66/Mercat_Central_d%27Alacant_01.jpg/1200px-Mercat_Central_d%27Alacant_01.jpg',
+      description: 'Edificio de estilo modernista, corazón de la gastronomía alicantina.',
+      schedule: '7:30 - 14:30.',
+      price: 'Entrada Libre.',
+      disabilityBenefit: 'Accesibilidad total en ambas plantas mediante ascensores.',
+      technicalSpecs: {
+        doorWidth: 'Automática',
+        turningSpace: 'Sí',
+        magneticLoop: 'No',
+        brailleSignage: 'Limitado',
+        adaptedAudio: 'No',
+        adaptedToilet: 'Sí'
+      },
+      verifiedByCommunity: {
+        status: 'Muy Accesible',
+        lastCheck: 'Hace 3 días',
+        userCount: 24
+      },
+      location: { latitude: 38.3475, longitude: -0.4852 }
     }
   ]
 };

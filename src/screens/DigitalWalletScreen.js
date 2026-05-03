@@ -8,7 +8,8 @@ import {
   Image, 
   Dimensions,
   ScrollView,
-  Platform
+  Platform,
+  Linking
 } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
@@ -19,8 +20,12 @@ import {
   Share2, 
   Calendar,
   CreditCard,
-  Info
+  Info,
+  User,
+  ExternalLink,
+  Map as MapIcon
 } from 'lucide-react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { typography } from '../theme/typography';
 
 const { width } = Dimensions.get('window');
@@ -41,44 +46,98 @@ export function DigitalWalletScreen({ navigation }) {
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>TU TARJETA EUROPEA</Text>
         
-        {/* EU Card Preview */}
-        <View style={[styles.card, { backgroundColor: '#003399' }]}>
-          <View style={styles.cardHeader}>
-            <View style={styles.euStars}>
-              <Text style={styles.euText}>EU</Text>
-            </View>
-            <Text style={styles.cardTitle}>European Disability Card</Text>
+        {/* EU Card Preview - Exact Official EDC Design */}
+        <LinearGradient
+          colors={['#003399', '#002a80', '#001a4d']}
+          style={styles.edcCard}
+        >
+          {/* Header Row: Stars + Titles */}
+          <View style={styles.edcHeaderRow}>
+             <View style={styles.edcStarsEmblem}>
+                {[...Array(12)].map((_, i) => (
+                  <View 
+                    key={i} 
+                    style={[
+                      styles.edcSmallStar, 
+                      { 
+                        transform: [
+                          { rotate: `${i * 30}deg` },
+                          { translateY: -16 }
+                        ] 
+                      }
+                    ]} 
+                  />
+                ))}
+                <Text style={styles.edcCountryText}>ES</Text>
+             </View>
+             <View style={styles.edcTitleContainer}>
+                <Text style={styles.edcOfficialTitleEn}>European Disability Card</Text>
+                <Text style={styles.edcOfficialTitleEs}>Tarjeta Europea de Discapacidad</Text>
+                <View style={styles.edcVerifiedBadge}>
+                   <ShieldCheck color="#FFCC00" size={10} />
+                   <Text style={styles.edcVerifiedText}>VERIFIED v3.0</Text>
+                </View>
+             </View>
           </View>
           
-          <View style={styles.cardBody}>
-            <View style={styles.userPhotoPlaceholder}>
+          <View style={styles.edcMainContent}>
+            {/* Left: Photo */}
+            <View style={styles.edcPhotoBox}>
               {userData.profileImage ? (
-                <Image source={{ uri: userData.profileImage }} style={styles.userPhoto} />
+                <Image source={{ uri: userData.profileImage }} style={styles.edcPhotoImg} />
               ) : (
-                <View style={styles.photoIcon} />
+                <View style={styles.edcPhotoPlaceholder}>
+                  <User color="#FFF" size={35} />
+                </View>
               )}
             </View>
-            <View style={styles.cardInfo}>
-              <Text style={styles.userName}>{userData.name || 'VIAJERO DISTRAVEL'}</Text>
-              <Text style={styles.userId}>ID: {userData.id?.toUpperCase() || 'GUEST-001'}</Text>
-              <View style={styles.badge}>
-                <Text style={styles.badgeText}>{userData.disabilityDegree}% DISCAPACIDAD</Text>
+
+            {/* Right: Data Fields */}
+            <View style={styles.edcDataArea}>
+              <View style={styles.edcField}>
+                <Text style={styles.edcFieldLabel}>Surname / Apellido(s)</Text>
+                <Text style={styles.edcFieldValue}>{userData.lastName || 'GARCÍA LÓPEZ'}</Text>
+              </View>
+              <View style={styles.edcField}>
+                <Text style={styles.edcFieldLabel}>First name / Nombre</Text>
+                <Text style={styles.edcFieldValue}>{userData.name || 'JUAN'}</Text>
+              </View>
+              <View style={styles.edcFieldRow}>
+                 <View style={{ flex: 1 }}>
+                   <Text style={styles.edcFieldLabel}>Birth date / Nacimiento</Text>
+                   <Text style={styles.edcFieldValue}>{userData.birthDate || '15/08/1985'}</Text>
+                 </View>
+                 <View style={styles.edcAssistantTag}>
+                    <Text style={styles.edcAssistantTagText}>A</Text>
+                 </View>
               </View>
             </View>
           </View>
 
-          <View style={styles.cardFooter}>
-            <View style={styles.expiryContainer}>
-              <Calendar color="#FFFFFF" size={12} />
-              <Text style={styles.expiryText}>VALIDEZ: {userData.expiryDate || '31/12/2028'}</Text>
-            </View>
-            <Image 
-              source={require('../../assets/logo_official.png')} 
-              style={styles.cardLogo} 
-              resizeMode="contain"
-            />
+          <View style={styles.edcBottomBar}>
+             <View>
+               <Text style={styles.edcFieldLabel}>Card Number / Número</Text>
+               <Text style={styles.edcCardNum}>{userData.id?.toUpperCase() || 'ES-123456789'}</Text>
+             </View>
+             <View style={styles.edcExpiryArea}>
+                <Text style={styles.edcFieldLabel}>Valid until / Vence</Text>
+                <Text style={styles.edcFieldValue}>{userData.expiryDate || '31/12/2028'}</Text>
+             </View>
           </View>
-        </View>
+
+          {/* Discreet Braille dots at the very bottom right */}
+          <View style={styles.edcOfficialBraille}>
+             <View style={styles.brailleCol}>
+                <View style={styles.bDot} /><View style={styles.bDot} />
+             </View>
+             <View style={styles.brailleCol}>
+                <View style={styles.bDot} /><View style={[styles.bDot, { opacity: 0 }]} />
+             </View>
+             <View style={styles.brailleCol}>
+                <View style={styles.bDot} /><View style={styles.bDot} />
+             </View>
+          </View>
+        </LinearGradient>
 
         {/* Security Status */}
         <View style={[styles.statusBox, { backgroundColor: theme.surface, borderColor: theme.border }]}>
@@ -105,6 +164,26 @@ export function DigitalWalletScreen({ navigation }) {
               </View>
            </View>
            <Text style={[styles.qrHint, { color: theme.textSecondary }]}>Muestre este QR en taquilla para validación rápida</Text>
+        </View>
+
+        {/* Physical Card Request Info */}
+        <View style={[styles.requestBox, { backgroundColor: theme.primary + '10', borderColor: theme.primary + '30' }]}>
+           <View style={styles.requestContent}>
+              <Info color={theme.primary} size={22} />
+              <View style={styles.requestTextContainer}>
+                 <Text style={[styles.requestTitle, { color: theme.primary }]}>¿No tienes la tarjeta física?</Text>
+                 <Text style={[styles.requestSub, { color: theme.textSecondary }]}>
+                   El despliegue en España está en proceso. Consulta el estado oficial y requisitos.
+                 </Text>
+              </View>
+           </View>
+           <TouchableOpacity 
+             style={[styles.requestBtn, { backgroundColor: theme.primary }]}
+             onPress={() => Linking.openURL('https://ec.europa.eu/social/main.jsp?catId=1139&langId=es')}
+           >
+              <Text style={styles.requestBtnText}>Ver Información Oficial</Text>
+              <ExternalLink color="#FFF" size={16} />
+           </TouchableOpacity>
         </View>
 
         {/* Action Buttons */}
@@ -134,7 +213,7 @@ export function DigitalWalletScreen({ navigation }) {
 
         <TouchableOpacity style={[styles.credItem, { backgroundColor: theme.surface, borderColor: theme.border }]}>
           <View style={[styles.credIconContainer, { backgroundColor: '#3498DB15' }]}>
-            <Map color="#3498DB" size={24} />
+            <MapIcon color="#3498DB" size={24} />
           </View>
           <View style={styles.credInfo}>
             <Text style={[styles.credTitle, { color: theme.text }]}>Tarjeta de Estacionamiento PMR</Text>
@@ -187,112 +266,200 @@ const styles = StyleSheet.create({
     letterSpacing: 1.5,
     marginBottom: 20,
   },
-  card: {
+  edcCard: {
     width: '100%',
-    height: 220,
-    borderRadius: 24,
-    padding: 20,
-    justifyContent: 'space-between',
+    height: 230,
+    borderRadius: 12,
+    padding: 16,
+    position: 'relative',
+    overflow: 'hidden',
     elevation: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 15,
+    shadowRadius: 8,
   },
-  cardHeader: {
+  edcHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 15,
   },
-  euStars: {
-    width: 35,
-    height: 35,
-    borderRadius: 8,
-    backgroundColor: '#FFCC00',
+  edcStarsEmblem: {
+    width: 42,
+    height: 42,
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
   },
-  euText: {
-    color: '#003399',
-    fontWeight: '900',
+  edcSmallStar: {
+    position: 'absolute',
+    width: 5,
+    height: 5,
+    backgroundColor: '#FFCC00',
+    borderRadius: 2.5,
+  },
+  edcCountryText: {
+    color: '#FFCC00',
     fontSize: 14,
+    fontWeight: '900',
   },
-  cardTitle: {
+  edcTitleContainer: {
+    marginLeft: 15,
+  },
+  edcOfficialTitleEn: {
     color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '800',
-    marginLeft: 12,
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: -0.2,
   },
-  cardBody: {
+  edcOfficialTitleEs: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '400',
+    opacity: 0.85,
+  },
+  edcVerifiedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 20,
+    backgroundColor: 'rgba(255, 204, 0, 0.15)',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginTop: 4,
+    alignSelf: 'flex-start',
+    gap: 4,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255, 204, 0, 0.3)',
   },
-  userPhotoPlaceholder: {
-    width: 70,
-    height: 85,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 12,
-    overflow: 'hidden',
+  edcVerifiedText: {
+    color: '#FFCC00',
+    fontSize: 8,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  edcMainContent: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  edcPhotoBox: {
+    width: 80,
+    height: 100,
+    backgroundColor: '#FFFFFF15',
+    borderRadius: 4,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
+    borderColor: '#FFFFFF30',
+    overflow: 'hidden',
   },
-  userPhoto: {
+  edcPhotoImg: {
     width: '100%',
     height: '100%',
   },
-  photoIcon: {
+  edcPhotoPlaceholder: {
     flex: 1,
-    backgroundColor: '#FFFFFF40',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  cardInfo: {
-    marginLeft: 20,
+  edcDataArea: {
     flex: 1,
+    marginLeft: 15,
   },
-  userName: {
+  edcField: {
+    marginBottom: 6,
+  },
+  edcFieldRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  edcFieldLabel: {
     color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '900',
-    letterSpacing: 0.5,
+    fontSize: 8,
+    fontWeight: '600',
+    opacity: 0.7,
+    textTransform: 'uppercase',
   },
-  userId: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 12,
-    marginTop: 4,
-    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
+  edcFieldValue: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
   },
-  badge: {
+  edcAssistantTag: {
+    width: 22,
+    height: 22,
     backgroundColor: '#FFCC00',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 20,
-    alignSelf: 'flex-start',
-    marginTop: 10,
+    borderRadius: 11,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
   },
-  badgeText: {
+  edcAssistantTagText: {
     color: '#003399',
-    fontSize: 10,
+    fontSize: 14,
     fontWeight: '900',
   },
-  cardFooter: {
+  edcBottomBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-end',
+    marginTop: 'auto',
   },
-  expiryContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  expiryText: {
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: 10,
+  edcCardNum: {
+    color: '#FFFFFF',
+    fontSize: 12,
     fontWeight: '700',
   },
-  cardLogo: {
-    width: 40,
-    height: 40,
-    tintColor: '#FFFFFF',
-    opacity: 0.8,
+  edcOfficialBraille: {
+    position: 'absolute',
+    bottom: 12,
+    right: 12,
+    flexDirection: 'row',
+    gap: 2,
+  },
+  brailleCol: {
+    gap: 2,
+  },
+  bDot: {
+    width: 3.5,
+    height: 3.5,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 1.75,
+    opacity: 0.5,
+  },
+  requestBox: {
+    padding: 20,
+    borderRadius: 20,
+    borderWidth: 1,
+    marginTop: 25,
+  },
+  requestContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  requestTextContainer: {
+    marginLeft: 15,
+    flex: 1,
+  },
+  requestTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  requestSub: {
+    fontSize: 12,
+    marginTop: 4,
+    lineHeight: 18,
+  },
+  requestBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    borderRadius: 14,
+    gap: 10,
+  },
+  requestBtnText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 14,
   },
   statusBox: {
     flexDirection: 'row',

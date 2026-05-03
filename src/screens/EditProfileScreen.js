@@ -25,11 +25,13 @@ import {
   Maximize, 
   X, 
   Check,
+  Calendar,
   Map
 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Modal, Image, Alert, ActivityIndicator } from 'react-native';
 import * as Location from 'expo-location';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { typography } from '../theme/typography';
 
 const InputField = ({ label, value, icon: Icon, onChangeText, keyboardType, theme, actionIcon: ActionIcon, onActionPress, isLoading }) => (
@@ -69,6 +71,7 @@ export function EditProfileScreen({ navigation }) {
   // Usamos el estado local para la edición fluida
   const [localData, setLocalData] = useState({ ...userData });
   const [editModalVisible, setEditModalVisible] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [scale, setScale] = useState(1);
   const [tempImage, setTempImage] = useState(null);
@@ -192,12 +195,50 @@ export function EditProfileScreen({ navigation }) {
             <Text style={[styles.avatarLabel, { color: theme.textSecondary }]}>Toca para cambiar foto</Text>
           </View>
           <InputField 
-            label="Nombre Completo" 
+            label="Nombre" 
             value={localData.name} 
             icon={User}
             theme={theme}
             onChangeText={(text) => setLocalData(prev => ({...prev, name: text}))}
           />
+          <InputField 
+            label="Apellido(s)" 
+            value={localData.lastName} 
+            icon={User}
+            theme={theme}
+            onChangeText={(text) => setLocalData(prev => ({...prev, lastName: text}))}
+          />
+          
+          <TouchableOpacity 
+            style={styles.inputContainer} 
+            onPress={() => setShowDatePicker(true)}
+          >
+            <Text style={[styles.label, { color: theme.textSecondary }]}>Fecha de Nacimiento</Text>
+            <View style={[styles.inputWrapper, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+              <Calendar color={theme.primary} size={20} />
+              <Text style={[styles.input, { color: localData.birthDate ? theme.text : theme.textSecondary, lineHeight: 24, paddingTop: 14 }]}>
+                {localData.birthDate || 'Seleccionar fecha'}
+              </Text>
+            </View>
+          </TouchableOpacity>
+
+          {showDatePicker && (
+            <DateTimePicker
+              value={localData.birthDate ? new Date(localData.birthDate.split('/').reverse().join('-')) : new Date(1990, 0, 1)}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={(event, selectedDate) => {
+                setShowDatePicker(false);
+                if (selectedDate) {
+                  const day = selectedDate.getDate().toString().padStart(2, '0');
+                  const month = (selectedDate.getMonth() + 1).toString().padStart(2, '0');
+                  const year = selectedDate.getFullYear();
+                  setLocalData(prev => ({ ...prev, birthDate: `${day}/${month}/${year}` }));
+                }
+              }}
+            />
+          )}
+
           <InputField 
             label="Correo Electrónico" 
             value={localData.email} 
