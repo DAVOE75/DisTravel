@@ -674,7 +674,32 @@ export function AddLocationScreen({ route, navigation }) {
           phone: "+34 964 173 032"
         };
       } else {
-        // Fallback inteligente para lugares desconocidos con Geocodificación
+        // Fallback inteligente mejorado para lugares desconocidos
+        const nameLower = formData.name.toLowerCase();
+        let guessedCategory = "Monumento";
+        let guessedPrice = "10";
+        let guessedFree = "Consulta descuentos para personas con discapacidad.";
+        
+        if (nameLower.includes('museo') || nameLower.includes('mubag') || nameLower.includes('maca')) {
+          guessedCategory = "Museo";
+          guessedPrice = "5";
+        } else if (nameLower.includes('castillo') || nameLower.includes('fortaleza')) {
+          guessedCategory = "Monumento";
+          guessedPrice = "8";
+        } else if (nameLower.includes('catedral') || nameLower.includes('basilica') || nameLower.includes('monasterio')) {
+          guessedCategory = "Monumento";
+          guessedPrice = "6";
+          guessedFree = "Suele ser de pago como monumento. PCD normalmente gratis o reducido.";
+        } else if (nameLower.includes('iglesia') || nameLower.includes('parroquia') || nameLower.includes('ermita')) {
+          guessedCategory = "Iglesia";
+          guessedPrice = "0";
+          guessedFree = "Entrada generalmente gratuita para el culto.";
+        } else if (nameLower.includes('playa') || nameLower.includes('parque') || nameLower.includes('plaza')) {
+          guessedCategory = nameLower.includes('playa') ? "Playa" : "Parque";
+          guessedPrice = "0";
+          guessedFree = "Acceso público y gratuito.";
+        }
+
         let lat = 40.4168;
         let lng = -3.7038;
         try {
@@ -683,40 +708,34 @@ export function AddLocationScreen({ route, navigation }) {
           if (geocodeResult && geocodeResult.length > 0) {
             lat = geocodeResult[0].latitude;
             lng = geocodeResult[0].longitude;
-          } else if (formData.city) {
-            const cityResult = await Location.geocodeAsync(`${formData.city}, España`);
-            if (cityResult && cityResult.length > 0) {
-              lat = cityResult[0].latitude;
-              lng = cityResult[0].longitude;
-            }
           }
-        } catch(e) {
-          console.log("Geocode error", e);
-        }
+        } catch(e) {}
 
         aiData = {
           name: formData.name,
           city: formData.city,
-          category: "Monumento",
-          description: `Descubre la historia y la belleza de ${formData.name}, uno de los lugares más emblemáticos de ${formData.city || 'la región'}. Un rincón imprescindible para cualquier viajero.`,
-          importantNotices: ["Verificar accesibilidad física en la entrada principal.", "Recomendamos contactar previamente para confirmar horarios."],
-          freeInfo: "Consulta descuentos presentando tu tarjeta de discapacidad en taquilla.",
+          category: guessedCategory,
+          description: `Descubre ${formData.name} en ${formData.city || 'la provincia'}. Un lugar de gran interés ${guessedCategory.toLowerCase()} que destaca por su historia y relevancia local.`,
+          importantNotices: [
+            "Se recomienda verificar horarios en días festivos.",
+            "Accesibilidad física bajo revisión en zonas antiguas."
+          ],
+          freeInfo: guessedFree,
           accessibility: { physical: true, visual: true, auditory: true, cognitive: true },
           image: "https://images.unsplash.com/photo-1519677100203-a0e668c92439",
           tariffs: [
-            { id: 1, label: 'Entrada General', price: '10' },
+            { id: 1, label: 'Entrada General (Est.)', price: guessedPrice },
             { id: 2, label: 'PCD / Discapacidad', price: '0' }
           ],
-          location: { latitude: lat, longitude: lng, latitudeDelta: 0.05, longitudeDelta: 0.05 },
-          website: formData.city ? `turismo.${normalize(formData.city).replace(/\s+/g, '')}.es` : `www.turismo.es`,
-          phone: "+34 900 112 112 (Turismo / Ayto.)",
-          audioguide: {
-            available: formData.name.toLowerCase().includes('museo') || formData.name.toLowerCase().includes('castillo'),
-            price: 'Consulta en taquilla',
-            accessible: true,
-            languages: ['Español', 'Inglés'],
-            note: "Posibilidad de audioguía adaptada o app móvil oficial."
-          }
+          location: { latitude: lat, longitude: lng, latitudeDelta: 0.01, longitudeDelta: 0.01 },
+          seasons: [
+            { 
+              name: 'Horario Estándar', 
+              period: 'Todo el año', 
+              weekday: guessedPrice === "0" ? 'Abierto 24h' : '10:00 a 20:00', 
+              weekend: guessedPrice === "0" ? 'Abierto 24h' : '10:00 a 14:00' 
+            }
+          ]
         };
       }
 

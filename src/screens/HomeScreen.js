@@ -17,7 +17,9 @@ import {
 import { 
   MapPin, 
   Search, 
-  Accessibility, 
+  Accessibility,
+  Droplets,
+  Bath,
   Star,
   Clock,
   Compass, 
@@ -560,7 +562,7 @@ export function HomeScreen({ navigation }) {
               style={[styles.serviceCard, { backgroundColor: '#3498DB' }]} 
               onPress={() => navigation.navigate('Toilets')}
             >
-              <Users color="#FFF" size={24} />
+              <Bath color="#FFF" size={24} />
               <Text style={styles.serviceText}>BAÑOS</Text>
             </TouchableOpacity>
 

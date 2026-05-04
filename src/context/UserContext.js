@@ -439,13 +439,13 @@ export const UserProvider = ({ children }) => {
   useEffect(() => {
     const loadData = async () => {
       console.log('Distravel v3.0: Iniciando carga de datos...');
+      setIsLoading(true);
       try {
+        // 1. Cargar datos desde el almacenamiento único
         const jsonValue = await AsyncStorage.getItem(STORAGE_KEY);
-        let parsed = jsonValue != null ? JSON.parse(jsonValue) : { contributions: [] };
-        console.log('Distravel v3.0: Datos recuperados de almacenamiento.');
+        let parsed = jsonValue != null ? JSON.parse(jsonValue) : INITIAL_USER_DATA;
         
-        // Unificar contributions y asegurar que no hay duplicados por ID
-        let currentContributions = parsed.contributions || [];
+        let currentContributions = parsed.contributions || INITIAL_USER_DATA.contributions || [];
         
         // Añadir semillas si no existen o actualizar si han cambiado campos clave
         SEED_DATA.forEach(seed => {
@@ -454,87 +454,58 @@ export const UserProvider = ({ children }) => {
             currentContributions.push(seed);
           } else {
             const existing = currentContributions[idx];
-            // IMPORTANTE: Solo actualizar campos si el usuario NO los ha modificado
-            // Si la imagen actual es diferente a la de la semilla y no es la por defecto de Unsplash,
-            // asumimos que el usuario la ha personalizado y la respetamos.
             const userHasCustomImage = existing.image && existing.image !== seed.image && !existing.image.includes('unsplash.com');
-            
-            currentContributions[idx] = { 
-              ...seed, 
-              ...existing, // Lo que ya tiene el usuario (sus fotos) prevalece sobre la semilla
-              id: seed.id 
-            };
-            
-            // Si la semilla tiene una imagen mejor (Wikipedia) y el usuario no ha puesto una propia, actualizamos
+            currentContributions[idx] = { ...seed, ...existing, id: seed.id };
             if (!userHasCustomImage && seed.image && seed.image.includes('wikipedia')) {
               currentContributions[idx].image = seed.image;
             }
           }
         });
 
-        // 3. Intentar obtener lugares del SERVIDOR (Compartidos por otros) con Timeout
+        // 3. Intentar obtener lugares del SERVIDOR
         try {
-          const SERVER_URL = API_BASE_URL;
-          
-          // Timeout de 3 segundos para no bloquear el Splash
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 3000);
-          
-          const response = await fetch(`${SERVER_URL}/api/places`, { 
-            signal: controller.signal 
-          });
+          const timeoutId = setTimeout(() => controller.abort(), 2000);
+          const response = await fetch(`${API_BASE_URL}/api/places`, { signal: controller.signal });
           clearTimeout(timeoutId);
-
           if (response.ok) {
             const serverPlaces = await response.json();
-            console.log(`Distravel v3.0.2: ${serverPlaces.length} lugares recuperados del servidor.`);
-            
             serverPlaces.forEach(sp => {
               const idx = currentContributions.findIndex(p => p.id === sp.id);
-              if (idx === -1) {
-                currentContributions.push(sp);
-              }
+              if (idx === -1) currentContributions.push(sp);
             });
           }
-        } catch (serverError) {
-          console.warn('Servidor backend no disponible o tiempo excedido, operando en modo local.');
-        }
+        } catch (e) {}
 
-        // Limpieza final de duplicados y ordenación
+        // 4. Limpieza final de duplicados y ordenación
         const uniqueContributions = [];
         const seen = new Set();
-        currentContributions.forEach(p => {
-          const key = `${p.id || p.name}-${p.city}`;
-          if (!seen.has(key)) {
+        const sortedContributions = currentContributions.sort((a, b) => {
+          const aHasImg = a.image && !a.image.includes('http');
+          const bHasImg = b.image && !b.image.includes('http');
+          return (aHasImg === bHasImg) ? 0 : aHasImg ? -1 : 1;
+        });
+
+        sortedContributions.forEach(p => {
+          const key = `${(p.name || '').toLowerCase().trim()}-${(p.city || p.cityName || '').toLowerCase().trim()}`;
+          if (!seen.has(key) && key !== '-') {
             seen.add(key);
             uniqueContributions.push(p);
           }
         });
 
-        parsed.contributions = uniqueContributions;
-        const finalData = { ...INITIAL_USER_DATA, ...parsed, isAdmin: true };
-        
-        // Migración robusta v3.0.2: Asegurar que los nuevos campos tengan valores por defecto
-        // incluso si 'parsed' tiene cadenas vacías o valores nulos de sesiones anteriores.
-        if (!finalData.country || finalData.country.trim() === '') {
-          finalData.country = 'España';
-        }
-        if (!finalData.phonePrefix || finalData.phonePrefix.trim() === '') {
-          finalData.phonePrefix = '+34';
-        }
-        
-        setUserData(finalData);
-        console.log('Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.');
+        setUserData({ ...parsed, contributions: uniqueContributions });
       } catch (e) {
-        console.error('Distravel v3.0 Error:', e);
-        setUserData(INITIAL_USER_DATA);
+        console.error('Error cargando datos:', e);
       } finally {
         setIsLoading(false);
-        console.log('Distravel v3.0: Carga finalizada.');
       }
     };
+
     loadData();
   }, []);
+
+
 
   const saveData = async (data) => {
     await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
