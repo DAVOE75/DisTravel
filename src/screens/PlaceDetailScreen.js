@@ -16,6 +16,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
+import { API_BASE_URL } from '../config/api';
 import { 
   ChevronLeft, 
   MapPin, 
@@ -28,6 +29,8 @@ import {
   Navigation,
   CheckCircle,
   AlertTriangle,
+  AlertCircle,
+  Link,
   Edit,
   Sparkles,
   Eye,
@@ -44,7 +47,8 @@ import {
   ShieldCheck,
   Construction,
   Languages,
-  Zap
+  Zap,
+  ChevronRight
 } from 'lucide-react-native';
 import { typography } from '../theme/typography';
 import { calculatePlaceSavings } from '../utils/savings';
@@ -102,94 +106,318 @@ export function PlaceDetailScreen({ route, navigation }) {
   const [place, setPlace] = useState(initialPlace);
   const [image, setImage] = useState(place.image || 'https://images.unsplash.com/photo-1543731068-7e0f5beff43a');
 
-  useEffect(() => {
-    if (placeFromContext && !isEditing) {
-      setPlace(placeFromContext);
-      if (placeFromContext.image) {
-        setImage(placeFromContext.image);
-      }
-    }
-  }, [placeFromContext, isEditing]);
+
 
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [isAiEnhanced, setIsAiEnhanced] = useState(false);
+  const [aiResults, setAiResults] = useState(null);
 
-  const handleAiEnhance = () => {
+  // Unificamos el objeto que se muestra en pantalla
+  const displayPlace = aiResults ? { ...place, ...aiResults } : place;
+
+  const handleAiEnhance = async () => {
     const hasGemini = userData.aiApiKey && userData.aiApiKey.length > 10;
     setIsAiProcessing(true);
     
-    // Simular búsqueda y generación profunda
+    const placeName = place.name;
+    const cityName = place.city || 'este municipio';
+    const category = place.category || 'lugar de interés';
+
+    if (hasGemini) {
+      try {
+        const prompt = `Actúa como un experto en turismo e historia de España. 
+        Realiza una investigación profunda sobre "${placeName}" ubicado en "${cityName}". 
+        Devuelve la respuesta en formato JSON estricto.
+        
+        EJEMPLO DE ESTRUCTURA REQUERIDA:
+        {
+          "description": "...",
+          "touristTip": "...",
+          "address": "Calle Falsa 123, CP 03001, Ciudad",
+          "phone": "+34 900 000 000",
+          "website": "www.ejemplo.com",
+          "structuredSchedules": [
+            {
+              "name": "Horario General",
+              "startMonth": "1",
+              "endMonth": "12",
+              "days": {
+                "1": {"isOpen": true, "mOpen": "10:00", "mClose": "20:00", "aOpen": "", "aClose": ""},
+                "0": {"isOpen": true, "mOpen": "10:00", "mClose": "19:00", "aOpen": "", "aClose": ""}
+              }
+            }
+          ],
+          "tariffs": [
+            {"id": "t1", "label": "General", "price": "15.00 €"},
+            {"id": "t2", "label": "PCD + Acompañante", "price": "Gratis"}
+          ]
+        }
+        
+        IMPORTANTE: 0 es Domingo, 1 es Lunes... 6 es Sábado.
+        Investiga si el acompañante de personas con discapacidad (PCD) también entra gratis.
+        No incluyas markdown, solo el JSON puro.`;
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userData.aiApiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+          })
+        });
+
+        const data = await response.json();
+        const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        
+        let aiContent;
+        try {
+          const cleanJson = aiText.replace(/```json/g, '').replace(/```/g, '').trim();
+          aiContent = JSON.parse(cleanJson);
+        } catch (e) {
+          aiContent = {
+            description: aiText.substring(0, 500),
+            touristTip: "Consulta la accesibilidad en la entrada.",
+            schedule: "No disponible",
+            price: "Consultar en taquilla"
+          };
+        }
+
+        applyAiResults(aiContent, true);
+      } catch (error) {
+        console.error('Error con Gemini:', error);
+        Alert.alert("Error de Conexión", "No se pudo contactar con Gemini PRO. Usando motor secundario.");
+        simulateAiEnhance();
+      }
+    } else {
+      simulateAiEnhance();
+    }
+  };
+
+  const simulateAiEnhance = () => {
+    const placeName = place.name;
+    const cityName = place.city || 'este municipio';
+    const normName = normalize(placeName);
+    
     setTimeout(() => {
-      const placeName = place.name;
-      const isBelmonte = normalize(placeName).includes('belmonte');
-      const isAlmudena = normalize(placeName).includes('almudena');
-      
       let aiContent = {
-        description: `Este lugar histórico representa un pilar fundamental en la identidad de su municipio. Su construcción y evolución a lo largo de los siglos ha sido documentada por historiadores como un ejemplo de resiliencia y adaptación arquitectónica. La visita a este enclave ofrece una perspectiva única sobre la cultura local y nacional.`,
-        touristTip: `Te recomendamos realizar la visita durante las primeras horas de la mañana para evitar aglomeraciones y disfrutar de una luz natural que resalta cada detalle. No olvides consultar la disponibilidad de guías especializados en accesibilidad.`
+        description: `${placeName} es un enclave de gran valor patrimonial ubicado en ${cityName}. Su arquitectura y emplazamiento reflejan la rica historia de la región, habiendo servido como punto de encuentro cultural a lo largo de las décadas. La preservación de su estructura original permite a los visitantes de hoy en día conectar con el pasado de una forma única y accesible.`,
+        touristTip: `Para disfrutar plenamente de ${placeName}, recomendamos visitarlo en días laborables. El acceso principal ha sido evaluado como apto para sillas de ruedas.`,
+        schedule: "Lunes a Domingo: 10:00 - 19:00",
+        price: "General: 8€. Gratis para PCD y acompañante."
       };
 
-      if (isBelmonte) {
+      // Simulador avanzado si no hay API Key
+      if (normName.includes('belmonte')) {
         aiContent = {
-          description: "El Castillo de Belmonte es una de las fortalezas más singulares y mejor conservadas de España. Mandado construir en 1456 por Juan Pacheco, primer Marqués de Villena, destaca por su planta en forma de estrella de seis puntas, una rareza en la arquitectura militar gótico-mudéjar. Durante el siglo XIX, la emperatriz Eugenia de Montijo, descendiente de los Pacheco, impulsó una ambiciosa restauración que dotó al castillo de sus impresionantes artesonados y decoraciones neogóticas. Sus muros han servido de escenario para numerosas superproducciones de Hollywood, consolidándose como un icono cultural que fusiona la dureza militar con el refinamiento palaciego.",
-          touristTip: "El castillo dispone de un ascensor moderno integrado discretamente para acceder a las plantas superiores, permitiendo que personas con movilidad reducida disfruten de las salas palaciegas y los artesonados mudéjares sin barreras."
+          description: "El Castillo de Belmonte es una de las fortalezas más singulares y mejor conservadas de España. Mandado construir en 1456 por Juan Pacheco, primer Marqués de Villena, destaca por su planta en forma de estrella de seis puntas, una rareza en la arquitectura militar gótico-mudéjar. Durante el siglo XIX, la emperatriz Eugenia de Montijo impulsó una ambiciosa restauración que dotó al castillo de sus impresionantes artesonados y decoraciones neogóticas. Sus muros han servido de escenario para numerosas superproducciones de Hollywood, consolidándose como un icono cultural que fusiona la dureza militar con el refinamiento palaciego.",
+          touristTip: "El castillo dispone de un ascensor moderno integrado discretamente para acceder a las plantas superiores, permitiendo que personas con movilidad reducida disfruten de las salas palaciegas sin barreras.",
+          schedule: "Mañanas: 10:00 - 14:00. Tardes: 15:30 - 18:30. Lunes cerrado.",
+          price: "General: 10€. Reducida (PCD): 8€."
         };
-      } else if (isAlmudena) {
+      } else if (normName.includes('prado')) {
         aiContent = {
-          description: "La Catedral de Santa María la Real de la Almudena es un templo de dimensiones monumentales que refleja la compleja historia de Madrid. Aunque su construcción se proyectó en el siglo XVI, la primera piedra no se puso hasta 1883, bajo el reinado de Alfonso XII. El diseño original neogótico de Francisco de Cubas evolucionó hacia un exterior neoclásico para armonizar con el Palacio Real. En su interior, destaca el contraste entre las vidrieras contemporáneas de colores vibrantes y la solemnidad de la Cripta neorrománica. Es el primer templo consagrado por un Papa fuera de Roma, el Papa Juan Pablo II en 1993.",
-          touristTip: "La entrada principal por la Plaza de la Armería es totalmente accesible. Existe un ascensor para subir a la cúpula, desde donde se obtienen las mejores vistas panorámicas accesibles del Madrid de los Austrias."
-        };
-      } else if (normalize(placeName).includes('camp nou') || normalize(placeName).includes('spotify')) {
-        aiContent = {
-          description: "El Spotify Camp Nou se encuentra actualmente en un proceso histórico de remodelación integral bajo el proyecto Espai Barça. Durante esta fase, el 'Barça Immersive Tour' ofrece una experiencia vanguardista en el antiguo Palacio de Hielo. El recorrido utiliza tecnología inmersiva de última generación, incluyendo una sala circular 360º (la más grande de Europa) que permite revivir los momentos más épicos del club. A pesar de las obras, el club ha mantenido un compromiso firme con la accesibilidad, adaptando todo el recorrido museístico para sillas de ruedas y proporcionando servicios específicos para diversas discapacidades sensoriales.",
-          touristTip: "Si tienes una discapacidad <33%, acude directamente a las taquillas (no compres online) para obtener el 50% de descuento para ti y tu acompañante. Evita la sala inmersiva si eres sensible a luces intermitentes.",
-          tariffs: [
-            { id: 1, label: 'General (11 a 64 años)', price: '28,00 €' },
-            { id: 2, label: 'Mayores de 65 años', price: '21,00 €' },
-            { id: 3, label: 'Infantil (4 a 10 años)', price: '21,00 €' },
-            { id: 4, label: 'Residentes Cataluña', price: '16,00 €' },
-            { id: 5, label: 'Discapacidad <33% (incl. acomp.)', price: '14,00 €' },
-            { id: 6, label: 'Menores de 4 años', price: 'Gratis' }
+          description: "El Museo Nacional del Prado es una de las pinacotecas más importantes del mundo. Situado en Madrid, alberga obras maestras de Velázquez, Goya, El Greco, Tiziano y El Bosco, entre otros.",
+          touristTip: "El museo es completamente accesible. Recomendamos entrar por la Puerta de Jerónimos. ¡Recuerda que las dos últimas horas de apertura son GRATIS!",
+          structuredSchedules: [
+            {
+              name: "Horario General",
+              startMonth: "1",
+              endMonth: "12",
+              days: {
+                1: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
+                2: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
+                3: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
+                4: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
+                5: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
+                6: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
+                0: { isOpen: true, mOpen: '10:00', mClose: '19:00', aOpen: '', aClose: '' }
+              }
+            }
           ],
-          seasons: [
-            { name: 'Invierno', period: '2 ene al 25 feb', weekday: '10:00 - 18:00', weekend: '10:00 - 18:00', festive: '10:00 - 18:00' },
-            { name: 'Primavera', period: '26 feb al 27 mar', weekday: '10:00 - 19:00', weekend: '10:00 - 19:00', festive: '10:00 - 19:00' },
-            { name: 'Temporada Alta', period: '28 mar al 18 oct', weekday: '09:30 - 19:00', weekend: '09:30 - 19:00', festive: '09:30 - 19:00' },
-            { name: 'Otoño / Invierno', period: '19 oct al 31 dic', weekday: '10:00 - 19:00', weekend: '10:00 - 19:00', festive: '10:00 - 19:00' }
+          tariffs: [
+            { id: 'prado-gen', label: 'Entrada General', price: '15.00 €' },
+            { id: 'prado-pcd', label: 'PCD + Acompañante', price: 'Gratis' },
+            { id: 'prado-free', label: 'Horario Gratuito', price: 'Gratis (L-S 18-20h)' }
+          ],
+          importantNotices: [
+            "Entrada GRATUITA para PCD y un acompañante.",
+            "Acceso gratuito: Lunes a Sábado de 18:00 a 20:00.",
+            "Acceso gratuito: Domingos y Festivos de 17:00 a 19:00."
+          ]
+        };
+      } else if (normName.includes('almudena')) {
+        aiContent = {
+          description: "La Catedral de Santa María la Real de la Almudena es un templo de dimensiones monumentales que refleja la compleja historia de Madrid. El diseño original neogótico evolucionó hacia un exterior neoclásico para armonizar con el Palacio Real. En su interior, destaca el contraste entre las vidrieras contemporáneas de colores vibrantes y la solemnidad de la Cripta neorrománica. Es el primer templo consagrado por un Papa fuera de Roma.",
+          touristTip: "La entrada principal por la Plaza de la Armería es totalmente accesible. Existe un ascensor para subir a la cúpula con vistas panorámicas accesibles del Madrid de los Austrias.",
+          schedule: "Catedral: 10:00 - 20:00. Museo: 10:00 - 14:30 (L-S).",
+          price: "Catedral: Donativo sugerido 1€. Museo: 6€. PCD: 4€."
+        };
+      } else if (normName.includes('morella')) {
+        aiContent = {
+          description: "El Castillo de Morella, imponente fortaleza construida sobre una muela de roca a más de mil metros de altitud, domina el paisaje castellonense. Sus murallas han visto pasar a romanos, visigodos, árabes y cristianos.",
+          touristTip: "Se recomienda visitar el Palacio del Gobernador, que es la zona más accesible del conjunto.",
+          schedule: "Invierno: 11:00 - 17:00. Verano: 11:00 - 19:00.",
+          price: "General: 3.50€. Reducida (PCD): 2.50€."
+        };
+      } else if (normName.includes('marq') || normName.includes('arqueologico de alicante')) {
+        aiContent = {
+          description: "El Museo Arqueológico de Alicante (MARQ) es un referente internacional en arqueología del siglo XXI. Ubicado en el antiguo hospital de San Juan de Dios, ofrece un recorrido desde la Prehistoria hasta la Edad Moderna con un montaje vanguardista y didáctico.",
+          touristTip: "Los domingos y festivos la entrada general cuesta solo 3€. Si vienes en AVE o Larga Distancia de RENFE, ¡tienes entrada gratuita presentando tu billete nominativo!",
+          address: "Plaza Dr. Gómez Ulla, s/n. 03013 Alicante",
+          phone: "+34 965 14 90 00",
+          website: "www.marqalicante.com",
+          importantNotices: [
+            "Personas con discapacidad + 1 Acompañante: GRATIS.",
+            "Desempleados y Menores de 8 años: GRATIS.",
+            "Signoguías y Guías Multimedia disponibles por 1€.",
+            "Pago en Torre Almudaina solo en EFECTIVO."
+          ],
+          structuredSchedules: [
+            {
+              "name": "Horario General",
+              "startMonth": "1",
+              "endMonth": "12",
+              "days": {
+                "1": { "isOpen": false, "mOpen": "", "mClose": "", "aOpen": "", "aClose": "" },
+                "2": { "isOpen": true, "mOpen": "10:00", "mClose": "19:00", "aOpen": "", "aClose": "" },
+                "3": { "isOpen": true, "mOpen": "10:00", "mClose": "19:00", "aOpen": "", "aClose": "" },
+                "4": { "isOpen": true, "mOpen": "10:00", "mClose": "19:00", "aOpen": "", "aClose": "" },
+                "5": { "isOpen": true, "mOpen": "10:00", "mClose": "19:00", "aOpen": "", "aClose": "" },
+                "6": { "isOpen": true, "mOpen": "10:00", "mClose": "19:00", "aOpen": "", "aClose": "" },
+                "0": { "isOpen": true, "mOpen": "10:00", "mClose": "14:00", "aOpen": "", "aClose": "" }
+              }
+            }
+          ],
+          tariffs: [
+            { id: 'm1', label: 'General MARQ', price: '6.00 €' },
+            { id: 'm2', label: 'Dom. y Festivos', price: '3.00 €' },
+            { id: 'm3', label: 'Conjunta (MARQ + Yacimientos)', price: '8.00 €' },
+            { id: 'm4', label: 'Reducida (Est./Jub./Fam.Num)', price: '3.00 €' },
+            { id: 'm5', label: 'PCD + Acompañante', price: 'Gratis' },
+            { id: 'm6', label: 'Desempleados / Menores 8a', price: 'Gratis' },
+            { id: 'm7', label: 'Visita Guiada (Extra)', price: '+3.00 €' }
+          ]
+        };
+      } else if (normName.includes('maca') || normName.includes('arte contemporaneo de alicante')) {
+        aiContent = {
+          description: "El MACA (Museo de Arte Contemporáneo de Alicante) es un espacio cultural de vanguardia ubicado en el edificio civil más antiguo de la ciudad: La Asegurada (1685). Alberga una de las colecciones de arte del siglo XX más importantes de España, con obras de Picasso, Dalí, Miró y Chillida, centradas especialmente en el legado de Eusebio Sempere.",
+          touristTip: "Accesibilidad universal en todas sus plantas mediante ascensores amplios. Entrada gratuita.",
+          structuredSchedules: [
+            {
+              name: "Temporada Invierno (Oct-Jun)",
+              startMonth: "10",
+              endMonth: "6",
+              days: {
+                1: { isOpen: false, mOpen: '', mClose: '', aOpen: '', aClose: '' },
+                2: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
+                3: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
+                4: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
+                5: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
+                6: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
+                0: { isOpen: true, mOpen: '10:00', mClose: '14:00', aOpen: '', aClose: '' }
+              }
+            },
+            {
+              name: "Temporada Verano (Jul-Sep)",
+              startMonth: "7",
+              endMonth: "9",
+              days: {
+                1: { isOpen: false, mOpen: '', mClose: '', aOpen: '', aClose: '' },
+                2: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
+                3: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
+                4: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
+                5: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
+                6: { isOpen: true, mOpen: '11:00', mClose: '20:00', aOpen: '', aClose: '' },
+                0: { isOpen: true, mOpen: '10:00', mClose: '14:00', aOpen: '', aClose: '' }
+              }
+            }
+          ],
+          tariffs: [
+            { id: 'maca-1', label: 'Entrada General', price: 'Gratis' },
+            { id: 'maca-2', label: 'Personas con Discapacidad', price: 'Gratis' }
           ]
         };
       }
 
-      setPlace(prev => {
-        const updated = { ...prev, ...aiContent };
-        
-        // Guardar permanentemente en contribuciones
-        updateUserData('contributions', (prev) => {
-          const current = prev || [];
-          const existingIdx = current.findIndex(p => p.id === place.id);
-          let newContributions = [...current];
-          
-          if (existingIdx > -1) {
-            newContributions[existingIdx] = { ...newContributions[existingIdx], ...aiContent };
-          } else {
-            newContributions.push({ ...place, ...aiContent });
-          }
-          return newContributions;
-        });
-        return updated;
-      });
+      applyAiResults(aiContent, false);
+    }, 2000);
+  };
 
-      setIsAiProcessing(false);
-      setIsAiEnhanced(true);
+  const applyAiResults = (aiContent, isRealGemini) => {
+    // Si la respuesta es vacía o muy corta y viene de Gemini, activamos el simulador de respaldo
+    if (isRealGemini && (!aiContent.description || aiContent.description.trim().length < 20)) {
+      console.log("[AI] Respuesta pobre de Gemini, activando simulador de respaldo...");
+      simulateAiEnhance();
+      return;
+    }
+
+    // --- PARSEADOR INTELIGENTE DE TARIFAS ---
+    // Si la IA no devolvió tarifas estructuradas pero sí el texto de precio, 
+    // intentamos extraer los números para que el sistema de ahorros funcione.
+    if (!aiContent.tariffs && aiContent.price) {
+      const genMatch = aiContent.price.match(/General:\s*([\d,.]+)/i);
+      const pcdMatch = aiContent.price.match(/Reducida[^:]*:\s*([\d,.]+)/i) || 
+                       aiContent.price.match(/PCD[^:]*:\s*([\d,.]+)/i) ||
+                       aiContent.price.match(/Discapacidad[^:]*:\s*([\d,.]+)/i);
       
+      const isGratis = aiContent.price.toLowerCase().includes('gratis') || 
+                       aiContent.price.toLowerCase().includes('0€') ||
+                       aiContent.price.toLowerCase().includes('0 €');
+
+      if (genMatch || pcdMatch || isGratis) {
+        aiContent.tariffs = [
+          { id: 'ai-gen-' + Date.now(), label: 'General', price: genMatch ? `${genMatch[1]} €` : '3.00 €' },
+          { id: 'ai-pcd-' + Date.now(), label: 'PCD / Discapacidad', price: isGratis ? 'Gratis' : (pcdMatch ? `${pcdMatch[1]} €` : 'Gratis') }
+        ];
+      }
+    }
+
+    // --- NORMALIZADOR DE HORARIOS IA ---
+    if (aiContent.structuredSchedules) {
+      aiContent.structuredSchedules = aiContent.structuredSchedules.map(season => {
+        // Aseguramos que 'days' sea un objeto y que las claves sean correctas
+        const cleanDays = {};
+        [0, 1, 2, 3, 4, 5, 6].forEach(d => {
+          const dayData = season.days[d] || season.days[String(d)] || { isOpen: false, mOpen: '', mClose: '', aOpen: '', aClose: '' };
+          cleanDays[d] = {
+            isOpen: dayData.isOpen ?? true,
+            mOpen: dayData.mOpen || '',
+            mClose: dayData.mClose || '',
+            aOpen: dayData.aOpen || '',
+            aClose: dayData.aClose || ''
+          };
+        });
+        return { ...season, days: cleanDays };
+      });
+    }
+
+    setAiResults(aiContent);
+    setIsAiProcessing(false);
+    setIsAiEnhanced(true);
+
+    // 1. Actualizamos el estado local
+    setPlace(prev => ({ ...prev, ...aiContent }));
+
+    // 2. Guardamos en el perfil (Contexto)
+    updateUserData('contributions', (prevConts) => {
+      const current = prevConts || [];
+      const existingIdx = current.findIndex(p => p.id === place.id);
+      let newContributions = [...current];
+      if (existingIdx > -1) {
+        newContributions[existingIdx] = { ...newContributions[existingIdx], ...aiContent };
+      } else {
+        newContributions.push({ ...place, ...aiContent });
+      }
+      return newContributions;
+    });
+
+    setTimeout(() => {
+      const descLen = (aiContent.description || '').length;
       Alert.alert(
-        hasGemini ? "🚀 MOTOR GEMINI PRO: ANÁLISIS ÉLITE" : "✨ IA DISTRAVEL ACTIVADA",
-        hasGemini 
-          ? `¡Búsqueda Profunda Completada! Hemos extraído datos históricos verificados y consejos de accesibilidad de alta fiabilidad para ${placeName}.`
-          : `Contenido mejorado con éxito para ${placeName}.`,
-        [{ text: "¡PERFECTO!", onPress: () => awardExperience(20, 'IA activada') }]
+        isRealGemini ? "🚀 MOTOR GEMINI PRO 1.5: ÉLITE" : "✨ IA DISTRAVEL ACTIVADA",
+        `Investigación finalizada.\n\nSe han recuperado ${descLen} caracteres de información detallada sobre ${displayPlace.name}.`,
+        [{ text: "¡ENTENDIDO!", onPress: () => awardExperience(20, 'Investigación IA') }]
       );
-    }, hasGemini ? 3500 : 2000);
+    }, 100);
   };
 
   const savings = calculatePlaceSavings(place);
@@ -489,7 +717,7 @@ export function PlaceDetailScreen({ route, navigation }) {
 
               // 2. Intentar eliminar en el SERVIDOR en segundo plano si no es solo local
               if (!place.isLocalOnly) {
-                const SERVER_URL = 'http://82.223.44.196:3000';
+                const SERVER_URL = API_BASE_URL;
                 fetch(`${SERVER_URL}/api/places/${place.id}`, { method: 'DELETE' })
                   .catch(() => console.warn('Borrado servidor fallido'));
               }
@@ -532,63 +760,47 @@ export function PlaceDetailScreen({ route, navigation }) {
 
     // 1. Determine active schedule
     let activeSchedule = {
-      openingDays: place.openingDays,
-      morningOpen: place.morningOpen,
-      morningClose: place.morningClose,
-      afternoonOpen: place.afternoonOpen,
-      afternoonClose: place.afternoonClose,
-      isSplitSchedule: place.isSplitSchedule,
-      schedule: place.schedule
+      openingDays: displayPlace.openingDays,
+      morningOpen: displayPlace.morningOpen,
+      morningClose: displayPlace.morningClose,
+      afternoonOpen: displayPlace.afternoonOpen,
+      afternoonClose: displayPlace.afternoonClose,
+      isSplitSchedule: displayPlace.isSplitSchedule,
+      schedule: displayPlace.schedule
     };
 
-    // Check seasons
-    if (place.seasons && place.seasons.length > 0) {
-      const activeSeason = place.seasons.find(s => {
-        const sM = s.startMonth ? parseInt(s.startMonth) : -1;
-        const eM = s.endMonth ? parseInt(s.endMonth) : -1;
-
-        if (sM !== -1 && eM !== -1) {
-          if (sM <= eM) return currentMonth >= sM && currentMonth <= eM;
-          else return currentMonth >= sM || currentMonth <= eM;
-        }
-        
-        // Fallback: try to parse period string like "Diciembre - Marzo"
-        const periodLower = (s.period || "").toLowerCase();
-        const months = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
-        let startIdx = -1, endIdx = -1;
-        months.forEach((m, idx) => {
-          if (periodLower.includes(m)) {
-            if (startIdx === -1) startIdx = idx + 1;
-            else endIdx = idx + 1;
-          }
-        });
-
-        if (startIdx !== -1 && endIdx !== -1) {
-          if (startIdx <= endIdx) return currentMonth >= startIdx && currentMonth <= endIdx;
-          else return currentMonth >= startIdx || currentMonth <= endIdx;
-        }
-
-        const currentMonthName = months[currentMonth - 1];
-        return periodLower.includes(currentMonthName);
+    // NUEVO: Sistema de Horarios Estructurados (V3)
+    if (displayPlace.structuredSchedules && displayPlace.structuredSchedules.length > 0) {
+      const activeSeason = displayPlace.structuredSchedules.find(s => {
+        const sM = parseInt(s.startMonth);
+        const eM = parseInt(s.endMonth);
+        if (sM <= eM) return currentMonth >= sM && currentMonth <= eM;
+        return currentMonth >= sM || currentMonth <= eM;
       });
 
-      if (activeSeason) {
-        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-        let seasonTime = isWeekend ? activeSeason.weekend : activeSeason.weekday;
+      if (activeSeason && activeSeason.days && activeSeason.days[dayOfWeek]) {
+        const dayData = activeSeason.days[dayOfWeek];
+        if (!dayData.isOpen) return { status: 'closed_today', text: 'Cerrado hoy', color: '#E74C3C' };
         
-        // Festive awareness (using Sunday as primary festive mock for now)
-        if (dayOfWeek === 0 && activeSeason.festive) {
-          seasonTime = activeSeason.festive;
-        }
-
-        if (seasonTime && seasonTime.includes('-')) {
-          activeSchedule.morningOpen = seasonTime.split('-')[0].trim();
-          activeSchedule.morningClose = seasonTime.split('-')[1].trim();
-          activeSchedule.isSplitSchedule = false;
-        }
+        activeSchedule = {
+          ...activeSchedule,
+          morningOpen: dayData.mOpen,
+          morningClose: dayData.mClose,
+          afternoonOpen: dayData.aOpen,
+          afternoonClose: dayData.aClose,
+          isSplitSchedule: !!(dayData.aOpen && dayData.aClose)
+        };
+      }
+    } else {
+      // Fallback a detección por texto (V2)
+      const scheduleText = (activeSchedule.schedule || "").toLowerCase();
+      const dayNameLower = dayName.toLowerCase();
+      if (scheduleText.includes(`${dayNameLower}: cerrado`) || 
+          scheduleText.includes(`${dayNameLower} cerrado`)) {
+        return { status: 'closed_today', text: 'Cerrado hoy', color: '#E74C3C' };
       }
     }
-
+        
     const isOpenToday = activeSchedule.openingDays ? activeSchedule.openingDays[dayName] : true;
     if (!isOpenToday) return { status: 'closed_today', text: 'Cerrado hoy', color: '#E74C3C' };
 
@@ -717,7 +929,7 @@ export function PlaceDetailScreen({ route, navigation }) {
           <View style={styles.heroContent}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <View style={[styles.badge, { backgroundColor: theme.primary }]}>
-                <Text style={styles.badgeText}>{category.toUpperCase()}</Text>
+                <Text style={[styles.badgeText, { color: isDarkMode ? '#000000' : '#FFFFFF' }]}>{category.toUpperCase()}</Text>
               </View>
               
               {timeInfo && (
@@ -730,20 +942,20 @@ export function PlaceDetailScreen({ route, navigation }) {
             {isEditing ? (
               <TextInput
                 style={[styles.placeNameEdit, typography.h1]}
-                value={place.name}
+                value={displayPlace.name}
                 onChangeText={(v) => setPlace({...place, name: v})}
                 multiline
               />
             ) : (
               <View>
-                <Text style={[styles.placeName, typography.h1]}>{place.name}</Text>
+                <Text style={[styles.placeName, typography.h1]}>{displayPlace.name}</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 }}>
                   <TouchableOpacity 
                     onPress={handleGoToCity}
                     style={[styles.cityChip, { backgroundColor: 'rgba(255,255,255,0.2)' }]}
                   >
                     <MapPin color="#FFF" size={12} />
-                    <Text style={styles.cityChipText}>{place.city}</Text>
+                    <Text style={styles.cityChipText}>{displayPlace.city}</Text>
                   </TouchableOpacity>
                   {savings && (
                     <View style={styles.savingsBadge}>
@@ -761,9 +973,9 @@ export function PlaceDetailScreen({ route, navigation }) {
           onPress={handleGoToMap}
           style={[styles.locationBar, { backgroundColor: '#EFBF04' }]}
         >
-          <MapPin color="#0A192F" size={18} />
-          <Text style={styles.locationBarText}>
-            {(place.province || place.city || 'ALICANTE').toUpperCase()} / <Text style={{ fontWeight: '800' }}>VER EN EL MAPA</Text>
+          <MapPin color="#000000" size={18} />
+          <Text style={[styles.locationBarText, { color: '#000000' }]}>
+            {(displayPlace.province || displayPlace.city || 'ALICANTE').toUpperCase()} / <Text style={{ fontWeight: '800' }}>VER EN EL MAPA</Text>
           </Text>
         </TouchableOpacity>
 
@@ -774,26 +986,99 @@ export function PlaceDetailScreen({ route, navigation }) {
             {isEditing ? (
               <TextInput
                 style={[styles.descriptionEdit, { color: theme.textSecondary, borderColor: theme.border }]}
-                value={place.description}
+                value={displayPlace.description}
                 onChangeText={(v) => setPlace({...place, description: v})}
                 multiline
               />
             ) : (
-              <Text style={[styles.description, { color: theme.textSecondary }]}>
-                {place.description || 'Este emblemático lugar es una parada obligatoria para cualquier visitante.'}
-              </Text>
+              <View>
+                {isAiProcessing ? (
+                  <View style={{ padding: 20, alignItems: 'center' }}>
+                    <Zap color={theme.primary} size={32} style={{ marginBottom: 10 }} />
+                    <Text style={{ color: theme.textSecondary, fontStyle: 'italic', textAlign: 'center' }}>
+                      Investigando profundamente en la base de datos de Gemini PRO 1.5...
+                    </Text>
+                  </View>
+                ) : (
+                  <Text style={[styles.description, { color: theme.textSecondary }]}>
+                    {displayPlace.description || 'Pulsa el botón "Investigar con Gemini PRO" para generar una descripción detallada, horarios actualizados y consejos de accesibilidad para este lugar.'}
+                  </Text>
+                )}
+              </View>
             )}
+            
+            {/* Contact Info Block */}
+            <View style={styles.contactContainer}>
+              {(displayPlace.address || isEditing) && (
+                <View style={styles.contactRow}>
+                  <View style={styles.contactIconBox}>
+                    <MapPin color={theme.primary} size={18} />
+                  </View>
+                  {isEditing ? (
+                    <TextInput 
+                      style={[styles.contactText, { color: isDarkMode ? '#FFFFFF' : theme.text, borderBottomWidth: 1, borderBottomColor: theme.border }]}
+                      value={displayPlace.address}
+                      onChangeText={(v) => setPlace({...place, address: v})}
+                      placeholder="Dirección..."
+                    />
+                  ) : (
+                    <Text style={[styles.contactText, { color: isDarkMode ? '#FFFFFF' : theme.textSecondary }]}>{displayPlace.address}</Text>
+                  )}
+                </View>
+              )}
+              
+              {(displayPlace.phone || isEditing) && (
+                <View style={styles.contactRow}>
+                  <View style={styles.contactIconBox}>
+                    <Phone color={isDarkMode ? '#F1C40F' : theme.primary} size={18} />
+                  </View>
+                  <Text style={[styles.contactLabel, { color: theme.text }]}>Teléfono de reservas: </Text>
+                  {isEditing ? (
+                    <TextInput 
+                      style={[styles.contactValue, { color: isDarkMode ? '#FFFFFF' : theme.primary, borderBottomWidth: 1, borderBottomColor: theme.border }]}
+                      value={displayPlace.phone}
+                      onChangeText={(v) => setPlace({...place, phone: v})}
+                      placeholder="Teléfono..."
+                    />
+                  ) : (
+                    <TouchableOpacity onPress={() => displayPlace.phone && Linking.openURL(`tel:${displayPlace.phone.replace(/\s/g, '')}`)}>
+                      <Text style={[styles.contactValue, { color: isDarkMode ? '#FFFFFF' : theme.primary }]}>{displayPlace.phone}</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
+              
+              {(displayPlace.website || isEditing) && (
+                <View style={styles.contactRow}>
+                  <View style={styles.contactIconBox}>
+                    <Globe color={isDarkMode ? '#F1C40F' : theme.primary} size={18} />
+                  </View>
+                  <Text style={[styles.contactLabel, { color: theme.text }]}>Sitio Web: </Text>
+                  {isEditing ? (
+                    <TextInput 
+                      style={[styles.contactValue, { color: isDarkMode ? '#FFFFFF' : theme.primary, borderBottomWidth: 1, borderBottomColor: theme.border }]}
+                      value={displayPlace.website}
+                      onChangeText={(v) => setPlace({...place, website: v})}
+                      placeholder="www.ejemplo.com"
+                    />
+                  ) : (
+                    <TouchableOpacity onPress={() => displayPlace.website && Linking.openURL(displayPlace.website.startsWith('http') ? displayPlace.website : `https://${displayPlace.website}`)}>
+                      <Text style={[styles.contactValue, { color: isDarkMode ? '#FFFFFF' : theme.primary }]} numberOfLines={1}>{displayPlace.website}</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
+            </View>
 
             {/* BOTÓN IA ELITE PARA LUGARES */}
             <TouchableOpacity 
               style={[
                 styles.aiButton, 
-                isAiEnhanced && styles.aiButtonActive,
                 userData.aiApiKey && { backgroundColor: '#8E44AD' },
                 { marginTop: 15 }
               ]} 
               onPress={handleAiEnhance}
-              disabled={isAiProcessing || isAiEnhanced}
+              disabled={isAiProcessing}
             >
               {isAiProcessing ? (
                 <Zap color="#FFF" size={20} />
@@ -819,7 +1104,7 @@ export function PlaceDetailScreen({ route, navigation }) {
 
 
           {/* Tourist Tip */}
-          {(place.touristTip || isEditing) && (
+          {(displayPlace.touristTip || isEditing) && (
             <View style={[styles.tipCard, { backgroundColor: isDarkMode ? 'rgba(241, 196, 15, 0.1)' : '#FEF9E7', borderColor: '#F1C40F' }]}>
               <Sparkles color="#F1C40F" size={20} />
               <View style={styles.tipContent}>
@@ -827,13 +1112,13 @@ export function PlaceDetailScreen({ route, navigation }) {
                 {isEditing ? (
                   <TextInput
                     style={[styles.tipTextEdit, { color: theme.text }]}
-                    value={place.touristTip}
+                    value={displayPlace.touristTip}
                     onChangeText={(v) => setPlace({...place, touristTip: v})}
                     multiline
                     placeholder="Escribe un consejo para viajeros..."
                   />
                 ) : (
-                  <Text style={[styles.tipText, { color: theme.text }]}>{place.touristTip}</Text>
+                  <Text style={[styles.tipText, { color: theme.text }]}>{displayPlace.touristTip}</Text>
                 )}
               </View>
             </View>
@@ -849,7 +1134,7 @@ export function PlaceDetailScreen({ route, navigation }) {
                 { id: 'auditory', icon: Ear, label: 'Auditiva' },
                 { id: 'cognitive', icon: Brain, label: 'Cognitiva' }
               ].map(feat => {
-                const isActive = place.accessibility?.[feat.id];
+                const isActive = displayPlace.accessibility?.[feat.id];
                 return (
                   <TouchableOpacity 
                     key={feat.id}
@@ -857,7 +1142,7 @@ export function PlaceDetailScreen({ route, navigation }) {
                     style={[styles.accessIconBox, { backgroundColor: isActive ? theme.primary : theme.surface }]}
                     onPress={() => setPlace({
                       ...place, 
-                      accessibility: { ...place.accessibility, [feat.id]: !isActive }
+                      accessibility: { ...displayPlace.accessibility, [feat.id]: !isActive }
                     })}
                   >
                     <feat.icon color={isActive ? (isDarkMode ? '#070B14' : '#FFFFFF') : theme.textSecondary} size={22} />
@@ -879,7 +1164,7 @@ export function PlaceDetailScreen({ route, navigation }) {
                    <View style={{ flex: 1 }}>
                       <Text style={[styles.verificationTitle, { color: theme.text }]}>Estado de Verificación</Text>
                       <Text style={[styles.verificationSub, { color: theme.textSecondary }]}>
-                        {place.verifications || Math.floor(Math.random() * 10) + 2} viajeros han confirmado la accesibilidad recientemente
+                        {displayPlace.verifications || Math.floor(Math.random() * 10) + 2} viajeros han confirmado la accesibilidad recientemente
                       </Text>
                    </View>
                 </View>
@@ -895,20 +1180,20 @@ export function PlaceDetailScreen({ route, navigation }) {
           )}
 
           {/* Ficha Técnica "Océano Azul" */}
-          {place.technicalSpecs && (
+          {displayPlace.technicalSpecs && (
             <View style={styles.section}>
               <Text style={[styles.sectionTitle, { color: theme.text }]}>Especificaciones Técnicas</Text>
               <View style={styles.techGrid}>
-                {place.technicalSpecs.doorWidth && (
+                {displayPlace.technicalSpecs.doorWidth && (
                   <View style={[styles.techItem, { backgroundColor: theme.surface }]}>
                     <Info color={theme.primary} size={18} />
                     <View>
                       <Text style={styles.techLabel}>Ancho Puerta</Text>
-                      <Text style={[styles.techValue, { color: theme.text }]}>{place.technicalSpecs.doorWidth}</Text>
+                      <Text style={[styles.techValue, { color: theme.text }]}>{displayPlace.technicalSpecs.doorWidth}</Text>
                     </View>
                   </View>
                 )}
-                {place.technicalSpecs.adaptedToilet && (
+                {displayPlace.technicalSpecs.adaptedToilet && (
                   <View style={[styles.techItem, { backgroundColor: theme.surface }]}>
                     <ShieldCheck color="#2ECC71" size={18} />
                     <View>
@@ -917,12 +1202,12 @@ export function PlaceDetailScreen({ route, navigation }) {
                     </View>
                   </View>
                 )}
-                {place.technicalSpecs.elevatorDimensions && (
+                {displayPlace.technicalSpecs.elevatorDimensions && (
                   <View style={[styles.techItem, { backgroundColor: theme.surface }]}>
                     <Construction color={theme.primary} size={18} />
                     <View>
                       <Text style={styles.techLabel}>Ascensor</Text>
-                      <Text style={[styles.techValue, { color: theme.text }]}>{place.technicalSpecs.elevatorDimensions}</Text>
+                      <Text style={[styles.techValue, { color: theme.text }]}>{displayPlace.technicalSpecs.elevatorDimensions}</Text>
                     </View>
                   </View>
                 )}
@@ -947,7 +1232,7 @@ export function PlaceDetailScreen({ route, navigation }) {
           )}
 
           {/* Avisos Importantes (Critical Notices) */}
-          {(place.importantNotices?.length > 0 || isEditing) && (
+          {(displayPlace.importantNotices?.length > 0 || isEditing) && (
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <AlertTriangle color="#E74C3C" size={22} />
@@ -957,7 +1242,7 @@ export function PlaceDetailScreen({ route, navigation }) {
                     style={{ marginLeft: 'auto' }}
                     onPress={() => setPlace({
                       ...place,
-                      importantNotices: [...(place.importantNotices || []), "Nuevo aviso importante..."]
+                      importantNotices: [...(displayPlace.importantNotices || []), "Nuevo aviso importante..."]
                     })}
                   >
                     <PlusCircle color="#E74C3C" size={24} />
@@ -965,12 +1250,12 @@ export function PlaceDetailScreen({ route, navigation }) {
                 )}
               </View>
               <View style={[styles.noticesContainer, { backgroundColor: '#FDEDEC', borderColor: '#E74C3C' }]}>
-                {(place.importantNotices || []).map((notice, idx) => (
+                {(displayPlace.importantNotices || []).map((notice, idx) => (
                   <View key={idx} style={styles.noticeRow}>
                     {isEditing ? (
                       <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                         <TouchableOpacity onPress={() => {
-                          const newNotices = [...(place.importantNotices || [])];
+                          const newNotices = [...(displayPlace.importantNotices || [])];
                           newNotices.splice(idx, 1);
                           setPlace({...place, importantNotices: newNotices});
                         }}>
@@ -980,7 +1265,7 @@ export function PlaceDetailScreen({ route, navigation }) {
                           style={[styles.noticeTextEdit, { color: '#C0392B' }]}
                           value={notice}
                           onChangeText={(v) => {
-                            const newNotices = [...(place.importantNotices || [])];
+                            const newNotices = [...(displayPlace.importantNotices || [])];
                             newNotices[idx] = v;
                             setPlace({...place, importantNotices: newNotices});
                           }}
@@ -996,372 +1281,176 @@ export function PlaceDetailScreen({ route, navigation }) {
             </View>
           )}
 
-          {/* Horarios Dinámicos */}
-          {( (place.schedules && place.schedules.length > 0) || isEditing) && (
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Clock color={theme.primary} size={22} />
-                <Text style={[styles.sectionTitle, { color: theme.text, marginLeft: 10, marginBottom: 0 }]}>Horarios de Visita</Text>
-                {isEditing && (
-                  <TouchableOpacity 
-                    style={{ marginLeft: 'auto' }}
-                    onPress={() => setPlace({
-                      ...place,
-                      schedules: [...(place.schedules || []), { id: Date.now().toString(), days: 'Días...', hours: 'Horas...' }]
-                    })}
-                  >
-                    <PlusCircle color={theme.primary} size={24} />
-                  </TouchableOpacity>
-                )}
-              </View>
-              
-              <View style={[styles.schedulesGrid, { marginTop: 15 }]}>
-                {(place.schedules || []).map((sched, sIdx) => (
-                  <View key={sched.id || sIdx} style={[styles.scheduleCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                    {isEditing ? (
-                      <View style={{ gap: 8 }}>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <TextInput 
-                            style={[styles.scheduleLabelEdit, { color: theme.text, fontWeight: '800' }]}
-                            value={sched.days}
-                            onChangeText={(v) => {
-                              const newS = [...place.schedules];
-                              newS[sIdx].days = v;
-                              setPlace({...place, schedules: newS});
-                            }}
-                          />
-                          <TouchableOpacity onPress={() => {
-                            const newS = place.schedules.filter((_, i) => i !== sIdx);
-                            setPlace({...place, schedules: newS});
-                          }}>
-                            <MinusCircle color="#E74C3C" size={18} />
-                          </TouchableOpacity>
-                        </View>
-                        <TextInput 
-                          style={[styles.scheduleHoursEdit, { color: theme.primary }]}
-                          value={sched.hours}
-                          onChangeText={(v) => {
-                            const newS = [...place.schedules];
-                            newS[sIdx].hours = v;
-                            setPlace({...place, schedules: newS});
-                          }}
-                        />
-                      </View>
-                    ) : (
-                      <>
-                        <Text style={[styles.scheduleLabel, { color: theme.text }]}>{sched.days}</Text>
-                        <Text style={[styles.scheduleHours, { color: theme.textSecondary }]}>{sched.hours}</Text>
-                      </>
-                    )}
-                  </View>
-                ))}
-              </View>
-              
-              {(place.specialClosures || isEditing) && (
-                <View style={[styles.specialClosuresRow, { backgroundColor: '#FDEDEC', borderColor: '#E74C3C' }]}>
-                  <AlertCircle color="#E74C3C" size={16} />
-                  {isEditing ? (
-                    <TextInput 
-                      style={[styles.specialClosuresEdit, { color: '#C0392B' }]}
-                      value={place.specialClosures}
-                      onChangeText={(v) => setPlace({...place, specialClosures: v})}
-                      placeholder="Ej: Cerrado 25 Dic..."
-                    />
-                  ) : (
-                    <Text style={[styles.specialClosuresText, { color: '#C0392B' }]}>{place.specialClosures}</Text>
-                  )}
-                </View>
-              )}
-            </View>
-          )}
-
-          {/* Horarios Estructurados (NUEVO) */}
-          {(place.workingHours || isEditing) && (
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Clock color={theme.primary} size={22} />
-                <Text style={[styles.sectionTitle, { color: theme.text, marginLeft: 10, marginBottom: 0 }]}>Horario Inteligente</Text>
-                {isEditing && (
-                  <TouchableOpacity 
-                    style={{ marginLeft: 'auto', backgroundColor: '#6366f1', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, flexDirection: 'row', alignItems: 'center', gap: 5 }}
-                    onPress={handleAiGenerateHours}
-                  >
-                    <Zap color="#FFF" size={14} fill="#FFF" />
-                    <Text style={{ color: '#FFF', fontSize: 11, fontWeight: '800' }}>IA GEN</Text>
-                  </TouchableOpacity>
-                )}
-              </View>
-              
-              <View style={[styles.hoursGrid, { backgroundColor: theme.surface, borderColor: theme.border, padding: 15, borderRadius: 12, marginTop: 15, borderWidth: 1 }]}>
-                {isEditing ? (
-                  <View style={styles.editHoursContainer}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 15 }}>
-                      <Text style={{ color: theme.textSecondary, fontSize: 13, fontWeight: '600' }}>Lunes - Viernes</Text>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                        <TextInput 
-                          style={{ width: 60, height: 36, backgroundColor: theme.background, color: theme.text, borderRadius: 8, textAlign: 'center', borderWidth: 1, borderColor: theme.border }}
-                          value={place.workingHours?.weekday?.open}
-                          onChangeText={(v) => setPlace({
-                            ...place, 
-                            workingHours: { ...place.workingHours, weekday: { ...place.workingHours?.weekday, open: v } }
-                          })}
-                          placeholder="00:00"
-                        />
-                        <Text style={{ color: theme.textSecondary }}>a</Text>
-                        <TextInput 
-                          style={{ width: 60, height: 36, backgroundColor: theme.background, color: theme.text, borderRadius: 8, textAlign: 'center', borderWidth: 1, borderColor: theme.border }}
-                          value={place.workingHours?.weekday?.close}
-                          onChangeText={(v) => setPlace({
-                            ...place, 
-                            workingHours: { ...place.workingHours, weekday: { ...place.workingHours?.weekday, close: v } }
-                          })}
-                          placeholder="00:00"
-                        />
-                      </View>
-                    </View>
-
-                    <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 15 }}>
-                      <Text style={{ color: theme.textSecondary, fontSize: 13, fontWeight: '600' }}>Fin de Semana</Text>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                        <TextInput 
-                          style={{ width: 60, height: 36, backgroundColor: theme.background, color: theme.text, borderRadius: 8, textAlign: 'center', borderWidth: 1, borderColor: theme.border }}
-                          value={place.workingHours?.weekend?.open}
-                          onChangeText={(v) => setPlace({
-                            ...place, 
-                            workingHours: { ...place.workingHours, weekend: { ...place.workingHours?.weekend, open: v } }
-                          })}
-                          placeholder="00:00"
-                        />
-                        <Text style={{ color: theme.textSecondary }}>a</Text>
-                        <TextInput 
-                          style={{ width: 60, height: 36, backgroundColor: theme.background, color: theme.text, borderRadius: 8, textAlign: 'center', borderWidth: 1, borderColor: theme.border }}
-                          value={place.workingHours?.weekend?.close}
-                          onChangeText={(v) => setPlace({
-                            ...place, 
-                            workingHours: { ...place.workingHours, weekend: { ...place.workingHours?.weekend, close: v } }
-                          })}
-                          placeholder="00:00"
-                        />
-                      </View>
-                    </View>
-
-                    <TouchableOpacity 
-                      style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 5 }}
-                      onPress={() => setPlace({
-                        ...place,
-                        workingHours: { ...place.workingHours, is24h: !place.workingHours?.is24h }
-                      })}
-                    >
-                      <View style={{ width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: theme.primary, backgroundColor: place.workingHours?.is24h ? theme.primary : 'transparent', justifyContent: 'center', alignItems: 'center' }}>
-                        {place.workingHours?.is24h && <CheckCircle color="#FFF" size={14} />}
-                      </View>
-                      <Text style={{ color: theme.text, fontWeight: '600' }}>Lugar abierto 24 horas</Text>
-                    </TouchableOpacity>
-                  </View>
-                ) : (
-                  <View style={styles.viewHoursContainer}>
-                    {place.workingHours?.is24h ? (
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                        <CheckCircle color="#2ECC71" size={20} />
-                        <Text style={{ color: theme.text, fontWeight: '700', fontSize: 15 }}>Abierto las 24 horas del día</Text>
-                      </View>
-                    ) : (
-                      <>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
-                          <Text style={{ color: theme.textSecondary, fontWeight: '600' }}>Lunes a Viernes</Text>
-                          <Text style={{ color: theme.text, fontWeight: '800' }}>{place.workingHours?.weekday?.open} - {place.workingHours?.weekday?.close}</Text>
-                        </View>
-                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                          <Text style={{ color: theme.textSecondary, fontWeight: '600' }}>Fin de Semana</Text>
-                          <Text style={{ color: theme.text, fontWeight: '800' }}>{place.workingHours?.weekend?.open} - {place.workingHours?.weekend?.close}</Text>
-                        </View>
-                      </>
-                    )}
-                  </View>
-                )}
-              </View>
-            </View>
-          )}
-
-          {/* Horarios y Calendario POR TEMPORADAS */}
+          {/* Configuración de Horarios (Google Style) */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Clock color={theme.primary} size={22} />
-              <Text style={[styles.sectionTitle, { color: theme.text, marginLeft: 10, marginBottom: 0 }]}>Horarios por Temporada</Text>
+              <Text style={[styles.sectionTitle, { color: theme.text, marginLeft: 10, marginBottom: 0 }]}>Configuración de Horarios</Text>
               {isEditing && (
                 <TouchableOpacity 
-                  style={{ marginLeft: 'auto' }}
-                  onPress={() => setPlace({
-                    ...place,
-                    seasons: [...(place.seasons || []), { 
-                      name: 'Nueva Temporada', 
-                      period: 'Fechas...', 
-                      weekday: '10:00 - 14:00 y 16:00 - 19:00',
-                      weekend: '10:00 - 14:00'
-                    }]
-                  })}
+                  style={styles.addSeasonBtn}
+                  onPress={() => {
+                    const newSeason = {
+                      name: 'Nueva Temporada',
+                      startMonth: '1',
+                      endMonth: '12',
+                      days: {
+                        1: { isOpen: true, mOpen: '10:00', mClose: '14:00', aOpen: '16:00', aClose: '20:00' },
+                        2: { isOpen: true, mOpen: '10:00', mClose: '14:00', aOpen: '16:00', aClose: '20:00' },
+                        3: { isOpen: true, mOpen: '10:00', mClose: '14:00', aOpen: '16:00', aClose: '20:00' },
+                        4: { isOpen: true, mOpen: '10:00', mClose: '14:00', aOpen: '16:00', aClose: '20:00' },
+                        5: { isOpen: true, mOpen: '10:00', mClose: '14:00', aOpen: '16:00', aClose: '20:00' },
+                        6: { isOpen: true, mOpen: '10:00', mClose: '14:00', aOpen: '', aClose: '' },
+                        0: { isOpen: true, mOpen: '10:00', mClose: '14:00', aOpen: '', aClose: '' }
+                      }
+                    };
+                    setPlace({ ...place, structuredSchedules: [...(displayPlace.structuredSchedules || []), newSeason] });
+                  }}
                 >
                   <PlusCircle color={theme.primary} size={24} />
+                  <Text style={{ color: theme.primary, marginLeft: 5, fontWeight: 'bold' }}>Añadir Temporada</Text>
                 </TouchableOpacity>
               )}
             </View>
 
-            {(place.seasons || []).map((season, sIdx) => (
-              <View key={sIdx} style={[styles.seasonCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                {isEditing && (
-                  <TouchableOpacity 
-                    style={styles.removeSeasonBtn}
-                    onPress={() => {
-                      const newSeasons = [...place.seasons];
-                      newSeasons.splice(sIdx, 1);
-                      setPlace({...place, seasons: newSeasons});
-                    }}
-                  >
-                    <X color="#E74C3C" size={16} />
-                  </TouchableOpacity>
-                )}
-                
-                <View style={styles.seasonHeader}>
+            {(displayPlace.structuredSchedules || []).map((season, sIdx) => (
+              <View key={sIdx} style={[styles.structuredSeasonCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                <View style={styles.seasonHeaderRow}>
                   {isEditing ? (
-                    <View style={{ flex: 1 }}>
+                    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                       <TextInput 
-                        style={[styles.seasonNameEdit, { color: theme.primary }]}
+                        style={[styles.seasonNameInput, { color: theme.primary }]}
                         value={season.name}
-                        placeholder="Nombre (ej. Invierno)"
                         onChangeText={(v) => {
-                          const newSeasons = [...place.seasons];
-                          newSeasons[sIdx].name = v;
-                          setPlace({...place, seasons: newSeasons});
+                          const newSchedules = [...displayPlace.structuredSchedules];
+                          newSchedules[sIdx].name = v;
+                          setPlace({ ...place, structuredSchedules: newSchedules });
                         }}
                       />
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 8 }}>
-                        <Text style={{ fontSize: 12, color: theme.textSecondary }}>De mes:</Text>
-                        <TextInput 
-                          style={[styles.seasonMonthInput, { color: theme.text }]}
-                          value={String(season.startMonth || '')}
-                          placeholder="1"
-                          keyboardType="numeric"
-                          onChangeText={(v) => {
-                            const newSeasons = [...place.seasons];
-                            newSeasons[sIdx].startMonth = v;
-                            setPlace({...place, seasons: newSeasons});
-                          }}
-                        />
-                        <Text style={{ fontSize: 12, color: theme.textSecondary }}>A mes:</Text>
-                        <TextInput 
-                          style={[styles.seasonMonthInput, { color: theme.text }]}
-                          value={String(season.endMonth || '')}
-                          placeholder="3"
-                          keyboardType="numeric"
-                          onChangeText={(v) => {
-                            const newSeasons = [...place.seasons];
-                            newSeasons[sIdx].endMonth = v;
-                            setPlace({...place, seasons: newSeasons});
-                          }}
-                        />
-                      </View>
+                      <Text style={{ color: theme.textSecondary }}>De mes:</Text>
+                      <TextInput 
+                        style={[styles.monthInput, { color: theme.text }]}
+                        value={String(season.startMonth)}
+                        keyboardType="numeric"
+                        onChangeText={(v) => {
+                          const newSchedules = [...displayPlace.structuredSchedules];
+                          newSchedules[sIdx].startMonth = v;
+                          setPlace({ ...place, structuredSchedules: newSchedules });
+                        }}
+                      />
+                      <Text style={{ color: theme.textSecondary }}>A:</Text>
+                      <TextInput 
+                        style={[styles.monthInput, { color: theme.text }]}
+                        value={String(season.endMonth)}
+                        keyboardType="numeric"
+                        onChangeText={(v) => {
+                          const newSchedules = [...displayPlace.structuredSchedules];
+                          newSchedules[sIdx].endMonth = v;
+                          setPlace({ ...place, structuredSchedules: newSchedules });
+                        }}
+                      />
                     </View>
                   ) : (
-                    <View>
-                      <Text style={[styles.seasonName, { color: theme.primary }]}>{season.name.toUpperCase()}</Text>
-                      <Text style={[styles.seasonPeriod, { color: theme.textSecondary }]}>{season.period}</Text>
-                    </View>
+                    <Text style={[styles.seasonTitle, { color: theme.primary }]}>{season.name} ({season.startMonth}-{season.endMonth})</Text>
+                  )}
+                  {isEditing && (
+                    <TouchableOpacity onPress={() => {
+                      const newSchedules = [...displayPlace.structuredSchedules];
+                      newSchedules.splice(sIdx, 1);
+                      setPlace({ ...place, structuredSchedules: newSchedules });
+                    }}>
+                      <X color="#E74C3C" size={20} />
+                    </TouchableOpacity>
                   )}
                 </View>
 
-                <View style={styles.seasonBody}>
-                  <View style={styles.seasonRow}>
-                    <Text style={[styles.seasonLabel, { color: theme.text }]}>Lunes a Sábado:</Text>
-                    {isEditing ? (
-                      <TextInput 
-                        style={[styles.seasonTimeEdit, { color: theme.text }]}
-                        value={season.weekday}
-                        onChangeText={(v) => {
-                          const newSeasons = [...place.seasons];
-                          newSeasons[sIdx].weekday = v;
-                          setPlace({...place, seasons: newSeasons});
-                        }}
-                      />
-                    ) : (
-                      <Text style={[styles.seasonTime, { color: theme.textSecondary }]}>{season.weekday}</Text>
-                    )}
-                  </View>
-                  <View style={styles.seasonRow}>
-                    <Text style={[styles.seasonLabel, { color: theme.text }]}>Sábados:</Text>
-                    {isEditing ? (
-                      <TextInput 
-                        style={[styles.seasonTimeEdit, { color: theme.text }]}
-                        value={season.weekend}
-                        placeholder="10:00 - 14:00"
-                        onChangeText={(v) => {
-                          const newSeasons = [...place.seasons];
-                          newSeasons[sIdx].weekend = v;
-                          setPlace({...place, seasons: newSeasons});
-                        }}
-                      />
-                    ) : (
-                      <Text style={[styles.seasonTime, { color: theme.textSecondary }]}>{season.weekend}</Text>
-                    )}
-                  </View>
-                  <View style={styles.seasonRow}>
-                    <Text style={[styles.seasonLabel, { color: theme.text }]}>Domingos/Festivos:</Text>
-                    {isEditing ? (
-                      <TextInput 
-                        style={[styles.seasonTimeEdit, { color: theme.text }]}
-                        value={season.festive}
-                        placeholder="11:00 - 17:00"
-                        onChangeText={(v) => {
-                          const newSeasons = [...place.seasons];
-                          newSeasons[sIdx].festive = v;
-                          setPlace({...place, seasons: newSeasons});
-                        }}
-                      />
-                    ) : (
-                      <Text style={[styles.seasonTime, { color: theme.textSecondary }]}>{season.festive || 'Cerrado'}</Text>
-                    )}
-                  </View>
+                {/* Grid de días */}
+                <View style={styles.daysGrid}>
+                  {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((dayName, index) => {
+                    const dayKey = index === 6 ? 0 : index + 1; // 0=Domingo
+                    const dayData = season.days[dayKey] || { isOpen: false };
+                    
+                    return (
+                      <View key={dayKey} style={styles.dayRow}>
+                        <View style={{ width: 30 }}>
+                          <Text style={{ color: theme.text, fontWeight: '800' }}>{dayName}</Text>
+                        </View>
+                        
+                        {isEditing ? (
+                          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                            <TouchableOpacity 
+                              style={[styles.dayToggle, { backgroundColor: dayData.isOpen ? theme.primary : theme.border }]}
+                              onPress={() => {
+                                const newSchedules = [...displayPlace.structuredSchedules];
+                                newSchedules[sIdx].days[dayKey].isOpen = !dayData.isOpen;
+                                setPlace({ ...place, structuredSchedules: newSchedules });
+                              }}
+                            >
+                              <Text style={{ color: '#FFF', fontSize: 10, fontWeight: '900' }}>{dayData.isOpen ? 'SÍ' : 'NO'}</Text>
+                            </TouchableOpacity>
+                            
+                            {dayData.isOpen && (
+                              <>
+                                <TextInput 
+                                  style={[styles.timeInput, { color: theme.text }]}
+                                  value={dayData.mOpen}
+                                  onChangeText={(v) => {
+                                    const newSchedules = [...displayPlace.structuredSchedules];
+                                    newSchedules[sIdx].days[dayKey].mOpen = v;
+                                    setPlace({ ...place, structuredSchedules: newSchedules });
+                                  }}
+                                />
+                                <Text style={{ color: theme.textSecondary }}>-</Text>
+                                <TextInput 
+                                  style={[styles.timeInput, { color: theme.text }]}
+                                  value={dayData.mClose}
+                                  onChangeText={(v) => {
+                                    const newSchedules = [...displayPlace.structuredSchedules];
+                                    newSchedules[sIdx].days[dayKey].mClose = v;
+                                    setPlace({ ...place, structuredSchedules: newSchedules });
+                                  }}
+                                />
+                                <View style={{ width: 1, height: 15, backgroundColor: theme.border, marginHorizontal: 5 }} />
+                                <TextInput 
+                                  style={[styles.timeInput, { color: theme.text }]}
+                                  value={dayData.aOpen}
+                                  placeholder="Tarde"
+                                  onChangeText={(v) => {
+                                    const newSchedules = [...displayPlace.structuredSchedules];
+                                    newSchedules[sIdx].days[dayKey].aOpen = v;
+                                    setPlace({ ...place, structuredSchedules: newSchedules });
+                                  }}
+                                />
+                                <Text style={{ color: theme.textSecondary }}>-</Text>
+                                <TextInput 
+                                  style={[styles.timeInput, { color: theme.text }]}
+                                  value={dayData.aClose}
+                                  onChangeText={(v) => {
+                                    const newSchedules = [...displayPlace.structuredSchedules];
+                                    newSchedules[sIdx].days[dayKey].aClose = v;
+                                    setPlace({ ...place, structuredSchedules: newSchedules });
+                                  }}
+                                />
+                              </>
+                            )}
+                          </View>
+                        ) : (
+                          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                            {dayData.isOpen ? (
+                              <Text style={{ color: theme.textSecondary }}>
+                                {dayData.mOpen}-{dayData.mClose} {dayData.aOpen ? ` / ${dayData.aOpen}-${dayData.aClose}` : ''}
+                              </Text>
+                            ) : (
+                              <Text style={{ color: '#E74C3C', fontWeight: 'bold' }}>Cerrado</Text>
+                            )}
+                          </View>
+                        )}
+                      </View>
+                    );
+                  })}
                 </View>
               </View>
             ))}
-
-            {(!place.seasons || place.seasons.length === 0) && (
-              <View style={[styles.scheduleContainer, { backgroundColor: theme.surface }]}>
-                {['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map((day) => {
-                  const isOpen = place.openingDays ? place.openingDays[day] : true;
-                  const currentDaySchedule = place.schedule || (place.morningOpen ? `${place.morningOpen} - ${place.morningClose}` : 'Consultar horario');
-                  
-                  return (
-                    <View key={day} style={styles.scheduleRow}>
-                      <Text style={[styles.dayText, { color: theme.textSecondary }]}>{day}</Text>
-                      <TouchableOpacity 
-                        disabled={!isEditing}
-                        style={{ flex: 1, alignItems: 'flex-end' }}
-                        onPress={() => setPlace({
-                          ...place,
-                          openingDays: { ...(place.openingDays || {}), [day]: !isOpen }
-                        })}
-                      >
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                          <Text style={[styles.timeText, { color: isOpen ? theme.text : '#E74C3C', fontWeight: isOpen ? '700' : '400' }]}>
-                            {isOpen ? currentDaySchedule : 'Cerrado'}
-                          </Text>
-                          {isEditing && (
-                            <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: isOpen ? '#2ECC71' : '#E74C3C' }} />
-                          )}
-                        </View>
-                      </TouchableOpacity>
-                    </View>
-                  );
-                })}
-              </View>
-            )}
-            
-            <View style={styles.holidayNote}>
-              <AlertTriangle color="#F1C40F" size={14} />
-              <Text style={[styles.holidayText, { color: theme.textSecondary }]}>
-                Los festivos pueden alterar estos horarios. Recomendamos verificar antes de viajar.
-              </Text>
-            </View>
           </View>
 
           {/* Tarifas Completas */}
@@ -1382,7 +1471,7 @@ export function PlaceDetailScreen({ route, navigation }) {
                     <TouchableOpacity 
                       onPress={() => setPlace({
                         ...place,
-                        tariffs: [...(place.tariffs || []), { id: Date.now(), label: 'Nueva Tarifa', price: '0 €' }]
+                        tariffs: [...(displayPlace.tariffs || []), { id: Date.now(), label: 'Nueva Tarifa', price: '0 €' }]
                       })}
                     >
                       <PlusCircle color={theme.primary} size={24} />
@@ -1390,18 +1479,18 @@ export function PlaceDetailScreen({ route, navigation }) {
                   </View>
                   
                   <TouchableOpacity 
-                    style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: place.isLinkedEntrance ? theme.primary : theme.surface, borderWidth: 1, borderColor: theme.primary, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 }}
-                    onPress={() => setPlace({...place, isLinkedEntrance: !place.isLinkedEntrance})}
+                    style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: displayPlace.isLinkedEntrance ? theme.primary : theme.surface, borderWidth: 1, borderColor: theme.primary, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 }}
+                    onPress={() => setPlace({...place, isLinkedEntrance: !displayPlace.isLinkedEntrance})}
                   >
-                    <Link color={place.isLinkedEntrance ? '#FFF' : theme.primary} size={14} />
-                    <Text style={{ fontSize: 10, color: place.isLinkedEntrance ? '#FFF' : theme.primary, fontWeight: '800' }}>VINCULAR ENTRADA</Text>
+                    <Link color={displayPlace.isLinkedEntrance ? '#FFF' : theme.primary} size={14} />
+                    <Text style={{ fontSize: 10, color: displayPlace.isLinkedEntrance ? '#FFF' : theme.primary, fontWeight: '800' }}>VINCULAR ENTRADA</Text>
                   </TouchableOpacity>
                 </View>
               )}
             </View>
 
             {/* AVISO DE ENTRADA VINCULADA */}
-            {(place.isLinkedEntrance || (isEditing && place.isLinkedEntrance)) && (
+            {(displayPlace.isLinkedEntrance || (isEditing && displayPlace.isLinkedEntrance)) && (
               <View style={[styles.linkedEntranceCard, { backgroundColor: '#F4F6F7', borderColor: theme.primary, marginBottom: 15 }]}>
                 <Building2 color={theme.primary} size={20} />
                 <View style={{ flex: 1 }}>
@@ -1410,26 +1499,26 @@ export function PlaceDetailScreen({ route, navigation }) {
                     <TextInput 
                       style={[styles.linkedInput, { color: theme.textSecondary }]}
                       placeholder="Ej: La visita se incluye en la entrada del castillo"
-                      value={place.linkedEntranceName}
+                      value={displayPlace.linkedEntranceName}
                       onChangeText={(v) => setPlace({...place, linkedEntranceName: v})}
                     />
                   ) : (
                     <Text style={[styles.linkedText, { color: theme.textSecondary }]}>
-                      {place.linkedEntranceName || 'La visita se incluye en la entrada del monumento principal.'}
+                      {displayPlace.linkedEntranceName || 'La visita se incluye en la entrada del monumento principal.'}
                     </Text>
                   )}
                 </View>
               </View>
             )}
             <View style={[styles.tariffsContainer, { backgroundColor: theme.surface }]}>
-              {(place.tariffs || []).length > 0 ? (
+              {(displayPlace.tariffs || []).length > 0 ? (
                 <>
-                  {(place.tariffs || []).map((tariff, idx) => (
+                  {(displayPlace.tariffs || []).map((tariff, idx) => (
                     <View key={tariff.id || idx} style={styles.tariffRow}>
                       {isEditing ? (
                         <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                           <TouchableOpacity onPress={() => {
-                            const newTariffs = [...(place.tariffs || [])];
+                            const newTariffs = [...(displayPlace.tariffs || [])];
                             newTariffs.splice(idx, 1);
                             setPlace({...place, tariffs: newTariffs});
                           }}>
@@ -1439,7 +1528,7 @@ export function PlaceDetailScreen({ route, navigation }) {
                             style={[styles.tariffLabel, { color: theme.text, borderBottomWidth: 1, borderBottomColor: theme.border }]}
                             value={tariff.label}
                             onChangeText={(v) => {
-                              const newTariffs = [...(place.tariffs || [])];
+                              const newTariffs = [...(displayPlace.tariffs || [])];
                               newTariffs[idx] = { ...tariff, label: v };
                               setPlace({...place, tariffs: newTariffs});
                             }}
@@ -1455,7 +1544,7 @@ export function PlaceDetailScreen({ route, navigation }) {
                             style={[styles.priceEditInput, { color: theme.primary }]}
                             value={String(tariff.price)}
                             onChangeText={(v) => {
-                              const newTariffs = [...(place.tariffs || [])];
+                              const newTariffs = [...(displayPlace.tariffs || [])];
                               newTariffs[idx] = { ...tariff, price: v };
                               setPlace({...place, tariffs: newTariffs});
                             }}
@@ -1480,14 +1569,14 @@ export function PlaceDetailScreen({ route, navigation }) {
                         <View>
                           <Text style={[styles.savingsLabel, { color: theme.textSecondary }]}>Tarifa General</Text>
                           <Text style={[styles.savingsValue, { color: theme.text, textDecorationLine: 'line-through' }]}>
-                            {place.tariffs.find(t => t.label.toLowerCase().includes('general') || t.label.toLowerCase().includes('adulto'))?.price || '12.00 €'}
+                            {displayPlace.tariffs.find(t => t.label.toLowerCase().includes('general') || t.label.toLowerCase().includes('adulto'))?.price || '12.00 €'}
                           </Text>
                         </View>
                         <ChevronRight color={theme.textSecondary} size={20} />
                         <View>
                           <Text style={[styles.savingsLabel, { color: theme.primary }]}>Tu Precio</Text>
                           <Text style={[styles.savingsValue, { color: theme.primary, fontWeight: '900' }]}>
-                            {place.tariffs.find(t => t.label.toLowerCase().includes('pcd') || t.label.toLowerCase().includes('discapacidad'))?.price || 'Gratis'}
+                            {displayPlace.tariffs.find(t => t.label.toLowerCase().includes('pcd') || t.label.toLowerCase().includes('discapacidad'))?.price || 'Gratis'}
                           </Text>
                         </View>
                       </View>
@@ -1501,10 +1590,10 @@ export function PlaceDetailScreen({ route, navigation }) {
                 </View>
               )}
             </View>
-            </View>
+          </View>
 
           {/* Audioguía y Servicios Digitales */}
-          {(place.audioguide || isEditing) && (
+          {(displayPlace.audioguide || isEditing) && (
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Languages color={theme.primary} size={22} />
@@ -1557,62 +1646,6 @@ export function PlaceDetailScreen({ route, navigation }) {
             </View>
           )}
 
-          {/* Contact & Links */}
-          <View style={styles.section}>
-            {/* Basic Info Section */}
-            <View style={styles.infoSection}>
-              <View style={styles.infoRow}>
-                <MapPin color={theme.primary} size={20} />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Dirección</Text>
-                  {isEditing ? (
-                    <TextInput
-                      style={[styles.infoValueInput, { color: theme.text, borderBottomColor: theme.primary }]}
-                      value={place.address}
-                      onChangeText={(v) => setPlace({ ...place, address: v })}
-                      placeholder="Calle, Número, CP, Ciudad..."
-                    />
-                  ) : (
-                    <Text style={[styles.infoValue, { color: theme.text }]}>{place.address || `${place.city}, ${place.province}`}</Text>
-                  )}
-                </View>
-              </View>
-
-              <View style={styles.infoRow}>
-                <Phone color={theme.primary} size={20} />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Teléfono de Reservas</Text>
-                  {isEditing ? (
-                    <TextInput
-                      style={[styles.infoValueInput, { color: theme.text, borderBottomColor: theme.primary }]}
-                      value={place.phone}
-                      onChangeText={(v) => setPlace({ ...place, phone: v })}
-                      placeholder="+34 ..."
-                      keyboardType="phone-pad"
-                    />
-                  ) : (
-                    <TouchableOpacity onPress={() => place.phone && Linking.openURL(`tel:${place.phone}`)}>
-                      <Text style={[styles.infoValue, { color: place.phone ? theme.primary : theme.text, fontWeight: place.phone ? '700' : '500' }]}>
-                        {place.phone || 'No disponible'}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              </View>
-
-              {place.website && (
-                <View style={styles.infoRow}>
-                  <Globe color={theme.primary} size={20} />
-                  <View style={{ flex: 1, marginLeft: 12 }}>
-                    <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Sitio Web</Text>
-                    <TouchableOpacity onPress={() => Linking.openURL(place.website.startsWith('http') ? place.website : `https://${place.website}`)}>
-                      <Text style={[styles.infoValue, { color: theme.primary, fontWeight: '700' }]}>{place.website}</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              )}
-            </View>
-          </View>
 
           {/* Location Map */}
           <View style={styles.section}>
@@ -1624,8 +1657,8 @@ export function PlaceDetailScreen({ route, navigation }) {
                   userInterfaceStyle={isDarkMode ? 'dark' : 'light'}
                   customMapStyle={isDarkMode ? DARK_MAP_STYLE : []}
                   initialRegion={{
-                    latitude: Number(place.location.latitude),
-                    longitude: Number(place.location.longitude),
+                    latitude: Number(displayPlace.location.latitude),
+                    longitude: Number(displayPlace.location.longitude),
                     latitudeDelta: 0.005,
                     longitudeDelta: 0.005,
                   }}
@@ -1633,8 +1666,8 @@ export function PlaceDetailScreen({ route, navigation }) {
                   zoomEnabled={true}
                 >
                   <Marker coordinate={{
-                    latitude: Number(place.location.latitude),
-                    longitude: Number(place.location.longitude),
+                    latitude: Number(displayPlace.location.latitude),
+                    longitude: Number(displayPlace.location.longitude),
                   }} />
                 </MapView>
               ) : (
@@ -1647,20 +1680,20 @@ export function PlaceDetailScreen({ route, navigation }) {
             
             <View style={styles.addressBar}>
               <Text style={[styles.addressText, { color: theme.textSecondary }]}>
-                {place.address || `${place.city}, ${place.province || ''}`}
+                {displayPlace.address || `${displayPlace.city}, ${displayPlace.province || ''}`}
               </Text>
               <TouchableOpacity 
                 style={[styles.navBtn, { backgroundColor: theme.primary }]}
                 onPress={() => {
-                  const lat = place.location?.latitude || 40.4168;
-                  const lon = place.location?.longitude || -3.7038;
-                  const label = encodeURI(place.name);
+                  const lat = displayPlace.location?.latitude || 40.4168;
+                  const lon = displayPlace.location?.longitude || -3.7038;
+                  const label = encodeURI(displayPlace.name);
                   const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
                   Linking.openURL(url);
                 }}
               >
-                <Navigation color="#FFF" size={18} />
-                <Text style={styles.navBtnText}>Cómo llegar</Text>
+                <Navigation color={isDarkMode ? "#0A192F" : "#FFF"} size={18} />
+                <Text style={[styles.navBtnText, { color: isDarkMode ? "#0A192F" : "#FFF" }]}>Cómo llegar</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -1674,7 +1707,7 @@ export function PlaceDetailScreen({ route, navigation }) {
               </Text>
             </View>
             <Text style={[styles.accessibilityText, { color: theme.textSecondary }]}>
-              {place.freeInfo || 'Lugar adaptado con rampas de acceso, baños adaptados y personal formado para asistencia.'}
+              {displayPlace.freeInfo || 'Lugar adaptado con rampas de acceso, baños adaptados y personal formado para asistencia.'}
             </Text>
             <View style={styles.checkList}>
               <View style={styles.checkItem}>
@@ -1722,7 +1755,7 @@ const styles = StyleSheet.create({
   },
   headerActions: { position: 'absolute', top: 0, left: 0, right: 0, flexDirection: 'row', padding: 20, zIndex: 10 },
   circleButton: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
-  heroContent: { position: 'absolute', bottom: 20, left: 20, right: 20 }, // Bajado un poco
+  heroContent: { position: 'absolute', bottom: 20, left: 20, right: 20 }, 
   badge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, alignSelf: 'flex-start' },
   badgeText: { color: '#FFFFFF', fontSize: 10, fontWeight: '800', letterSpacing: 1 },
   timeBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, gap: 6 },
@@ -1746,8 +1779,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
   aiButtonActive: {
-    backgroundColor: '#10B981',
-    shadowColor: '#10B981',
+    backgroundColor: '#27AE60',
   },
   aiButtonText: {
     color: '#FFF',
@@ -1770,6 +1802,36 @@ const styles = StyleSheet.create({
   section: { marginBottom: 25 },
   sectionTitle: { fontSize: 18, fontWeight: '800', marginBottom: 12 },
   description: { fontSize: 15, lineHeight: 24 },
+  contactContainer: {
+    marginTop: 15,
+    paddingTop: 15,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.05)',
+  },
+  contactRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  contactIconBox: {
+    width: 32,
+    marginRight: 10,
+    alignItems: 'center',
+  },
+  contactText: {
+    fontSize: 14,
+    fontWeight: '400',
+    flex: 1,
+  },
+  contactLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  contactValue: {
+    fontSize: 14,
+    fontWeight: '400',
+    flex: 1,
+  },
   tipCard: { flexDirection: 'row', padding: 15, borderRadius: 15, borderWidth: 1, marginBottom: 25, gap: 12 },
   tipContent: { flex: 1 },
   tipTitle: { fontSize: 14, fontWeight: '800', marginBottom: 4 },
@@ -1888,13 +1950,23 @@ const styles = StyleSheet.create({
   },
   descriptionEdit: {
     fontSize: 15,
-    lineHeight: 24,
+    lineHeight: 22,
     borderWidth: 1,
-    borderRadius: 10,
-    padding: 10,
-    marginTop: 5,
+    borderRadius: 12,
+    padding: 12,
+    minHeight: 120,
     textAlignVertical: 'top',
-    minHeight: 100,
+  },
+  contactContainer: {
+    marginTop: 15,
+    paddingTop: 15,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.05)',
+  },
+  contactRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
   },
   tipTextEdit: {
     fontSize: 14,
@@ -2222,4 +2294,69 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
     textTransform: 'uppercase'
   },
+  structuredSeasonCard: {
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 15,
+    borderWidth: 1,
+    marginTop: 15,
+  },
+  seasonHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.05)',
+  },
+  seasonNameInput: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    flex: 1,
+  },
+  monthInput: {
+    width: 30,
+    fontSize: 14,
+    textAlign: 'center',
+    fontWeight: 'bold',
+    borderBottomWidth: 1,
+    borderBottomColor: '#CCC',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 4,
+  },
+  daysGrid: {
+    gap: 8,
+  },
+  dayRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 4,
+  },
+  dayToggle: {
+    paddingHorizontal: 2,
+    paddingVertical: 3,
+    borderRadius: 4,
+    width: 32,
+    alignItems: 'center',
+  },
+  timeInput: {
+    width: 42,
+    fontSize: 11,
+    textAlign: 'center',
+    padding: 2,
+    borderBottomWidth: 1,
+    borderBottomColor: '#CCC',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 4,
+  },
+  addSeasonBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 'auto',
+    backgroundColor: 'rgba(52, 152, 219, 0.15)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  }
 });

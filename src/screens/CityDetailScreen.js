@@ -46,7 +46,9 @@ import {
   Moon,
   CloudRain,
   Thermometer,
-  Wind
+  Wind,
+  MessageCircle,
+  MessageSquare
 } from 'lucide-react-native';
 import { MONUMENTOS } from '../data/monumentos';
 import { CIUDADES_PREMIUM } from '../data/ciudades';
@@ -60,6 +62,7 @@ import { PROVINCE_TO_REGION } from '../data/provinces';
 import { getFiestaPatronal } from '../data/fiestasPatronales';
 import { getPoblacion } from '../data/poblacion';
 import { REAL_CITY_DATA } from '../data/municipiosIA';
+import { API_ENDPOINTS } from '../config/api';
 
 const { width, height } = Dimensions.get('window');
 
@@ -91,6 +94,7 @@ const InfoModal = ({ visible, onClose, title, content, theme, icon: Icon }) => (
   </Modal>
 );
 
+
 export function CityDetailScreen({ route, navigation }) {
   const { city } = route.params;
   const { theme } = useTheme();
@@ -100,6 +104,70 @@ export function CityDetailScreen({ route, navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalData, setModalData] = useState({ title: '', content: '', icon: Info });
   const [cityCoords, setCityCoords] = useState(null);
+  
+  // Helper para el estado del lugar (Sincronizado con PlaceDetail)
+  const getPlaceStatus = (p) => {
+    if (!p) return { text: 'Cerrado', color: '#E74C3C' };
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const dayOfWeek = now.getDay();
+    const hour = now.getHours();
+    const minutes = now.getMinutes();
+    const nowMin = hour * 60 + minutes;
+
+    const parseTime = (timeStr) => {
+      if (!timeStr || !timeStr.includes(':')) return null;
+      const [h, m] = timeStr.split(':').map(Number);
+      return h * 60 + m;
+    };
+
+    const formatRemaining = (closeMin, nowMin) => {
+      const diff = closeMin - nowMin;
+      if (diff < 60) return `Cierra en ${diff} min`;
+      const hours = Math.floor(diff / 60);
+      return `Cierra en ${hours} ${hours === 1 ? 'hora' : 'horas'}`;
+    };
+
+    if (p.structuredSchedules && p.structuredSchedules.length > 0) {
+      const season = p.structuredSchedules.find(s => {
+        const sM = parseInt(s.startMonth);
+        const eM = parseInt(s.endMonth);
+        if (sM <= eM) return currentMonth >= sM && currentMonth <= eM;
+        return currentMonth >= sM || currentMonth <= eM;
+      });
+
+      if (season && season.days) {
+        const d = season.days[dayOfWeek];
+        const mO = parseTime(d?.mOpen);
+        const mC = parseTime(d?.mClose);
+        const aO = parseTime(d?.aOpen);
+        const aC = parseTime(d?.aClose);
+
+        if (d && d.isOpen) {
+          if (mO !== null && mC !== null && nowMin >= mO && nowMin < mC) return { text: `Abierto • ${formatRemaining(mC, nowMin)}`, color: '#2ECC71' };
+          if (aO !== null && aC !== null && nowMin >= aO && nowMin < aC) return { text: `Abierto • ${formatRemaining(aC, nowMin)}`, color: '#2ECC71' };
+          if (mO !== null && nowMin < mO) return { text: `Cerrado • Abre hoy a las ${d.mOpen}`, color: '#E74C3C' };
+          if (aO !== null && nowMin < aO) return { text: `Cerrado • Abre hoy a las ${d.aOpen}`, color: '#E74C3C' };
+        }
+
+        let nextDay = (dayOfWeek + 1) % 7;
+        const nextD = season.days[nextDay];
+        if (nextD && nextD.isOpen) {
+          return { text: `Cerrado • Abre mañana a las ${nextD.mOpen || '10:00'}`, color: '#E74C3C' };
+        }
+        return { text: 'Cerrado', color: '#E74C3C' };
+      }
+    }
+
+    const schedule = (p.schedule || "").toLowerCase();
+    const days = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+    if (schedule.includes(`${days[dayOfWeek]}: cerrado`)) return { text: 'Cerrado', color: '#E74C3C' };
+    return { text: 'Ver horario', color: theme.primary };
+  };
+
+  const [isLoadingAi, setIsLoadingAi] = useState(false);
+  const [serverPlaces, setServerPlaces] = useState([]);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
 
   const normalize = (text) => {
     if (!text) return '';
@@ -108,11 +176,8 @@ export function CityDetailScreen({ route, navigation }) {
       .replace(/y/g, 'i');
   };
 
-  // Combinar datos oficiales con persistencia personalizada de Admin
   const cityKey = normalize(city.name);
   const customData = userData?.customCityData?.[cityKey] || {};
-  
-  // Enriquecer con datos Premium si coinciden (por si se navega desde búsqueda general)
   const premiumMatch = Object.entries(CIUDADES_PREMIUM).find(([name]) => normalize(name) === cityKey)?.[1] || {};
 
   const [tempCityData, setTempCityData] = useState({
@@ -120,6 +185,90 @@ export function CityDetailScreen({ route, navigation }) {
     ...premiumMatch,
     ...customData
   });
+
+  // Cargar datos extendidos del servidor
+  useEffect(() => {
+    const fetchCityDetails = async () => {
+      // Si ya tenemos historia y geografía (Premium), no hace falta fetch
+      if (tempCityData.history && tempCityData.geography) return;
+      if (!city.id) return;
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+      setIsLoadingDetails(true);
+      try {
+        const response = await fetch(`${API_ENDPOINTS.MUNICIPALITIES}/${city.id}`, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        
+        if (response.ok) {
+          const detailedCity = await response.json();
+          setTempCityData(prev => ({
+            ...prev,
+            ...detailedCity,
+            name: detailedCity.name || prev.name,
+            population: detailedCity.population || prev.population,
+            fiesta: detailedCity.fiesta || prev.fiesta
+          }));
+        }
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.error('Error fetching city details:', error);
+        }
+      } finally {
+        setIsLoadingDetails(false);
+      }
+    };
+
+    fetchCityDetails();
+  }, [city.id]);
+
+  // Cargar lugares de esta ciudad desde el servidor
+  useEffect(() => {
+    const fetchCityPlaces = async () => {
+      const cityName = tempCityData.name || city.name;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+      try {
+        const response = await fetch(`${API_ENDPOINTS.PLACES}?city=${encodeURIComponent(cityName)}`, {
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data && data.length > 0) {
+            const mapped = data.map(p => ({
+              ...p,
+              ...p.extra_data,
+              isPlace: true
+            }));
+            setServerPlaces(mapped);
+          } else {
+            // Fallback si el servidor no tiene lugares para esta ciudad
+            loadLocalPlacesFallback(cityName);
+          }
+        } else {
+          loadLocalPlacesFallback(cityName);
+        }
+      } catch (error) {
+        // Silenciar errores de red/timeout ya que tenemos fallback
+        loadLocalPlacesFallback(cityName);
+      }
+    };
+
+    const loadLocalPlacesFallback = (cityName) => {
+      const normCity = normalize(cityName);
+      // MONUMENTOS es un objeto donde las llaves son nombres de ciudades
+      const matchingKey = Object.keys(MONUMENTOS).find(k => normalize(k) === normCity);
+      const localMatches = MONUMENTOS[matchingKey] || [];
+      setServerPlaces(localMatches);
+    };
+
+    fetchCityPlaces();
+  }, [tempCityData.name, city.name]);
+
 
   // Determinar la región si falta
   const effectiveRegion = useMemo(() => {
@@ -146,7 +295,16 @@ export function CityDetailScreen({ route, navigation }) {
     getCoords();
   }, [city.name]);
 
-  const fiestaData = useMemo(() => getFiestaPatronal(tempCityData.name), [tempCityData.name]);
+  const fiestaData = useMemo(() => {
+    if (tempCityData.fiesta) {
+      return { 
+        fiesta: tempCityData.fiesta, 
+        fecha: tempCityData.fiesta_date || 'Consulta calendario local' 
+      };
+    }
+    return getFiestaPatronal(tempCityData.name || city.name);
+  }, [tempCityData.name, tempCityData.fiesta, tempCityData.fiesta_date, city.name]);
+
   const poblacion = useMemo(() => getPoblacion(tempCityData.name), [tempCityData.name]);
 
   // Sincronizar tempCityData con userData cuando cambie
@@ -217,12 +375,29 @@ export function CityDetailScreen({ route, navigation }) {
   const visibleUserContributions = (userContributions || []).filter(p => 
     isAdmin || p.verified || p.userId === userData?.id
   );
-  const visibleUserNames = new Set(visibleUserContributions.map(p => p.name.toLowerCase()));
-
-  const allPlaces = [
-    ...visibleUserContributions,
-    ...officialPlaces.filter(p => !visibleUserNames.has(p.name.toLowerCase()))
-  ];
+  
+  const allPlaces = useMemo(() => {
+    const combined = [
+      ...visibleUserContributions,
+      ...serverPlaces,
+      ...officialPlaces
+    ];
+    
+    const seen = new Set();
+    const unique = [];
+    
+    combined.forEach(p => {
+      // Usar un identificador compuesto para garantizar unicidad absoluta
+      const pId = p.id || p._id || `temp-${p.name}`;
+      const key = `${pId}-${normalize(p.name)}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        unique.push({ ...p, compositeKey: key });
+      }
+    });
+    
+    return unique;
+  }, [visibleUserContributions, serverPlaces, officialPlaces]);
 
   const handleValidate = async (placeId) => {
     const updatedContributions = userData.contributions.map(p => 
@@ -338,16 +513,23 @@ export function CityDetailScreen({ route, navigation }) {
 
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [isAiEnhanced, setIsAiEnhanced] = useState(false);
+  const [aiResults, setAiResults] = useState(null);
+
+  // Capa de visualización prioritaria
+  const displayCityData = useMemo(() => {
+    return aiResults ? { ...tempCityData, ...aiResults } : tempCityData;
+  }, [tempCityData, aiResults]);
 
   // Datos de contexto (Simulados para el Store)
   const cityContextData = React.useMemo(() => {
     const name = tempCityData.name || city.name;
-    const popRaw = getPoblacion(name);
-    // Extraer solo el número o limpiar el texto para el badge
-    const popFormatted = popRaw.replace(' hab.', '').replace(' (aprox.)', '');
+    // Priorizar población del servidor
+    const popRaw = tempCityData.population ? tempCityData.population.toLocaleString() : getPoblacion(name);
+    const popFormatted = popRaw.toString().replace(' hab.', '').replace(' (aprox.)', '');
     
     return { pop: popFormatted, temp: '22°C', status: 'sunny' };
-  }, [tempCityData.name, city.name]);
+  }, [tempCityData.name, tempCityData.population, city.name]);
+
 
   const renderWeatherIcon = (status, size = 16, color = "#FFF") => {
     switch (status) {
@@ -359,31 +541,74 @@ export function CityDetailScreen({ route, navigation }) {
     }
   };
 
-  const handleAiEnhance = () => {
+  const handleAiEnhance = async () => {
+    const hasGemini = userData.aiApiKey && userData.aiApiKey.length > 10;
     setIsAiProcessing(true);
-    const cityName = tempCityData.name || city.name || 'esta ciudad';
+    const cityName = displayCityData.name || city.name || 'esta ciudad';
     const cityKey = normalize(cityName);
-    const province = tempCityData.province || 'España';
-    const region = tempCityData.region || 'España';
-    
-    console.log(`Distravel AI: Analizando datos reales para ${cityName}...`);
-    
-    // Simular latencia
+
+    if (hasGemini) {
+      try {
+        const prompt = `Actúa como un experto historiador y guía turístico de España. 
+        Realiza una investigación profunda y profesional sobre el municipio de "${cityName}". 
+        Devuelve la respuesta en formato JSON estricto con la siguiente estructura:
+        {
+          "history": "3-4 frases detalladas sobre el origen y evolución histórica.",
+          "geography": "3-4 frases sobre la ubicación, altitud y límites.",
+          "climate": "3-4 frases sobre temperaturas medias, lluvias y mejor época para visitar.",
+          "landscape": "3-4 frases sobre la flora, fauna y parajes naturales cercanos.",
+          "gastronomy": "3-4 frases sobre platos típicos, ingredientes locales y dulces.",
+          "festivities": "3-4 frases sobre las fiestas patronales, fechas y tradiciones únicas."
+        }
+        No incluyas markdown, solo el JSON puro.`;
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userData.aiApiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+          })
+        });
+
+        const data = await response.json();
+        const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        
+        let aiContent = null;
+        try {
+          // Limpieza agresiva de la respuesta
+          const sanitizedText = aiText.replace(/[\u0000-\u001F\u007F-\u009F]/g, "");
+          const firstBrace = sanitizedText.indexOf('{');
+          const lastBrace = sanitizedText.lastIndexOf('}');
+          
+          if (firstBrace !== -1 && lastBrace !== -1) {
+            const jsonStr = sanitizedText.substring(firstBrace, lastBrace + 1);
+            aiContent = JSON.parse(jsonStr);
+          }
+        } catch (e) {
+          // Silenciamos el error y dejamos que caiga al fallback de abajo
+          aiContent = null;
+        }
+
+        if (aiContent) {
+          applyAiCityResults(aiContent, true);
+          return;
+        }
+      } catch (error) {
+        // Error de red o similar, caemos al fallback
+      }
+    }
+
+    // Fallback Simulator (Se ejecuta si no hay Gemini o si Gemini falló/dio JSON inválido)
     setTimeout(() => {
       const realData = REAL_CITY_DATA[cityKey];
+      let aiContent;
       
       if (realData) {
-        setTempCityData(prev => ({
-          ...prev,
-          history: realData.history,
-          geography: realData.geography,
-          climate: realData.climate,
-          landscape: realData.landscape,
-          gastronomy: realData.gastronomy,
-          festivities: realData.festivities
-        }));
+        aiContent = { ...realData };
       } else {
-        const regionalContext = {
+        const province = displayCityData.province || 'España';
+        const region = displayCityData.region || 'España';
+        aiContent = {
           history: `La historia de ${cityName} está ligada a la provincia de ${province}. Como parte de la región de ${region}, ha sido testigo de los procesos de repoblación medieval y el desarrollo agrícola que define este territorio. Su patrimonio refleja la arquitectura típica de la zona.`,
           geography: `${cityName} se integra en la geografía de ${province}. Su ubicación en ${region} le confiere un relieve que combina la orografía local con los accidentes geográficos propios de esta zona.`,
           climate: `El clima en ${cityName} es el propio de ${province}, caracterizado por ser un clima ${region.includes('Mediterránea') ? 'Mediterráneo con veranos secos' : 'Continental con marcadas oscilaciones térmicas'}.`,
@@ -391,129 +616,65 @@ export function CityDetailScreen({ route, navigation }) {
           gastronomy: `La gastronomía en ${cityName} se nutre de la despensa de ${province}. Destacan los productos de temporada y los guisos tradicionales de la región de ${region}.`,
           festivities: `Las festividades de ${cityName} celebran la identidad de sus gentes a través de tradiciones compartidas con el resto de ${province}. El calendario festivo está marcado por eventos populares inclusivos.`
         };
-
-        setTempCityData(prev => ({
-          ...prev,
-          ...regionalContext
-        }));
       }
-      
-      setIsAiProcessing(false);
-      setIsAiEnhanced(true);
-      Alert.alert("IA: Análisis Completado", `Datos reales y contexto regional aplicados para ${cityName}.`);
+      applyAiCityResults(aiContent, false);
     }, 1500);
   };
 
-  const oldHandleAiEnhance_Removed = () => { // Placeholder for removal logic if needed
-    const hasGemini = userData.aiApiKey && userData.aiApiKey.length > 10;
-    setIsAiProcessing(true);
-    console.log(`Distravel AI: Iniciando análisis para ${tempCityData.name}...`);
-    
-    // Simular procesamiento inteligente basado en el nombre de la ciudad
-    setTimeout(() => {
-      const cityName = tempCityData.name || city.name || 'esta ciudad';
-      const cityNameUpper = cityName.toUpperCase();
-      
-      // Motor de Generación de Contenido Avanzado (Simulación Gemini Pro)
-      const generateRichHistory = (name) => {
-        return `La historia de ${name} es un fascinante tapiz tejido a lo largo de milenios, donde cada capa arqueológica revela un capítulo crucial de la civilización occidental. Desde los asentamientos de la Edad del Bronce hasta su florecimiento bajo el dominio romano y la posterior impronta de la cultura andalusí, el municipio ha sido un crisol de culturas. Su evolución durante la Reconquista y su consolidación como villa real o enclave señorial le confirió una arquitectura civil y militar que hoy constituye un museo al aire libre. Cada callejón y sillar de sus monumentos narra historias de resiliencia, comercio y arte que han forjado el carácter indómito de sus gentes, convirtiendo a ${name} en un destino imprescindible para entender el legado histórico de la península.`;
-      };
+  const applyAiCityResults = (aiContent, isRealGemini) => {
+    const cityName = displayCityData.name || city.name;
+    const cityKey = normalize(cityName);
 
-      const generateRichGeography = (name) => {
-        return `Situado en una ubicación privilegiada que ha condicionado su destino desde tiempos ancestrales, ${name} presenta una orografía de contrastes sublimes. Se asienta sobre un relieve que alterna zonas de vega fértil con estribaciones montañosas que actúan como guardianes naturales del casco urbano. Su hidrografía, marcada por ríos o acuíferos históricos, no solo ha definido su agricultura sino que ha creado parajes de una belleza plástica singular. El urbanismo del municipio se ha adaptado magistralmente a esta topografía, creando una simbiosis perfecta entre la naturaleza y la mano del hombre, donde la altitud y la orientación proporcionan miradores naturales que ofrecen algunas de las panorámicas más espectaculares de la región.`;
-      };
+    setAiResults(aiContent);
+    setIsAiProcessing(false);
+    setIsAiEnhanced(true);
 
-      const generateRichClimate = (name) => {
-        return `El clima de ${name} se define por una benignidad característica que invita a la exploración durante todas las estaciones. Con una insolación media envidiable, la luminosidad de sus cielos ha sido fuente de inspiración para artistas y viajeros. Sus inviernos, suaves y cortos, permiten disfrutar de la accesibilidad urbana sin las restricciones del frío extremo, mientras que sus veranos, moderados por brisas locales o la altitud, mantienen una temperatura ideal para el ocio al aire libre. Esta estabilidad meteorológica no solo favorece el bienestar de sus habitantes, sino que convierte a ${name} en un refugio climatológico perfecto para personas que buscan un entorno saludable y predecible para sus viajes de turismo accesible.`;
-      };
+    // 1. Actualizamos localmente
+    setTempCityData(prev => ({ ...prev, ...aiContent }));
 
-      const generateRichLandscape = (name) => {
-        return `El paisaje de ${name} es una sinfonía visual de biodiversidad y patrimonio. Es un entorno donde el verde de su flora autóctona se funde con los tonos ocres de su piedra histórica y el azul de su horizonte. Los parques y zonas verdes urbanas han sido diseñados siguiendo criterios de sostenibilidad y accesibilidad universal, permitiendo que todos los ciudadanos y visitantes disfruten de espacios de sombra, descanso y contemplación. La integración de rutas accesibles que conectan el núcleo urbano con los parajes naturales circundantes permite una inmersión total en un ecosistema preservado, donde la fauna local y la flora estacional crean un espectáculo natural que cambia cromáticamente con el paso de los meses.`;
-      };
-
-      const generateRichGastronomy = (name) => {
-        return `La mesa en ${name} es un homenaje al producto de proximidad y a la herencia culinaria transmitida de generación en generación. Su gastronomía se sustenta en la excelencia de las materias primas de su propia tierra, ofreciendo una dieta equilibrada y llena de sabor. Platos de cuchara que reconfortan el alma se combinan con asados tradicionales y una repostería artesanal que conserva los secretos de los antiguos hornos locales. La oferta gastronómica no solo es una experiencia sensorial, sino un acto cultural en sí mismo, donde las tabernas históricas y los restaurantes modernos compiten por ofrecer la mejor interpretación de los sabores auténticos, siempre con un compromiso inquebrantable con la calidad y la hospitalidad.`;
-      };
-
-      const generateRichFestivities = (name) => {
-        return `Las celebraciones en ${name} son el reflejo del alma vibrante y acogedora de su comunidad. El calendario festivo es una sucesión de eventos donde la música, el color y la tradición invaden las plazas y calles en un estallido de alegría colectiva. Desde las procesiones solemnes que muestran el valor artístico de su imaginería hasta las verbenas populares llenas de luz y danzas tradicionales, cada fiesta es una oportunidad para compartir el orgullo de pertenecer a esta tierra. Estas festividades han sido adaptadas para garantizar que sean inclusivas y accesibles, permitiendo que todas las personas, independientemente de sus capacidades, puedan participar plenamente en el tejido social y cultural que define la identidad de ${name}.`;
-      };
-
-      let aiGeneratedData = {
-        history: generateRichHistory(cityName),
-        geography: generateRichGeography(cityName),
-        climate: generateRichClimate(cityName),
-        landscape: generateRichLandscape(cityName),
-        gastronomy: generateRichGastronomy(cityName),
-        festivities: generateRichFestivities(cityName),
-        transports: { bus: true, taxi: true, tram: false, train: false, plane: false }
-      };
-
-      const isAlicante = normalize(cityName).includes('alicante');
-      const isMadrid = normalize(cityName).includes('madrid');
-      const isMorella = normalize(cityName).includes('morella');
-      
-      if (isAlicante) {
-        aiGeneratedData = {
-          history: "Alicante, la antigua Lucentum romana, es una ciudad con una trayectoria milenaria marcada por su puerto estratégico y la vigilancia eterna desde el Castillo de Santa Bárbara. A lo largo de los siglos, ha sido testigo de la presencia cartaginesa, romana, árabe y cristiana, consolidándose como una de las plazas fuertes más disputadas del Levante español. Su importancia comercial floreció en el siglo XVIII, dejando un legado arquitectónico civil de gran valor, como el Ayuntamiento barroco. Hoy, Alicante fusiona sus raíces históricas con una modernidad vibrante, manteniendo viva su identidad mediterránea a través de la conservación de sus barrios tradicionales como Santa Cruz.",
-          geography: "Asentada a orillas del Mar Mediterráneo, Alicante disfruta de una orografía singular donde el monte Benacantil preside el paisaje urbano. La ciudad se extiende a lo largo de una bahía protegida, flanqueada por cabos como el Cabo de las Huertas que ofrecen una protección natural contra los vientos. El relieve es suave en el litoral, con amplias playas de arena dorada como San Juan y Postiguet, mientras que el interior se eleva hacia las estribaciones de la Cordillera Bética. Esta ubicación privilegiada la convierte en un balcón natural al mar, con un puerto que ha sido el corazón económico de la región durante siglos.",
-          climate: "Alicante disfruta de un microclima mediterráneo excepcional que la sitúa entre las ciudades con mejor meteorología de Europa. Con más de 3.000 horas de sol al año y una temperatura media anual de 18°C, el invierno es prácticamente inexistente en la capital. Las precipitaciones son escasas y se concentran principalmente en otoño, dejando paso a cielos despejados el resto del año. Esta benignidad climática favorece un estilo de vida al aire libre y permite el turismo de accesibilidad en cualquier estación, sin las restricciones que imponen los climas más extremos del interior peninsular.",
-          landscape: "El contraste visual en Alicante es fascinante: desde el azul intenso del Mediterráneo hasta el ocre de sus formaciones rocosas. La 'Cara del Moro', una silueta natural en el Castillo de Santa Bárbara, es el icono indiscutible del paisaje alicantino. La Explanada de España, con su mosaico ondulante que imita las olas del mar, es uno de los paseos más bellos de España, sombreado por majestuosas palmeras. El entorno se completa con parques urbanos como Canalejas y El Palmeral, auténticos oasis que oxigenan la ciudad y ofrecen espacios de sombra y descanso accesibles para todos.",
-          gastronomy: "Alicante es, por derecho propio, la capital mundial del arroz. Su cocina se basa en la excelencia del producto de proximidad, tanto del mar como de la huerta. Imprescindibles son el Arroz a Banda, el Arroz del Senyoret o la Olleta Alicantina, platos que resumen la esencia del Levante. El pescado fresco de la lonja, como la gamba roja de Denia o los salazones, son piezas clave en su recetario. No se puede olvidar el Turrón de Jijona y Alicante, una herencia árabe que ha traspasado fronteras, ni sus vinos con Denominación de Origen, que maridan a la perfección con la huerta local.",
-          festivities: "Las Hogueras de San Juan, declaradas de Interés Turístico Internacional, son el alma de la ciudad cada mes de junio. Monumentos artísticos de cartón piedra arden en la noche de la cremà, simbolizando la purificación y la llegada del verano. Otras celebraciones de gran calado incluyen la Romería de la Santa Faz, que congrega a miles de peregrinos en el segundo jueves tras Semana Santa, y las fiestas de Moros y Cristianos en los barrios de la ciudad. Estas festividades son un despliegue de música, color y tradición que transforman las calles en un escenario vivo de la cultura popular.",
-          transports: { bus: true, taxi: true, tram: true, train: true, plane: true }
-        };
-      } else if (isMadrid) {
-        aiGeneratedData = {
-          history: "Capital de España desde 1561 por decisión de Felipe II, Madrid es el corazón político, económico y cultural del país. Su historia es una crónica de la transformación de una pequeña villa castellana en una metrópoli imperial que albergó el Siglo de Oro literario y artístico. Madrid ha superado asedios, ha liderado revoluciones culturales como la Movida y se ha reinventado constantemente a través de su arquitectura, desde el Madrid de los Austrias hasta los rascacielos de la Castellana. Es una ciudad que abraza a todos, donde la historia se respira en cada rincón del Palacio Real, la Puerta del Sol o la majestuosa Plaza Mayor.",
-          geography: "Ubicada en el centro geográfico de la Península Ibérica, Madrid se asienta sobre la Meseta Central a una altitud media de 650 metros sobre el nivel del mar. La ciudad está surcada por el río Manzanares, cuyo entorno ha sido recuperado como un gran pulmón verde lineal. Su ubicación estratégica en el centro del país la convierte en el kilómetro cero de todas las infraestructuras españolas. Al norte, la Sierra de Guadarrama ofrece un telón de fondo montañoso espectacular que suaviza el horizonte urbano y proporciona recursos naturales esenciales para la capital.",
-          climate: "El clima de Madrid es mediterráneo continentalizado, caracterizado por inviernos fríos y veranos muy calurosos. Sin embargo, su cielo se describe frecuentemente como uno de los más bellos del mundo, con un azul profundo capturado magistralmente por Velázquez. La baja humedad relativa hace que el calor sea más llevadero que en la costa, y las noches madrileñas, especialmente en primavera y otoño, ofrecen temperaturas ideales para disfrutar de la ciudad. Es un clima de contrastes marcados que define el carácter dinámico y enérgico de sus habitantes.",
-          landscape: "Madrid es una de las capitales más arboladas del mundo. El Parque del Retiro, recientemente nombrado Paisaje de la Luz por la UNESCO, es un santuario verde de valor incalculable en el centro de la ciudad. El paisaje urbano es una mezcla armoniosa de palacios neoclásicos, iglesias barrocas y vanguardia arquitectónica. El eje Prado-Recoletos ofrece un paseo cultural sin parangón, mientras que zonas modernas como Madrid Río o la Casa de Campo proporcionan extensiones inmensas para el ocio inclusivo. El 'skyline' de Madrid, con sus torres icónicas, es una de las postales más reconocibles de la Europa moderna.",
-          gastronomy: "La gastronomía madrileña es el resultado de siglos de influencias de todas las regiones de España, destiladas en una cocina con personalidad propia. El Cocido Madrileño, servido en tres vuelcos, es el plato rey, seguido de cerca por los Callos a la Madrileña y el castizo Bocadillo de Calamares en la Plaza Mayor. Madrid es también el mayor mercado de pescado de Europa (después de Tokio), lo que garantiza una calidad excepcional en sus productos marinos. Los postres como las Rosquillas de San Isidro, los Barquillos y el chocolate con churros en San Ginés completan una oferta culinaria infinita y acogedora.",
-          festivities: "Las fiestas de San Isidro Labrador, patrón de la villa, llenan la ciudad de chulapos, organillos y verbenas cada 15 de mayo en la Pradera de San Isidro. Es un momento donde Madrid saca a relucir su orgullo más tradicional y castizo. Otras citas ineludibles son la Verbena de la Paloma en agosto, el Dos de Mayo (día de la Comunidad) y las celebraciones navideñas que culminan con las doce uvas en la Puerta del Sol. La oferta cultural se complementa con festivales de música, teatro y arte que mantienen a Madrid como una de las ciudades más vibrantes y festivas del mundo durante todo el año.",
-          transports: { bus: true, taxi: true, tram: true, train: true, plane: true }
-        };
-      } else if (isMorella) {
-        aiGeneratedData = {
-          history: "Morella es una de las joyas medievales más imponentes de España, una ciudad-fortaleza que ha sido testigo mudo de la historia desde la Prehistoria hasta las Guerras Carlistas. Su imponente castillo, que corona el cerro cónico sobre el que se asienta la villa, ha sido codiciado por íberos, romanos, árabes y cristianos. Fue en Morella donde Blasco de Alagón y Jaume I pactaron la expansión del Reino de Valencia, y sus murallas de más de dos kilómetros de perímetro siguen custodiando hoy un laberinto de calles góticas y palacios que son Patrimonio de la Humanidad. Su historia es una mezcla de épica militar y devoción religiosa, simbolizada en su majestuosa Basílica Arciprestal.",
-          geography: "Situada a una altitud de 984 metros, Morella preside la comarca de Els Ports como una atalaya inexpugnable. Su geografía es abrupta y dramática, caracterizada por muelas y valles profundos esculpidos por el paso del tiempo. La ciudad se adapta a la pendiente del terreno de forma magistral, escalonándose en la ladera para maximizar sus defensas naturales. Esta ubicación en un nudo de comunicaciones estratégico entre el valle del Ebro y el Mediterráneo le confiere unas vistas panorámicas que abarcan kilómetros de naturaleza salvaje, donde los bosques de encinas y robles conviven con una orografía rocosa que parece sacada de una leyenda medieval.",
-          climate: "El clima de Morella es mediterráneo de alta montaña, ofreciendo una experiencia climática auténtica y vigorizante. Los inviernos son fríos y frecuentemente nos regalan paisajes nevados que transforman la villa en un escenario de cuento de hadas, mientras que los veranos son frescos y luminosos, convirtiendo a Morella en un refugio ideal para escapar del sofocante calor del litoral. Sus cielos limpios y la pureza de su aire son un bálsamo para el viajero. Es un clima que invita a la contemplación junto a la chimenea en invierno y a las caminatas bajo el sol suave de la montaña en el estío.",
-          landscape: "El paisaje morellano es una sinfonía de piedra y verde. Desde cualquier punto de sus murallas, la mirada se pierde en un horizonte de relieves quebrados y barrancos espectaculares. La silueta del castillo recortada contra el cielo azul es la imagen icónica de la región. El entorno natural es rico en flora endémica y fauna protegida, como el buitre leonado que patrulla sus cielos. La integración del patrimonio arquitectónico con la roca viva crea un paisaje cultural único, donde la mano del hombre no ha roto la armonía, sino que ha elevado la belleza natural a una categoría artística monumental.",
-          gastronomy: "La gastronomía de Morella es el sabor de la montaña en estado puro. Es famosa por su 'trufa negra' (el diamante de la cocina), que aromatiza platos durante todo el invierno. Imprescindibles son sus 'croquetas morellanas', con su característica forma triangular, y el 'flaó', un dulce de herencia árabe elaborado con requesón y miel que es el emblema de la villa. Los embutidos artesanales, la miel de milflores y los quesos curados de oveja completan una despensa rica y contundente, diseñada para nutrir el cuerpo y deleitar el paladar tras una jornada de exploración por sus cuestas góticas.",
-          festivities: "Morella vive por y para sus tradiciones, siendo el 'Sexenni' su celebración más extraordinaria, declarada Fiesta de Interés Turístico Nacional. Se celebra cada seis años en honor a la Virgen de la Vallivana y transforma la ciudad en un museo de papel rizado y tapices hechos a mano. El 'Anunci' precede a este gran evento un año antes con una espectacular batalla de confeti. Otras fiestas como Sant Antoni, con su característica 'Santantonà', mantienen vivos rituales ancestrales de fuego y representación teatral medieval, demostrando que en Morella el tiempo no pasa, sino que se celebra con una intensidad y devoción únicas.",
-          transports: { bus: true, taxi: true, tram: false, train: false, plane: false }
-        };
-      }
-
-      console.log(`Distravel AI: Datos generados con éxito${hasGemini ? ' (usando motor Gemini Pro)' : ''}.`);
-      
-      // Actualizar el estado local inmediatamente
-      setTempCityData(current => ({
+    // 2. Guardamos permanentemente en el perfil
+    updateUserData('customCityData', (prevData) => {
+      const current = prevData || {};
+      return {
         ...current,
-        ...aiGeneratedData
-      }));
+        [cityKey]: {
+          ...(current[cityKey] || {}),
+          ...aiContent,
+          isAiEnhanced: true,
+          lastUpdate: new Date().toISOString()
+        }
+      };
+    });
 
-      setIsAiProcessing(false);
-      setIsAiEnhanced(true);
-      
+    setTimeout(() => {
       Alert.alert(
-        hasGemini ? "🚀 MOTOR GEMINI PRO ACTIVADO" : "✨ IA DISTRAVEL ACTIVADA",
-        hasGemini 
-          ? `¡Análisis Ultra-Detallado Completado para ${cityName}! La potencia de Gemini Pro ha generado un dossier completo con datos históricos profundos, análisis geográfico y recomendaciones de élite.`
-          : `¡Análisis Élite Completado! Hemos generado contenido histórico, geográfico y climático avanzado para ${cityName}.`,
-        [{ text: "¡EXCELENTE!", onPress: () => console.log("Usuario aceptó los datos de IA") }]
+        isRealGemini ? "🚀 MOTOR GEMINI PRO 1.5: MUNICIPIOS" : "✨ IA DISTRAVEL ACTIVADA",
+        `Investigación cultural completada para ${cityName}.\n\nSe han actualizado la historia, geografía, clima, paisaje, gastronomía y festividades de forma permanente.`
       );
-    }, hasGemini ? 3500 : 2500);
+    }, 100);
   };
+
+
 
   const introSection = (
     <View style={styles.introSection}>
-      <Text style={[styles.description, { color: theme.textSecondary }]}>
-        {tempCityData.description || 'Explora los lugares accesibles de este municipio.'}
-      </Text>
-      <TouchableOpacity onPress={() => openInfo('Descripción Completa', tempCityData.description, Info)}>
-        <Text style={[styles.readMore, { color: '#E74C3C' }]}>Leer más</Text>
-      </TouchableOpacity>
+      {isAiProcessing ? (
+        <View style={{ padding: 20, alignItems: 'center' }}>
+          <Zap color={theme.primary} size={32} style={{ marginBottom: 10 }} />
+          <Text style={{ color: theme.textSecondary, fontStyle: 'italic', textAlign: 'center' }}>
+            Investigando profundamente en la base de datos de Gemini PRO 1.5...
+          </Text>
+        </View>
+      ) : (
+        <View>
+          <Text style={[styles.description, { color: theme.textSecondary }]}>
+            {displayCityData.description || `Explora los lugares accesibles de ${displayCityData.name}.`}
+          </Text>
+          <TouchableOpacity onPress={() => openInfo('Descripción Completa', displayCityData.description, Info)}>
+            <Text style={[styles.readMore, { color: theme.primary }]}>Leer más</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* BOTÓN IA ELITE */}
       <TouchableOpacity 
@@ -556,7 +717,7 @@ export function CityDetailScreen({ route, navigation }) {
         {/* HERO SECTION */}
         <View style={styles.heroSection}>
           <Image 
-            source={{ uri: tempCityData.image || 'https://images.unsplash.com/photo-1543731068-7e0f5beff43a' }} 
+            source={{ uri: displayCityData.image || 'https://images.unsplash.com/photo-1543731068-7e0f5beff43a' }} 
             style={styles.heroImage} 
           />
           <View style={styles.heroOverlay} />
@@ -579,7 +740,7 @@ export function CityDetailScreen({ route, navigation }) {
             
             {/* City Name inside Hero */}
             <Text style={styles.heroCityNameInside}>
-              {tempCityData.name}
+              {displayCityData.name}
             </Text>
 
             {/* City Context Bar (Weather & Stats) */}
@@ -603,7 +764,7 @@ export function CityDetailScreen({ route, navigation }) {
         <View style={[styles.locationBar, { backgroundColor: '#EFBF04' }]}>
           <MapPin color="#0A192F" size={18} />
           <Text style={styles.locationBarText}>
-            {tempCityData.province || 'Alicante'} / <Text style={{ fontWeight: '800' }}>ESPAÑA</Text>
+            {displayCityData.province || 'Alicante'} / <Text style={{ fontWeight: '800' }}>ESPAÑA</Text>
           </Text>
         </View>
 
@@ -647,12 +808,31 @@ export function CityDetailScreen({ route, navigation }) {
             </View>
           </View>
 
+          {/* Quick Actions */}
+          <View style={styles.quickActionsRow}>
+            <TouchableOpacity 
+              style={[styles.quickActionBtn, { backgroundColor: theme.surface, borderColor: theme.border }]}
+              onPress={() => navigation.navigate('DistravelAI')}
+            >
+              <Sparkles color={theme.primary} size={20} />
+              <Text style={[styles.quickActionText, { color: theme.text }]}>Asistente IA</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.quickActionBtn, { backgroundColor: theme.surface, borderColor: theme.border }]}
+              onPress={() => navigation.navigate('Social')}
+            >
+              <MessageCircle color={theme.primary} size={20} />
+              <Text style={[styles.quickActionText, { color: theme.text }]}>Comunidad</Text>
+            </TouchableOpacity>
+          </View>
+
           {/* Grid Cards */}
           <View style={styles.grid}>
             <TouchableOpacity 
               style={[styles.infoCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => openInfo('Nuestra Historia', tempCityData.history || 'Ciudad histórica.', HistoryIcon)}
-              onLongPress={() => isAdmin && handleAdminEdit('Historia', tempCityData.history)}
+              onPress={() => openInfo('Nuestra Historia', displayCityData.history || 'Ciudad histórica.', HistoryIcon)}
+              onLongPress={() => isAdmin && handleAdminEdit('Historia', displayCityData.history)}
             >
               <HistoryIcon color={theme.primary} size={24} />
               <Text style={[styles.infoCardTitle, { color: theme.text }]}>Historia</Text>
@@ -661,8 +841,8 @@ export function CityDetailScreen({ route, navigation }) {
 
             <TouchableOpacity 
               style={[styles.infoCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => openInfo('Geografía Local', tempCityData.geography || 'Ubicación estratégica.', Globe)}
-              onLongPress={() => isAdmin && handleAdminEdit('Geografía', tempCityData.geography)}
+              onPress={() => openInfo('Geografía Local', displayCityData.geography || 'Ubicación estratégica.', Globe)}
+              onLongPress={() => isAdmin && handleAdminEdit('Geografía', displayCityData.geography)}
             >
               <Globe color={theme.primary} size={24} />
               <Text style={[styles.infoCardTitle, { color: theme.text }]}>Geografía</Text>
@@ -671,8 +851,8 @@ export function CityDetailScreen({ route, navigation }) {
 
             <TouchableOpacity 
               style={[styles.infoCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => openInfo('Climatología', tempCityData.climate || 'Clima mediterráneo.', Cloud)}
-              onLongPress={() => isAdmin && handleAdminEdit('Clima', tempCityData.climate)}
+              onPress={() => openInfo('Climatología', displayCityData.climate || 'Clima mediterráneo.', Cloud)}
+              onLongPress={() => isAdmin && handleAdminEdit('Clima', displayCityData.climate)}
             >
               <Cloud color={theme.primary} size={24} />
               <Text style={[styles.infoCardTitle, { color: theme.text }]}>Clima</Text>
@@ -681,8 +861,8 @@ export function CityDetailScreen({ route, navigation }) {
 
             <TouchableOpacity 
               style={[styles.infoCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => openInfo('Entorno y Paisaje', tempCityData.landscape || 'Entorno privilegiado.', Mountain)}
-              onLongPress={() => isAdmin && handleAdminEdit('Paisaje', tempCityData.landscape)}
+              onPress={() => openInfo('Entorno y Paisaje', displayCityData.landscape || 'Entorno privilegiado.', Mountain)}
+              onLongPress={() => isAdmin && handleAdminEdit('Paisaje', displayCityData.landscape)}
             >
               <Mountain color={theme.primary} size={24} />
               <Text style={[styles.infoCardTitle, { color: theme.text }]}>Paisaje</Text>
@@ -691,8 +871,8 @@ export function CityDetailScreen({ route, navigation }) {
 
             <TouchableOpacity 
               style={[styles.infoCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => openInfo('Gastronomía', tempCityData.gastronomy || 'Gastronomía rica y variada.', Utensils)}
-              onLongPress={() => isAdmin && handleAdminEdit('Gastronomía', tempCityData.gastronomy)}
+              onPress={() => openInfo('Gastronomía', displayCityData.gastronomy || 'Gastronomía rica y variada.', Utensils)}
+              onLongPress={() => isAdmin && handleAdminEdit('Gastronomía', displayCityData.gastronomy)}
             >
               <Utensils color={theme.primary} size={24} />
               <Text style={[styles.infoCardTitle, { color: theme.text }]}>Gastronomía</Text>
@@ -701,8 +881,8 @@ export function CityDetailScreen({ route, navigation }) {
 
             <TouchableOpacity 
               style={[styles.infoCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
-              onPress={() => openInfo('Festividades', tempCityData.festivities || 'Calendario festivo y cultural.', PartyPopper)}
-              onLongPress={() => isAdmin && handleAdminEdit('Festividades', tempCityData.festivities)}
+              onPress={() => openInfo('Festividades', displayCityData.festivities || 'Calendario festivo y cultural.', PartyPopper)}
+              onLongPress={() => isAdmin && handleAdminEdit('Festividades', displayCityData.festivities)}
             >
               <PartyPopper color={theme.primary} size={24} />
               <Text style={[styles.infoCardTitle, { color: theme.text }]}>Festividades</Text>
@@ -724,8 +904,8 @@ export function CityDetailScreen({ route, navigation }) {
                 { id: 'plane', title: 'Aeropuerto', icon: Plane, activeColor: '#E74C3C', activeText: 'Asistencia PMR' }
               ].map((transport) => {
                 // Si la IA ha devuelto transports, los usamos. Si no, por defecto mostramos bus y taxi (para evitar que salga todo activo al entrar).
-                const isActive = tempCityData.transports 
-                  ? tempCityData.transports[transport.id] 
+                const isActive = displayCityData.transports 
+                  ? displayCityData.transports[transport.id] 
                   : ['bus', 'taxi'].includes(transport.id); // Valor por defecto antes de usar IA
 
                 const Icon = transport.icon;
@@ -746,30 +926,19 @@ export function CityDetailScreen({ route, navigation }) {
             </ScrollView>
           </View>
 
-          <View style={styles.sectionHeaderRow}>
-            <Text style={[styles.sectionTitle, { color: theme.text }, typography.h2]}>
-              Explora Lugares
-            </Text>
-            {isAdmin && (
-              <TouchableOpacity 
-                style={[styles.adminAddBtn, { backgroundColor: theme.primary }]}
-                onPress={() => navigation.navigate('AddLocation', { defaultCity: tempCityData.name })}
-              >
-                <Plus color="#FFF" size={20} />
-              </TouchableOpacity>
-            )}
-          </View>
-
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false} 
             contentContainerStyle={{ paddingBottom: 20, paddingRight: 20 }}
           >
-            {allPlaces.map((place) => {
+            {allPlaces.map((place, index) => {
               const savings = calculatePlaceSavings(place);
+              const status = getPlaceStatus(place);
+              const isAiEnhanced = place.aiContent || (userData.contributions && userData.contributions.find(c => c.id === place.id && c.aiContent));
+
               return (
                 <TouchableOpacity 
-                  key={place.id} 
+                  key={place.compositeKey || `place-${index}-${place.id}`} 
                   style={[styles.placeCard, { backgroundColor: theme.surface, borderColor: theme.border }]}
                   onPress={() => navigation.navigate('PlaceDetail', { place })}
                   activeOpacity={0.9}
@@ -791,6 +960,11 @@ export function CityDetailScreen({ route, navigation }) {
                       <Text style={styles.savingsBadgeText}>Ahorras {savings}€</Text>
                     </View>
                   )}
+
+                  <View style={[styles.listStatusBadge, { backgroundColor: status.color }]}>
+                    <Clock color="#FFF" size={10} />
+                    <Text style={styles.listStatusText}>{status.text}</Text>
+                  </View>
 
                   {isAiEnhanced && (
                     <View style={styles.aiInsightBadge}>
@@ -1197,6 +1371,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
+  },
+  quickActionsRow: {
+    flexDirection: 'row',
+    gap: 15,
+    marginBottom: 20,
+  },
+  quickActionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    gap: 8,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+  },
+  quickActionText: {
+    fontSize: 14,
+    fontWeight: '700',
   },
   statusDot: {
     width: 6,

@@ -11,7 +11,9 @@ import {
   Animated,
   TextInput,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
+
 import { 
   MapPin, 
   Search, 
@@ -35,44 +37,38 @@ import {
   Sparkles,
   Info,
   Map as MapIcon,
-  MessageSquare
+  MessageSquare,
+  Church
 } from 'lucide-react-native';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
 import { MONUMENTOS } from '../data/monumentos';
 import { CIUDADES_PREMIUM } from '../data/ciudades';
 import { calculatePlaceSavings } from '../utils/savings';
+import { getOpeningStatus } from '../utils/timeUtils';
 import { typography } from '../theme/typography';
 import MUNICIPIOS_DATA from '../data/municipios.json';
 import { INE_PROVINCES, PROVINCE_TO_REGION } from '../data/provinces';
 import { getFiestaPatronal } from '../data/fiestasPatronales';
 import { getPoblacion } from '../data/poblacion';
 
+import { API_ENDPOINTS } from '../config/api';
+
 const { width } = Dimensions.get('window');
 
-// Pre-procesar todos los municipios para el buscador
-const ALL_MUNICIPIOS = MUNICIPIOS_DATA.map(m => {
+// Fallback local en caso de que el servidor no responda
+const LOCAL_FALLBACK_MUNICIPIOS = MUNICIPIOS_DATA.map(m => {
   const provinceName = INE_PROVINCES[m.parent_code] || 'Desconocida';
   const regionName = PROVINCE_TO_REGION[provinceName] || 'España';
-  
-  // Si está en CIUDADES_PREMIUM, usamos esos datos enriquecidos
   const premiumData = CIUDADES_PREMIUM[m.label];
-  
-  return {
-    ...m,
-    name: m.label,
-    province: provinceName,
-    region: regionName,
-    isCity: true,
-    ...(premiumData || {})
-  };
+  return { ...m, name: m.label, province: provinceName, region: regionName, isCity: true, ...(premiumData || {}) };
 });
-
 const CATEGORIES = [
   { id: '1', name: 'Playas', icon: Waves, color: '#3498DB' },
   { id: '2', name: 'Castillos', icon: Castle, color: '#E67E22' },
   { id: '3', name: 'Ocio', icon: Coffee, color: '#9B59B6' },
   { id: '4', name: 'Cultura', icon: Star, color: '#F1C40F' },
+  { id: '5', name: 'Iglesias', icon: Church, color: '#2ECC71' },
 ];
 
 export function HomeScreen({ navigation }) {
@@ -80,11 +76,133 @@ export function HomeScreen({ navigation }) {
   const { userData } = useUser();
   const scrollY = useRef(new Animated.Value(0)).current;
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [serverPlaces, setServerPlaces] = useState([]);
+  const searchTimeout = useRef(null);
+  
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
   const menuAnim = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef(null);
+
+  // Efecto para buscar en el servidor con debounce
+  useEffect(() => {
+    if (searchQuery.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+
+    searchTimeout.current = setTimeout(async () => {
+      setIsSearching(true);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+      try {
+        const response = await fetch(`${API_ENDPOINTS.MUNICIPALITIES}?search=${encodeURIComponent(searchQuery)}&limit=10`, {
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        
+        if (response.ok) {
+          const data = await response.json();
+          // Mapear datos del servidor al formato esperado por la UI
+          const mappedData = data.map(m => {
+            const provinceName = INE_PROVINCES[m.parent_code] || 'Desconocida';
+            const regionName = PROVINCE_TO_REGION[provinceName] || 'España';
+            return {
+              ...m,
+              name: m.name,
+              province: provinceName,
+              region: regionName,
+              isCity: true
+            };
+          });
+          setSearchResults(mappedData);
+        } else {
+          // Fallback local si el servidor falla
+          performLocalSearch();
+        }
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.error('Error buscando en servidor:', error);
+        }
+        performLocalSearch();
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(searchTimeout.current);
+  }, [searchQuery]);
+
+  // Efecto para cargar lugares destacados del servidor
+  useEffect(() => {
+    const fetchServerPlaces = async () => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+
+      try {
+        const response = await fetch(API_ENDPOINTS.PLACES, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const data = await response.json();
+          // Mapear para compatibilidad: los monumentos oficiales ahora vienen con extra_data
+          const mapped = data.map(p => ({
+            ...p,
+            ...p.extra_data,
+            cityName: p.city // Compatibilidad con el resto del código
+          }));
+          setServerPlaces(mapped);
+        } else {
+          const flatMonumentos = Object.values(MONUMENTOS).flat();
+          setServerPlaces(flatMonumentos.slice(0, 10));
+        }
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.error('Error cargando lugares del servidor:', error);
+        }
+        const flatMonumentos = Object.values(MONUMENTOS).flat();
+        setServerPlaces(flatMonumentos.slice(0, 10));
+      }
+    };
+
+    fetchServerPlaces();
+  }, []);
+
+  const performLocalSearch = () => {
+    const normQuery = normalize(searchQuery);
+    if (!normQuery) return;
+
+    const filtered = LOCAL_FALLBACK_MUNICIPIOS
+      .filter(m => normalize(m.name).includes(normQuery))
+      .sort((a, b) => {
+        const aNorm = normalize(a.name);
+        const bNorm = normalize(b.name);
+        
+        // Exact match first
+        if (aNorm === normQuery) return -1;
+        if (bNorm === normQuery) return 1;
+        
+        // Starts with match second
+        const aStarts = aNorm.startsWith(normQuery);
+        const bStarts = bNorm.startsWith(normQuery);
+        if (aStarts && !bStarts) return -1;
+        if (bStarts && !aStarts) return 1;
+        
+        // Alphabetical otherwise
+        return aNorm.localeCompare(bNorm);
+      })
+      .slice(0, 15);
+      
+    setSearchResults(filtered);
+  };
+
   
   const isAdmin = userData?.isAdmin || userData?.role === 'admin';
   
@@ -95,98 +213,6 @@ export function HomeScreen({ navigation }) {
       .replace(/y/g, 'i');
   };
   
-  const getOpeningStatus = (place) => {
-    if (!place) return 'Cerrado';
-    
-    const now = new Date();
-    const day = now.getDay(); // 0=Dom, 1=Lun...
-    const hour = now.getHours();
-    const minutes = now.getMinutes();
-    const currentTimeMinutes = hour * 60 + minutes;
-
-    const parseTime = (timeStr) => {
-      if (!timeStr) return null;
-      const [h, m] = timeStr.split(':').map(Number);
-      return h * 60 + m;
-    };
-
-    // 1. New Structure: workingHours
-    if (place.workingHours) {
-      if (place.workingHours.is24h) return 'Abierto 24h';
-      
-      const isWeekend = day === 0 || day === 6;
-      const config = isWeekend ? place.workingHours.weekend : place.workingHours.weekday;
-      
-      if (config && config.open && config.close) {
-        const openTime = parseTime(config.open);
-        const closeTime = parseTime(config.close);
-        
-        if (currentTimeMinutes >= openTime && currentTimeMinutes < closeTime) {
-          return `Abierto (Cierra a las ${config.close})`;
-        }
-        
-        if (currentTimeMinutes < openTime) {
-          return `Cerrado (Abre hoy a las ${config.open})`;
-        }
-        
-        // Find next day it opens
-        let tomorrowDay = (day + 1) % 7;
-        let nextConfig = (tomorrowDay === 0 || tomorrowDay === 6) ? place.workingHours.weekend : place.workingHours.weekday;
-        
-        // Special case for Museums closed on Mondays
-        if (tomorrowDay === 1 && (place.category === 'Museos' || place.name.toLowerCase().includes('museo'))) {
-          return 'Cerrado (Abre el martes a las 10:00)';
-        }
-        
-        return `Cerrado (Mañana abre a las ${nextConfig.open || '10:00'})`;
-      }
-    }
-
-    // 2. Old Structure: seasons
-    const currentMonth = now.getMonth() + 1;
-    const activeSeason = (place.seasons || []).find(s => {
-      if (s.startMonth && s.endMonth) {
-        const start = Number(s.startMonth);
-        const end = Number(s.endMonth);
-        if (start <= end) return currentMonth >= start && currentMonth <= end;
-        return currentMonth >= start || currentMonth <= end; // Crosses year
-      }
-      return true;
-    });
-
-    if (activeSeason) {
-      const isSun = day === 0;
-      const isSat = day === 6;
-      let timeStr = activeSeason.weekday;
-      if (isSun) timeStr = activeSeason.festive || activeSeason.weekend;
-      else if (isSat) timeStr = activeSeason.weekend || activeSeason.weekday;
-
-      if (timeStr && timeStr.toLowerCase().includes('abierto')) return 'Abierto 24h';
-      if (timeStr && timeStr.toLowerCase().includes('siempre')) return 'Abierto 24h';
-
-      // Simple parser for "HH:MM - HH:MM" or "HH:MM a HH:MM"
-      const match = timeStr?.match(/(\d{1,2}:\d{2})\s*(?:-|a)\s*(\d{1,2}:\d{2})/);
-      if (match) {
-        const openTime = parseTime(match[1]);
-        const closeTime = parseTime(match[2]);
-        if (currentTimeMinutes >= openTime && currentTimeMinutes < closeTime) {
-          return `Abierto (Cierra a las ${match[2]})`;
-        }
-        if (currentTimeMinutes < openTime) {
-          return `Cerrado (Abre hoy a las ${match[1]})`;
-        }
-        return `Cerrado (Hasta mañana)`;
-      }
-    }
-
-    // Fallback
-    const closingHour = (day === 0 || day === 6) ? 14 : 20;
-    if (hour >= 10 && hour < closingHour) {
-      return 'Cerrado (Abre el martes a las 10:00)';
-    }
-
-    return 'Cerrado (Mañana abre a las 10:00)';
-  };
 
   const mergedPlaces = useMemo(() => {
     const staticPlaces = Object.entries(MONUMENTOS).flatMap(([cityName, list]) => 
@@ -199,13 +225,20 @@ export function HomeScreen({ navigation }) {
     }));
 
     const map = new Map();
+    // Prioridad y orden: Los últimos añadidos o modificados primero
     staticPlaces.forEach(p => map.set(p.id || p.name, p));
     userPlaces.forEach(p => map.set(p.id || p.name, p));
+    serverPlaces.forEach(p => map.set(p.id || p.name, p));
 
-    return Array.from(map.values());
-  }, [userData?.contributions]);
+    // Convertimos a array y ordenamos: User Added y IDs más altos primero
+    return Array.from(map.values()).sort((a, b) => {
+      if (a.isUserAdded && !b.isUserAdded) return -1;
+      if (!a.isUserAdded && b.isUserAdded) return 1;
+      return String(b.id).localeCompare(String(a.id));
+    });
+  }, [userData?.contributions, serverPlaces]);
 
-  const searchData = ALL_MUNICIPIOS;
+  const searchData = LOCAL_FALLBACK_MUNICIPIOS;
 
   const goToProfile = () => navigation.navigate('Profile');
   const goToIA = () => navigation.navigate('DistravelAI');
@@ -342,17 +375,17 @@ export function HomeScreen({ navigation }) {
 
             <View style={styles.statsRow}>
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>0€</Text>
+                <Text style={styles.statValue}>{Math.round(userData?.totalSavings || 0)}€</Text>
                 <Text style={styles.statLabel}>AHORROS</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>0</Text>
+                <Text style={styles.statValue}>{userData?.visitedPlaces?.length || 0}</Text>
                 <Text style={styles.statLabel}>VISITAS</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statItem}>
-                <Text style={styles.statValue}>0</Text>
+                <Text style={styles.statValue}>{userData?.experience || 0}</Text>
                 <Text style={styles.statLabel}>XP</Text>
               </View>
             </View>
@@ -455,75 +488,59 @@ export function HomeScreen({ navigation }) {
 
           {showSearchResults && (
             <View style={[styles.searchResults, { backgroundColor: theme.surface, borderColor: theme.border, shadowColor: isDarkMode ? '#000' : '#475569' }]}>
-              {searchData
-                .filter(p => {
-                  const query = normalize(searchQuery);
-                  const name = normalize(p.name);
-                  const prov = normalize(p.province || '');
-                  return name.includes(query) || prov.includes(query);
-                })
-                .sort((a, b) => {
-                  const query = normalize(searchQuery);
-                  const aName = normalize(a.name);
-                  const bName = normalize(b.name);
-                  
-                  // Exact matches first
-                  if (aName === query) return -1;
-                  if (bName === query) return 1;
-                  
-                  // Starts with query next
-                  if (aName.startsWith(query) && !bName.startsWith(query)) return -1;
-                  if (bName.startsWith(query) && !aName.startsWith(query)) return 1;
-                  
-                  return 0;
-                })
-                .slice(0, 5)
-                .map((item, idx, arr) => (
-                  <TouchableOpacity 
-                    key={idx} 
-                    style={[
-                      styles.searchItem, 
-                      { borderBottomColor: theme.border, borderBottomWidth: idx === arr.length - 1 ? 0 : 0.5 }
-                    ]}
-                    onPress={() => {
-                      setShowSearchResults(false);
-                      setSearchQuery('');
-                      navigation.navigate('CityDetail', { city: item });
-                    }}
-                  >
-                    <View style={[styles.searchIconCircle, { backgroundColor: '#3498DB20' }]}>
-                      <MapPin color="#3498DB" size={18} />
-                    </View>
-                    <View style={{ marginLeft: 12, flex: 1 }}>
-                      <Text style={[styles.itemName, { color: theme.text }]}>{item.name}</Text>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
-                        <Text style={[styles.itemCity, { color: theme.textSecondary }]}>
-                          {item.province}, {item.region}
-                        </Text>
+              {isSearching ? (
+                <View style={{ padding: 20, alignItems: 'center' }}>
+                  <ActivityIndicator color={theme.accent} />
+                  <Text style={{ color: theme.textSecondary, marginTop: 8, fontSize: 12 }}>Buscando en Distravel...</Text>
+                </View>
+              ) : searchResults.length === 0 ? (
+                <View style={{ padding: 20, alignItems: 'center' }}>
+                  <Text style={{ color: theme.textSecondary, fontSize: 14 }}>No se encontraron municipios</Text>
+                </View>
+              ) : (
+                <ScrollView style={{ maxHeight: 400 }} keyboardShouldPersistTaps="handled">
+                  {searchResults.map((item, idx, arr) => (
+                    <TouchableOpacity 
+                      key={idx} 
+                      style={[
+                        styles.searchItem, 
+                        { borderBottomColor: theme.border, borderBottomWidth: idx === arr.length - 1 ? 0 : 0.5 }
+                      ]}
+                      onPress={() => {
+                        setShowSearchResults(false);
+                        setSearchQuery('');
+                        navigation.navigate('CityDetail', { city: item });
+                      }}
+                    >
+                      <View style={[styles.searchIconCircle, { backgroundColor: '#3498DB20' }]}>
+                        <MapPin color="#3498DB" size={18} />
                       </View>
-                      {/* FIESTA & POBLACION INFO */}
-                      {(() => {
-                        const fiesta = getFiestaPatronal(item.name);
-                        const habitantes = getPoblacion(item.name);
-                        return (
-                          <View style={{ flexDirection: 'row', gap: 6, marginTop: 4 }}>
-                            <View style={styles.searchFiestaBadge}>
-                              <Text style={styles.searchFiestaText}>
-                                🎊 {fiesta.fiesta}
-                              </Text>
-                            </View>
-                            <View style={[styles.searchFiestaBadge, { backgroundColor: '#3498DB15' }]}>
-                              <Text style={[styles.searchFiestaText, { color: '#3498DB' }]}>
-                                👥 {habitantes}
-                              </Text>
-                            </View>
+                      <View style={{ marginLeft: 12, flex: 1 }}>
+                        <Text style={[styles.itemName, { color: theme.text }]}>{item.name}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
+                          <Text style={[styles.itemCity, { color: theme.textSecondary }]}>
+                            {item.province}, {item.region}
+                          </Text>
+                        </View>
+                        
+                        <View style={{ flexDirection: 'row', gap: 6, marginTop: 4 }}>
+                          <View style={styles.searchFiestaBadge}>
+                            <Text style={styles.searchFiestaText}>
+                              🎊 {item.fiesta || 'Festa Local'}
+                            </Text>
                           </View>
-                        );
-                      })()}
-                    </View>
-                    <ChevronRight color={theme.textSecondary} size={16} />
-                  </TouchableOpacity>
-                ))}
+                          <View style={[styles.searchFiestaBadge, { backgroundColor: '#3498DB15' }]}>
+                            <Text style={[styles.searchFiestaText, { color: '#3498DB' }]}>
+                              👥 {item.population?.toLocaleString() || item.habitantes || 'Censo 2023'}
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                      <ChevronRight color={theme.textSecondary} size={16} />
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              )}
             </View>
           )}
         </View>
@@ -576,14 +593,15 @@ export function HomeScreen({ navigation }) {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>Top Verificados</Text>
-            <View style={styles.eliteStatus}>
+            <TouchableOpacity onPress={() => navigation.navigate('Social')} style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={{ color: theme.primary, fontSize: 13, fontWeight: '700', marginRight: 4 }}>Ver Comunidad</Text>
               <Users color={theme.primary} size={14} />
-              <Text style={{ color: theme.primary, fontSize: 11, fontWeight: '700', marginLeft: 4 }}>+4k Usuarios</Text>
-            </View>
+            </TouchableOpacity>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.listPadding}>
             {mergedPlaces.filter(p => p.verified || p.verifiedStatus === 'Verificado' || p.verifiedByCommunity?.status === 'Alta Confianza').slice(0, 10).map((place, idx) => {
               const savings = calculatePlaceSavings(place);
+              const status = getOpeningStatus(place);
               return (
                 <TouchableOpacity 
                   key={idx} 
@@ -612,9 +630,9 @@ export function HomeScreen({ navigation }) {
                     </View>
 
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
-                      <Clock size={12} color={theme.primary} />
-                      <Text style={{ fontSize: 11, color: theme.primary, fontWeight: '700', marginLeft: 4 }}>
-                        {getOpeningStatus(place)}
+                      <Clock size={12} color={status.color} />
+                      <Text style={{ fontSize: 11, color: status.color, fontWeight: '700', marginLeft: 4 }}>
+                        {status.text}
                       </Text>
                     </View>
                   </View>
@@ -622,7 +640,7 @@ export function HomeScreen({ navigation }) {
                     position: 'absolute', 
                     top: 10, 
                     right: 10, 
-                    backgroundColor: '#2ECC71', 
+                    backgroundColor: status.color, 
                     width: 12, 
                     height: 12, 
                     borderRadius: 6,
@@ -638,7 +656,11 @@ export function HomeScreen({ navigation }) {
         <View style={styles.section}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.listPadding}>
             {CATEGORIES.map((cat) => (
-              <TouchableOpacity key={cat.id} style={styles.categoryCard}>
+              <TouchableOpacity 
+                key={cat.id} 
+                style={styles.categoryCard}
+                onPress={() => navigation.navigate('CategoryList', { category: cat })}
+              >
                 <View style={[styles.categoryIcon, { backgroundColor: theme.surface, borderColor: cat.color + '40' }]}>
                   <View style={[styles.categoryGlow, { backgroundColor: cat.color }]} />
                   <cat.icon color={cat.color} size={28} strokeWidth={2.5} />
@@ -666,7 +688,11 @@ export function HomeScreen({ navigation }) {
                   style={[styles.recentCard, { backgroundColor: theme.surface }]}
                   onPress={() => navigation.navigate('PlaceDetail', { place })}
                 >
-                  <Image source={{ uri: place.image }} style={styles.recentImage} />
+                  <Image 
+                    source={{ uri: place.image || 'https://images.unsplash.com/photo-1548013146-72479768b921?auto=format&fit=crop&q=80&w=400' }} 
+                    style={styles.recentImage}
+                    defaultSource={{ uri: 'https://images.unsplash.com/photo-1548013146-72479768b921?auto=format&fit=crop&q=80&w=400' }}
+                  />
                   <View style={styles.recentInfo}>
                     <Text style={[styles.placeName, { color: theme.text }]} numberOfLines={1}>{place.name}</Text>
                     <View style={styles.placeMeta}>
@@ -687,10 +713,17 @@ export function HomeScreen({ navigation }) {
                     </View>
 
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
-                      <Clock size={10} color={theme.primary} />
-                      <Text style={{ fontSize: 10, color: theme.primary, fontWeight: '700', marginLeft: 4 }}>
-                        {getOpeningStatus(place)}
-                      </Text>
+                      {(() => {
+                        const status = getOpeningStatus(place);
+                        return (
+                          <>
+                            <Clock size={10} color={status.color} />
+                            <Text style={{ fontSize: 10, color: status.color, fontWeight: '700', marginLeft: 4 }}>
+                              {status.text}
+                            </Text>
+                          </>
+                        );
+                      })()}
                     </View>
                   </View>
                 </TouchableOpacity>
@@ -1159,7 +1192,13 @@ const styles = StyleSheet.create({
     elevation: 1,
     marginBottom: 15,
   },
-  recentImage: { width: '100%', height: 170 },
+  recentImage: { 
+    width: '100%', 
+    height: 170, 
+    backgroundColor: '#E2E8F0',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
   recentInfo: { padding: 18 },
   placeName: { fontSize: 17, fontWeight: '800', marginBottom: 4 },
   placeMeta: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

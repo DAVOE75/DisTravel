@@ -15,6 +15,7 @@ db.exec(`
     normalized_name TEXT NOT NULL,
     province TEXT,
     region TEXT,
+    parent_code TEXT,
     population TEXT,
     history TEXT,
     geography TEXT,
@@ -37,6 +38,7 @@ db.exec(`
     description TEXT,
     image TEXT,
     accessibility TEXT, -- JSON string
+    extra_data TEXT,    -- JSON string for schedule, price, etc.
     verified INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );

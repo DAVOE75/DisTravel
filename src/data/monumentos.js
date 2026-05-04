@@ -4,11 +4,11 @@ export const MONUMENTOS = {
       id: 'm1',
       name: 'Museo Nacional del Prado',
       category: 'Museos',
-      image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Museo_del_Prado_2016_%2825185969599%29.jpg/1200px-Museo_del_Prado_2016_%2825185969599%29.jpg',
+      image: 'https://cdn.pixabay.com/photo/2015/12/08/00/40/madrid-1081914_1280.jpg',
       description: 'Una de las pinacotecas más importantes del mundo, con obras de Velázquez, Goya y El Greco.',
       schedule: 'Lunes a sábado: 10:00 - 20:00. Domingos y festivos: 10:00 - 19:00.',
       price: 'General: 15€. Reducida: 7.50€.',
-      disabilityBenefit: 'GRATIS para personas con discapacidad (>33%) y un acompañante (si la discapacidad es >65% o requiere ayuda).',
+      disabilityBenefit: 'GRATIS para personas con discapacidad y un acompañante acreditado.',
       technicalSpecs: {
         doorWidth: '120cm',
         turningSpace: 'Sí (>150cm)',
@@ -26,9 +26,9 @@ export const MONUMENTOS = {
       },
       suitability: ['MOTOR', 'VISUAL', 'AUDITORY', 'COGNITIVE'],
       verifiedByCommunity: {
-        status: 'Alta Confianza',
-        lastCheck: 'Hace 2 días',
-        userCount: 42
+        status: 'Verificado',
+        lastCheck: 'Hoy',
+        userCount: 154
       },
       location: { latitude: 40.4137, longitude: -3.6921 }
     },

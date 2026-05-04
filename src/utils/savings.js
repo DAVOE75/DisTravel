@@ -14,11 +14,16 @@ export const calculatePlaceSavings = (place) => {
       if (!tariff) return null;
       // Soportamos tanto 'value' como 'price' (AddLocation usa price, PlaceDetail usaba value)
       const val = tariff.value !== undefined ? tariff.value : tariff.price;
+      if (typeof val === 'string' && val.toLowerCase().includes('gratis')) return 0;
       return parseFloat(val);
     };
 
     const generalVal = findValue(['general', 'adulto', 'completa']);
-    const pcdVal = findValue(['pcd', 'pmr', 'discapacidad', 'reducida']);
+    // Priorizamos palabras clave específicas de discapacidad antes que 'reducida' genérica
+    let pcdVal = findValue(['pcd', 'pmr', 'discapacidad']);
+    if (pcdVal === null) {
+      pcdVal = findValue(['reducida']);
+    }
 
     if (generalVal !== null && pcdVal !== null && !isNaN(generalVal) && !isNaN(pcdVal)) {
       const diff = generalVal - pcdVal;

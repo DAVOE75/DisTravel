@@ -12,6 +12,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
+import { API_BASE_URL } from '../config/api';
 import { 
   ChevronLeft, 
   CheckCircle, 
@@ -34,7 +35,7 @@ export function AdminValidationsScreen({ navigation }) {
     return (userData?.contributions || []).filter(p => !p.verified && p.id !== 'castillo-belmonte' && p.id !== 'castillo-la-mota' && p.id !== 'castillo-santa-barbara');
   }, [userData.contributions]);
 
-  const SERVER_URL = 'http://82.223.44.196:3000';
+  const SERVER_URL = API_BASE_URL;
 
   const handleValidate = async (placeId) => {
     try {

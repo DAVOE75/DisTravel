@@ -105,7 +105,15 @@ app.get('/api/municipalities', (req, res) => {
     params.push(parseInt(limit));
 
     const rows = db.prepare(query).all(...params);
-    res.json(rows);
+    
+    // Mapeo para compatibilidad con el frontend
+    const mappedRows = rows.map(row => ({
+      ...row,
+      fiesta: row.patronal_fiesta,
+      fiesta_date: row.patronal_date
+    }));
+    
+    res.json(mappedRows);
   } catch (error) {
     res.status(500).json({ error: 'Error al consultar municipios' });
   }
@@ -116,7 +124,15 @@ app.get('/api/municipalities/:id', (req, res) => {
   try {
     const row = db.prepare('SELECT * FROM municipalities WHERE id = ?').get(req.params.id);
     if (!row) return res.status(404).json({ error: 'Municipio no encontrado' });
-    res.json(row);
+    
+    // Mapeo para compatibilidad con el frontend
+    const mappedRow = {
+      ...row,
+      fiesta: row.patronal_fiesta,
+      fiesta_date: row.patronal_date
+    };
+    
+    res.json(mappedRow);
   } catch (error) {
     res.status(500).json({ error: 'Error al consultar municipio' });
   }
@@ -124,14 +140,26 @@ app.get('/api/municipalities/:id', (req, res) => {
 
 // --- ENDPOINT: PLACES (LUGARES COMPARTIDOS) ---
 
-// Obtener lugares compartidos
+// Obtener lugares compartidos (con filtro opcional por ciudad)
 app.get('/api/places', (req, res) => {
   try {
-    const rows = db.prepare('SELECT * FROM places ORDER BY created_at DESC').all();
-    // Parsear el campo accessibility que guardamos como JSON string
+    const { city } = req.query;
+    let query = 'SELECT * FROM places';
+    let params = [];
+
+    if (city) {
+      query += ' WHERE city = ?';
+      params.push(city);
+    }
+
+    query += ' ORDER BY created_at DESC';
+    const rows = db.prepare(query).all(...params);
+    
+    // Parsear campos JSON
     const parsedRows = rows.map(r => ({
       ...r,
       accessibility: JSON.parse(r.accessibility || '{}'),
+      extra_data: JSON.parse(r.extra_data || '{}'),
       verified: !!r.verified
     }));
     res.json(parsedRows);

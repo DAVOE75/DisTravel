@@ -1888,3 +1888,38 @@ Android Bundled 347ms index.js (1 module)
  LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
  LOG  Distravel v3.0: Carga finalizada.
  LOG  Distravel AI: Analizando datos reales para Mutxamel...
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 453ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [ReferenceError: Property 'ALL_MUNICIPIOS' doesn't exist]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ ERROR  [ReferenceError: Property 'CATEGORIES' doesn't exist]
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 87ms index.js (1 module)
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel App v3.0.2 - REFRESHED
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Datos recuperados de almacenamiento.
+ WARN  Servidor backend no disponible o tiempo excedido, operando en modo local.
+ LOG  Distravel v3.0.2: Estado de usuario sincronizado con País y Prefijo.
+ LOG  Distravel v3.0: Carga finalizada.

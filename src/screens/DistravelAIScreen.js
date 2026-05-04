@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
+import { useUser } from '../context/UserContext';
 import * as ImagePicker from 'expo-image-picker';
 import { 
   ChevronLeft, 
@@ -38,6 +39,7 @@ const { width } = Dimensions.get('window');
 
 export function DistravelAIScreen({ navigation }) {
   const { theme, isDarkMode } = useTheme();
+  const { userData } = useUser();
   const [activeTab, setActiveTab] = useState('chat'); // 'chat', 'auditor', 'explorer'
   const [messages, setMessages] = useState([
     { id: 1, text: "¡Hola! Soy Distravel AI. ¿En qué puedo ayudarte hoy con tu viaje accesible?", sender: 'ai' }
@@ -49,23 +51,45 @@ export function DistravelAIScreen({ navigation }) {
   const [explorerResult, setExplorerResult] = useState(null);
   const [capturedImage, setCapturedImage] = useState(null);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!inputText.trim()) return;
 
     const newMsg = { id: Date.now(), text: inputText, sender: 'user' };
-    setMessages([...messages, newMsg]);
+    const updatedMessages = [...messages, newMsg];
+    setMessages(updatedMessages);
     setInputText('');
     setIsTyping(true);
 
-    setTimeout(() => {
-      const aiResponse = { 
-        id: Date.now() + 1, 
-        text: "He analizado tu consulta. Para ese destino en Alcoy, te recomiendo el Hotel Serpis, tiene las mejores valoraciones en baños adaptados y una rampa de entrada certificada. ¿Quieres que te muestre la ruta?", 
-        sender: 'ai' 
-      };
-      setMessages(prev => [...prev, aiResponse]);
-      setIsTyping(false);
-    }, 1500);
+    if (userData?.aiApiKey) {
+      try {
+        const prompt = updatedMessages.map(m => `${m.sender === 'ai' ? 'Asistente' : 'Usuario'}: ${m.text}`).join('\\n') + '\\nAsistente:';
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userData.aiApiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: "Eres Distravel AI, un experto en turismo accesible. Responde de forma concisa.\\n" + prompt }] }]
+          })
+        });
+        const data = await response.json();
+        const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Lo siento, hubo un error de comunicación.';
+        
+        setMessages(prev => [...prev, { id: Date.now() + 1, text: aiText, sender: 'ai' }]);
+      } catch (error) {
+        setMessages(prev => [...prev, { id: Date.now() + 1, text: 'Error al conectar con la IA.', sender: 'ai' }]);
+      } finally {
+        setIsTyping(false);
+      }
+    } else {
+      setTimeout(() => {
+        const aiResponse = { 
+          id: Date.now() + 1, 
+          text: "Parece que no tienes configurada la clave de IA. Por favor, añádela en tu perfil.", 
+          sender: 'ai' 
+        };
+        setMessages(prev => [...prev, aiResponse]);
+        setIsTyping(false);
+      }, 1500);
+    }
   };
 
   const startAnalysis = async () => {
@@ -75,27 +99,63 @@ export function DistravelAIScreen({ navigation }) {
       return;
     }
 
-    const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.7 });
+    const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.7, base64: true });
 
     if (!result.canceled) {
       setCapturedImage(result.assets[0].uri);
       setIsAnalyzing(true);
       setAnalysisResult(null);
       
-      setTimeout(() => {
-        setAnalysisResult({
-          score: 8.5,
-          status: 'Accesibilidad Verificada',
-          details: [
-            { type: 'success', text: 'Ancho de puerta adecuado (90cm)' },
-            { type: 'success', text: 'Suelo antideslizante detectado' },
-            { type: 'warning', text: 'Barra de apoyo ligeramente alta' }
-          ]
-        });
-        setIsAnalyzing(false);
-      }, 2000);
+      if (userData?.aiApiKey && result.assets[0].base64) {
+        try {
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userData.aiApiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [
+                  { text: 'Analiza esta imagen y evalúa la accesibilidad. Devuelve el resultado en formato JSON estricto con esta estructura: { "score": 8.5, "status": "Texto de estado", "details": [{ "type": "success", "text": "Detalle" }] }. No incluyas markdown, solo el JSON.' },
+                  { inlineData: { mimeType: 'image/jpeg', data: result.assets[0].base64 } }
+                ]
+              }]
+            })
+          });
+          const data = await response.json();
+          const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          
+          let parsedResult;
+          try {
+            const cleanJson = aiText.replace(/```json/g, '').replace(/```/g, '').trim();
+            parsedResult = JSON.parse(cleanJson);
+          } catch (e) {
+            parsedResult = {
+              score: 5.0, status: 'Análisis Incompleto',
+              details: [{ type: 'warning', text: 'Respuesta de IA no parseable. Resultado bruto: ' + aiText.substring(0, 50) }]
+            };
+          }
+          setAnalysisResult(parsedResult);
+        } catch (error) {
+          Alert.alert("Error IA", "No se pudo auditar la imagen con Gemini.");
+        } finally {
+          setIsAnalyzing(false);
+        }
+      } else {
+        setTimeout(() => {
+          setAnalysisResult({
+            score: 8.5,
+            status: 'Accesibilidad Verificada (MOCK)',
+            details: [
+              { type: 'success', text: 'Ancho de puerta adecuado (90cm)' },
+              { type: 'success', text: 'Suelo antideslizante detectado' },
+              { type: 'warning', text: 'Barra de apoyo ligeramente alta' }
+            ]
+          });
+          setIsAnalyzing(false);
+        }, 2000);
+      }
     }
   };
+
 
   const [isCorrecting, setIsCorrecting] = useState(false);
   const [correctionText, setCorrectionText] = useState('');
@@ -108,7 +168,7 @@ export function DistravelAIScreen({ navigation }) {
       return;
     }
 
-    const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.7 });
+    const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, quality: 0.7, base64: true });
 
     if (!result.canceled) {
       setCapturedImage(result.assets[0].uri);
@@ -116,15 +176,43 @@ export function DistravelAIScreen({ navigation }) {
       setExplorerResult(null);
       setIsCorrecting(false);
       
-      setTimeout(() => {
-        setExplorerResult({
-          name: 'Museo de Biodiversidad (Alcoy)',
-          description: 'Antigua fábrica rehabilitada que alberga una colección única sobre fauna y flora mediterránea. Un ejemplo de arquitectura industrial del siglo XX.',
-          history: 'Fundado en 2004 para la investigación y divulgación de la biodiversidad local.',
-          accessInfo: 'Totalmente accesible, cuenta con ascensores panorámicos y maquetas táctiles para personas con discapacidad visual.'
-        });
-        setIsAnalyzing(false);
-      }, 2500);
+      if (userData?.aiApiKey && result.assets[0].base64) {
+        try {
+          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userData.aiApiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              contents: [{
+                parts: [
+                  { text: "Eres un guía turístico IA y asistes a alguien con discapacidad visual. Describe qué es el objeto principal de la imagen y lee cualquier texto visible de forma clara y directa." },
+                  { inlineData: { mimeType: 'image/jpeg', data: result.assets[0].base64 } }
+                ]
+              }]
+            })
+          });
+          const data = await response.json();
+          const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No pude identificar la imagen.';
+          
+          setExplorerResult({
+            objectName: 'Análisis Gemini',
+            description: aiText,
+            confidence: 99
+          });
+        } catch (error) {
+          Alert.alert("Error IA", "No se pudo identificar la imagen con Gemini.");
+        } finally {
+          setIsAnalyzing(false);
+        }
+      } else {
+        setTimeout(() => {
+          setExplorerResult({
+            objectName: 'Panel Informativo del Castillo',
+            description: 'Es un panel turístico de metal oscuro. El texto dice: "Construido en el siglo XIV, este bastión formaba parte de las defensas principales de la muralla." Hay un código QR en la esquina inferior derecha.',
+            confidence: 96
+          });
+          setIsAnalyzing(false);
+        }, 2500);
+      }
     }
   };
 

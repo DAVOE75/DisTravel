@@ -22,6 +22,8 @@ import { HowToUseScreen } from '../screens/HowToUseScreen';
 import { SplashScreen } from '../screens/SplashScreen';
 import { MedalsScreen } from '../screens/MedalsScreen';
 import { AdminValidationsScreen } from '../screens/AdminValidationsScreen';
+import { SocialScreen } from '../screens/SocialScreen';
+import CategoryListScreen from '../screens/CategoryListScreen';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
 
@@ -56,6 +58,8 @@ function AuthenticatedStack() {
         <Stack.Screen name="HowToUse" component={HowToUseScreen} />
         <Stack.Screen name="Medals" component={MedalsScreen} />
         <Stack.Screen name="AdminValidations" component={AdminValidationsScreen} />
+        <Stack.Screen name="Social" component={SocialScreen} />
+        <Stack.Screen name="CategoryList" component={CategoryListScreen} />
       </Stack.Navigator>
     </View>
   );

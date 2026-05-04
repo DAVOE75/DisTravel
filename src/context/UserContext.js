@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as FileSystem from 'expo-file-system';
+import { API_BASE_URL } from '../config/api';
 const { getInfoAsync, makeDirectoryAsync, copyAsync, documentDirectory } = FileSystem;
 
 const UserContext = createContext();
@@ -167,9 +168,13 @@ const SEED_DATA = [
       magneticLoop: true
     },
     tariffs: [
-      { id: 1, label: 'Entrada General', price: '3,00 €', value: 3.00 },
-      { id: 2, label: 'Reducida (Est./Jub.)', price: '1,50 €', value: 1.50 },
-      { id: 3, label: 'PCD + Acompañante', price: 'Gratis', value: 0 }
+      { id: 1, label: 'Entrada General MARQ', price: '6,00 €', value: 6.00 },
+      { id: 2, label: 'General (Domingos y festivos)', price: '3,00 €', value: 3.00 },
+      { id: 3, label: 'Entrada Conjunta (MARQ + Yacimientos)', price: '8,00 €', value: 8.00 },
+      { id: 4, label: 'Yacimientos (Lucentum/Illeta/Torre)', price: '3,00 €', value: 3.00 },
+      { id: 5, label: 'Tarifa Reducida', price: '3,00 €', value: 3.00 },
+      { id: 6, label: 'PCD / Discapacidad', price: 'Gratis', value: 0 },
+      { id: 7, label: 'Niños (<7 años)', price: 'Gratis', value: 0 }
     ],
     location: { latitude: 38.3534, longitude: -0.4754, latitudeDelta: 0.005, longitudeDelta: 0.005 },
     image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/MARQ_Alacant.JPG/1200px-MARQ_Alacant.JPG'
@@ -285,6 +290,40 @@ const SEED_DATA = [
     ],
     location: { latitude: 38.3461, longitude: -0.4793, latitudeDelta: 0.005, longitudeDelta: 0.005 },
     image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Basilica_of_Santa_Maria_of_Alicante_-_Facciata.jpg/1200px-Basilica_of_Santa_Maria_of_Alicante_-_Facciata.jpg'
+  },
+  {
+    id: 'lucentum-alicante',
+    name: 'Yacimiento Arqueológico Lucentum',
+    city: 'Alicante',
+    province: 'Alicante',
+    address: 'Calle Júpiter, s/n, 03016 Alicante',
+    category: 'Monumento',
+    description: 'Restos de la antigua ciudad romana de Lucentum, antecesora de la actual Alicante. Un yacimiento clave para entender el origen de la ciudad.',
+    seasons: [{ name: 'Horario', period: 'Todo el año', weekday: '10:00 a 14:00 y 16:00 a 18:00', weekend: '10:00 a 14:00' }],
+    accessibility: { physical: true, visual: false, auditory: true, cognitive: true },
+    tariffs: [
+      { id: 1, label: 'Entrada General', price: '3,00 €', value: 3.00 },
+      { id: 2, label: 'PCD / Discapacidad', price: 'Gratis', value: 0 }
+    ],
+    location: { latitude: 38.3619, longitude: -0.4431, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Lucentum_Alicante.jpg/1200px-Lucentum_Alicante.jpg'
+  },
+  {
+    id: 'illeta-banyets',
+    name: 'La Illeta dels Banyets',
+    city: 'El Campello',
+    province: 'Alicante',
+    address: 'Calle de la Illeta, s/n, 03560 El Campello',
+    category: 'Monumento',
+    description: 'Importante yacimiento con restos de la Edad del Bronce, íberos y romanos. Destacan sus famosas piscifactorías romanas excavadas en la roca.',
+    seasons: [{ name: 'Horario', period: 'Todo el año', weekday: '10:00 a 14:00 y 15:30 a 17:30', weekend: '10:00 a 14:00' }],
+    accessibility: { physical: true, visual: false, auditory: true, cognitive: true },
+    tariffs: [
+      { id: 1, label: 'Entrada General', price: '3,00 €', value: 3.00 },
+      { id: 2, label: 'PCD / Discapacidad', price: 'Gratis', value: 0 }
+    ],
+    location: { latitude: 38.4358, longitude: -0.3789, latitudeDelta: 0.005, longitudeDelta: 0.005 },
+    image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Illeta_dels_Banyets_El_Campello.jpg/1200px-Illeta_dels_Banyets_El_Campello.jpg'
   },
   {
     id: 'museo-hogueras-alicante',
@@ -435,7 +474,7 @@ export const UserProvider = ({ children }) => {
 
         // 3. Intentar obtener lugares del SERVIDOR (Compartidos por otros) con Timeout
         try {
-          const SERVER_URL = 'http://82.223.44.196:3000';
+          const SERVER_URL = API_BASE_URL;
           
           // Timeout de 3 segundos para no bloquear el Splash
           const controller = new AbortController();
@@ -620,7 +659,7 @@ export const UserProvider = ({ children }) => {
 
       // TODO: Configurar la URL real del servidor. 
       // Por ahora usamos la IP pública detectada para pruebas
-      const SERVER_URL = 'http://82.223.44.196:3000'; 
+      const SERVER_URL = API_BASE_URL;
 
       const response = await fetch(`${SERVER_URL}/api/upload`, {
         method: 'POST',
@@ -647,7 +686,7 @@ export const UserProvider = ({ children }) => {
    */
   const fetchPlacesFromServer = async () => {
     try {
-      const SERVER_URL = 'http://82.223.44.196:3000';
+      const SERVER_URL = API_BASE_URL;
       const response = await fetch(`${SERVER_URL}/api/places`);
       const data = await response.json();
       return data;
