@@ -33,7 +33,9 @@ import {
   Map,
   Globe,
   CreditCard,
-  Zap
+  Zap,
+  Eye,
+  EyeOff
 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
@@ -61,7 +63,7 @@ const EU_COUNTRIES = [
   { name: 'Hungría', code: 'HU', prefix: '+36' },
 ];
 
-const InputField = ({ label, value, icon: Icon, onChangeText, keyboardType, theme, actionIcon: ActionIcon, onActionPress, isLoading, prefix, onPrefixPress }) => (
+const InputField = ({ label, value, icon: Icon, onChangeText, keyboardType, theme, actionIcon: ActionIcon, onActionPress, isLoading, prefix, onPrefixPress, secureTextEntry }) => (
   <View style={styles.inputContainer}>
     <Text style={[styles.label, { color: theme.textSecondary }]}>{label}</Text>
     <View style={[styles.inputWrapper, { backgroundColor: theme.surface, borderColor: theme.border }]}>
@@ -84,6 +86,7 @@ const InputField = ({ label, value, icon: Icon, onChangeText, keyboardType, them
         keyboardType={keyboardType}
         placeholderTextColor={theme.textSecondary}
         autoCapitalize="none"
+        secureTextEntry={secureTextEntry}
       />
       {ActionIcon && (
         <TouchableOpacity 
@@ -115,6 +118,7 @@ export function EditProfileScreen({ navigation }) {
   const [tempImage, setTempImage] = useState(null);
   const [isLocating, setIsLocating] = useState(false);
   const [countryModalVisible, setCountryModalVisible] = useState(false);
+  const [showApiKey, setShowApiKey] = useState(false);
 
   const handleCountrySelect = (country) => {
     setLocalData(prev => ({ 
@@ -357,11 +361,23 @@ export function EditProfileScreen({ navigation }) {
                 value={localData.aiApiKey} 
                 icon={Zap}
                 theme={theme}
-                placeholder="Ingresa tu API Key para potencia extra"
+                placeholder="Clave de Google Gemini"
+                secureTextEntry={!showApiKey}
+                actionIcon={showApiKey ? EyeOff : Eye}
+                onActionPress={() => setShowApiKey(!showApiKey)}
                 onChangeText={(text) => setLocalData(prev => ({...prev, aiApiKey: text}))}
               />
+              <InputField 
+                label="API Key de OpenAI (ChatGPT Fallback)" 
+                value={localData.openaiApiKey} 
+                icon={Zap}
+                theme={theme}
+                placeholder="sk-..."
+                secureTextEntry={!showApiKey}
+                onChangeText={(text) => setLocalData(prev => ({...prev, openaiApiKey: text}))}
+              />
               <Text style={{ color: theme.textSecondary, fontSize: 11, fontStyle: 'italic', marginTop: -15, marginLeft: 5 }}>
-                * Esta clave activa modelos de lenguaje más potentes en la generación de guías.
+                * Estas claves activan la generación inteligente. ChatGPT se usará si Gemini falla.
               </Text>
             </View>
           )}

@@ -255,6 +255,51 @@ app.delete('/api/places/:id', (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════
+// PROXY GEMINI - El teléfono no puede llamar a Google directamente
+// El servidor actúa de intermediario (aquí sí funciona la clave)
+// ═══════════════════════════════════════════
+const GEMINI_MASTER_KEY = 'AIzaSyARIcAoz-_wFDhCncJYGrjc2z4UAugywcM';
+
+app.post('/api/gemini', async (req, res) => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 90000); // 90 segundos en servidor
+
+  try {
+    const { prompt, modelName = 'gemini-2.5-flash' } = req.body;
+    if (!prompt) return res.status(400).json({ error: 'Prompt requerido' });
+
+    console.log(`[IA PROXY] Investigando: ${prompt.substring(0, 50)}...`);
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_MASTER_KEY}`;
+    
+    const geminiRes = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      signal: controller.signal,
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { temperature: 0.1, maxOutputTokens: 4000 }
+      })
+    });
+
+    clearTimeout(timeoutId);
+    if (!geminiRes.ok) {
+      const err = await geminiRes.json().catch(() => ({}));
+      return res.status(geminiRes.status).json({ error: err.error?.message || 'Error Gemini' });
+    }
+
+    const data = await geminiRes.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+    console.log(`[IA PROXY] Éxito: ${text?.length || 0} caracteres recibidos.`);
+    res.json({ text });
+  } catch (error) {
+    clearTimeout(timeoutId);
+    console.error('[PROXY GEMINI] Error:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`[DISTRAVEL SERVER] Corriendo en puerto ${PORT}`);
   console.log(`[DISTRAVEL SERVER] Modo: ${process.env.NODE_ENV || 'development'}`);

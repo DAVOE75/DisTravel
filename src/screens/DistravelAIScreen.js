@@ -25,7 +25,7 @@ import {
   Send, 
   ScanSearch,
   ShieldCheck,
-  AlertTriangle,
+  TriangleAlert,
   MapPin,
   Library,
   Info,
@@ -33,6 +33,7 @@ import {
   Edit,
   Check
 } from 'lucide-react-native';
+import { GeminiService } from '../utils/gemini';
 import { typography } from '../theme/typography';
 
 const { width } = Dimensions.get('window');
@@ -60,20 +61,18 @@ export function DistravelAIScreen({ navigation }) {
     setInputText('');
     setIsTyping(true);
 
-    if (userData?.aiApiKey) {
+    if (userData?.aiApiKey || process.env.EXPO_PUBLIC_GEMINI_API_KEY) {
       try {
-        const prompt = updatedMessages.map(m => `${m.sender === 'ai' ? 'Asistente' : 'Usuario'}: ${m.text}`).join('\\n') + '\\nAsistente:';
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userData.aiApiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: "Eres Distravel AI, un experto en turismo accesible. Responde de forma concisa.\\n" + prompt }] }]
-          })
-        });
-        const data = await response.json();
-        const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Lo siento, hubo un error de comunicación.';
+        const history = updatedMessages.map(m => `${m.sender === 'ai' ? 'Asistente' : 'Usuario'}: ${m.text}`).join('\n');
+        const prompt = `Eres Distravel AI, un experto en turismo accesible. Responde de forma concisa y profesional.\n\nHistorial:\n${history}\nAsistente:`;
         
-        setMessages(prev => [...prev, { id: Date.now() + 1, text: aiText, sender: 'ai' }]);
+        const aiText = await GeminiService.generateContent(prompt, userData?.aiApiKey, userData?.openaiApiKey);
+        
+        setMessages(prev => [...prev, { 
+          id: Date.now() + 1, 
+          text: aiText || 'Lo siento, no he podido procesar tu solicitud en este momento.', 
+          sender: 'ai' 
+        }]);
       } catch (error) {
         setMessages(prev => [...prev, { id: Date.now() + 1, text: 'Error al conectar con la IA.', sender: 'ai' }]);
       } finally {
@@ -106,34 +105,25 @@ export function DistravelAIScreen({ navigation }) {
       setIsAnalyzing(true);
       setAnalysisResult(null);
       
-      if (userData?.aiApiKey && result.assets[0].base64) {
+      if ((userData?.aiApiKey || process.env.EXPO_PUBLIC_GEMINI_API_KEY) && result.assets[0].base64) {
         try {
-          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userData.aiApiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{
-                parts: [
-                  { text: 'Analiza esta imagen y evalúa la accesibilidad. Devuelve el resultado en formato JSON estricto con esta estructura: { "score": 8.5, "status": "Texto de estado", "details": [{ "type": "success", "text": "Detalle" }] }. No incluyas markdown, solo el JSON.' },
-                  { inlineData: { mimeType: 'image/jpeg', data: result.assets[0].base64 } }
-                ]
-              }]
-            })
-          });
-          const data = await response.json();
-          const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          // Auditoría de Accesibilidad Visual via Central Service
+          const prompt = `Analiza esta imagen y evalúa la accesibilidad física del lugar. 
+          Devuelve el resultado en formato JSON estricto con esta estructura: 
+          { 
+            "score": 8.5, 
+            "status": "Accesibilidad Buena", 
+            "details": [{ "type": "success", "text": "Rampa detectada" }, { "type": "warning", "text": "Escalón sin señalizar" }] 
+          }. 
+          No incluyas markdown, solo el JSON puro.`;
+
+          const aiText = await GeminiService.generateContent(prompt, userData?.aiApiKey, userData?.openaiApiKey, result.assets[0].base64);
           
-          let parsedResult;
-          try {
-            const cleanJson = aiText.replace(/```json/g, '').replace(/```/g, '').trim();
-            parsedResult = JSON.parse(cleanJson);
-          } catch (e) {
-            parsedResult = {
-              score: 5.0, status: 'Análisis Incompleto',
-              details: [{ type: 'warning', text: 'Respuesta de IA no parseable. Resultado bruto: ' + aiText.substring(0, 50) }]
-            };
-          }
-          setAnalysisResult(parsedResult);
+          const parsedResult = GeminiService.extractJSON(aiText);
+          setAnalysisResult(parsedResult || {
+            score: 0, status: 'Error de análisis',
+            details: [{ type: 'warning', text: 'No se pudo interpretar el análisis de la imagen.' }]
+          });
         } catch (error) {
           Alert.alert("Error IA", "No se pudo auditar la imagen con Gemini.");
         } finally {
@@ -176,26 +166,16 @@ export function DistravelAIScreen({ navigation }) {
       setExplorerResult(null);
       setIsCorrecting(false);
       
-      if (userData?.aiApiKey && result.assets[0].base64) {
+      if ((userData?.aiApiKey || process.env.EXPO_PUBLIC_GEMINI_API_KEY) && result.assets[0].base64) {
         try {
-          const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userData.aiApiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              contents: [{
-                parts: [
-                  { text: "Eres un guía turístico IA y asistes a alguien con discapacidad visual. Describe qué es el objeto principal de la imagen y lee cualquier texto visible de forma clara y directa." },
-                  { inlineData: { mimeType: 'image/jpeg', data: result.assets[0].base64 } }
-                ]
-              }]
-            })
-          });
-          const data = await response.json();
-          const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No pude identificar la imagen.';
+          const prompt = "Eres un guía turístico IA y asistes a alguien con discapacidad visual. Describe qué es el objeto principal de la imagen, su valor histórico si aplica, y lee cualquier texto visible de forma clara y directa. Sé descriptivo pero conciso.";
+          const aiText = await GeminiService.generateContent(prompt, userData?.aiApiKey, userData?.openaiApiKey, result.assets[0].base64);
           
           setExplorerResult({
-            objectName: 'Análisis Gemini',
-            description: aiText,
+            name: 'Explorador Distravel',
+            description: aiText || 'No pude identificar la imagen.',
+            history: 'Identificación automática basada en visión artificial.',
+            accessInfo: 'Análisis en tiempo real',
             confidence: 99
           });
         } catch (error) {
@@ -363,7 +343,7 @@ export function DistravelAIScreen({ navigation }) {
                   <View key={idx} style={styles.detailItem}>
                     {detail.type === 'success' ? 
                       <ShieldCheck color={theme.success} size={18} /> : 
-                      <AlertTriangle color="#F1C40F" size={18} />
+                      <TriangleAlert color="#F1C40F" size={18} />
                     }
                     <Text style={[styles.detailText, { color: theme.textSecondary }]}>{detail.text}</Text>
                   </View>

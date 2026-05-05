@@ -429,7 +429,8 @@ const INITIAL_USER_DATA = {
   level: 1,           // Nivel actual
   badges: [],         // Insignias ganadas
   unlockedTitles: ['Viajero Novel'], // Títulos ganados
-  aiApiKey: 'AIzaSyAHvW4-KuvjmzPpxMxO1vjiTs7lddJ50iQ', // Clave de API para Gemini (Admin)
+  aiApiKey: process.env.EXPO_PUBLIC_GEMINI_API_KEY || '', // Clave de API para Gemini desde entorno o vacía
+  openaiApiKey: process.env.EXPO_PUBLIC_OPENAI_API_KEY || '', // Clave de API para OpenAI como fallback
 };
 
 export const UserProvider = ({ children }) => {
@@ -635,9 +636,6 @@ export const UserProvider = ({ children }) => {
       const response = await fetch(`${SERVER_URL}/api/upload`, {
         method: 'POST',
         body: formData,
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
       });
 
       const result = await response.json();

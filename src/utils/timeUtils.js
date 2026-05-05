@@ -1,6 +1,6 @@
 /**
  * Calcula si un lugar está abierto o cerrado basado en su horario estructurado o string.
- * Retorna un objeto { text, color }
+ * Retorna un objeto { text, color, detail }
  */
 export const getOpeningStatus = (place) => {
   const now = new Date();
@@ -8,6 +8,27 @@ export const getOpeningStatus = (place) => {
   const hour = now.getHours();
   const minute = now.getMinutes();
   const currentTime = hour * 100 + minute;
+
+  const formatTime = (timeStr) => {
+    if (!timeStr) return '';
+    return timeStr.includes(':') ? timeStr : timeStr.slice(0, 2) + ':' + timeStr.slice(2);
+  };
+
+  const getMinutesDiff = (time1, time2) => {
+    // time format is HHMM as number
+    const h1 = Math.floor(time1 / 100);
+    const m1 = time1 % 100;
+    const h2 = Math.floor(time2 / 100);
+    const m2 = time2 % 100;
+    return (h2 * 60 + m2) - (h1 * 60 + m1);
+  };
+
+  const formatDiff = (diffMinutes) => {
+    const h = Math.floor(diffMinutes / 60);
+    const m = diffMinutes % 60;
+    if (h > 0) return `${h}h ${m}m`;
+    return `${m}m`;
+  };
 
   // Si tiene horario estructurado (el nuevo sistema)
   if (place.structuredSchedules && place.structuredSchedules.length > 0) {
@@ -20,27 +41,62 @@ export const getOpeningStatus = (place) => {
     }) || place.structuredSchedules[0];
 
     const dayInfo = schedule.days[day];
-    if (!dayInfo || !dayInfo.isOpen) return { text: 'CERRADO', color: '#E74C3C' };
+    if (!dayInfo || !dayInfo.isOpen) return { text: 'CERRADO', color: '#E74C3C', detail: 'Cerrado hoy' };
 
-    // Check morning
+    const shifts = [];
     if (dayInfo.mOpen && dayInfo.mClose) {
-      const open = parseInt(dayInfo.mOpen.replace(':', ''));
-      const close = parseInt(dayInfo.mClose.replace(':', ''));
-      if (currentTime >= open && currentTime < close) return { text: 'ABIERTO', color: '#2ECC71' };
+      shifts.push({ 
+        open: parseInt(dayInfo.mOpen.replace(':', '')), 
+        close: parseInt(dayInfo.mClose.replace(':', '')),
+        label: dayInfo.mOpen
+      });
     }
-
-    // Check afternoon
     if (dayInfo.aOpen && dayInfo.aClose) {
-      const open = parseInt(dayInfo.aOpen.replace(':', ''));
-      const close = parseInt(dayInfo.aClose.replace(':', ''));
-      if (currentTime >= open && currentTime < close) return { text: 'ABIERTO', color: '#2ECC71' };
+      shifts.push({ 
+        open: parseInt(dayInfo.aOpen.replace(':', '')), 
+        close: parseInt(dayInfo.aClose.replace(':', '')),
+        label: dayInfo.aOpen
+      });
     }
 
-    return { text: 'CERRADO', color: '#E74C3C' };
+    // Check if currently open
+    for (const shift of shifts) {
+      if (currentTime >= shift.open && currentTime < shift.close) {
+        const diff = getMinutesDiff(currentTime, shift.close);
+        return { 
+          text: 'ABIERTO', 
+          color: '#2ECC71', 
+          detail: `Cierra en ${formatDiff(diff)}` 
+        };
+      }
+    }
+
+    // If not open, check when it opens
+    for (const shift of shifts) {
+      if (currentTime < shift.open) {
+        return { 
+          text: 'CERRADO', 
+          color: '#E74C3C', 
+          detail: `Abre a las ${formatTime(shift.label)}` 
+        };
+      }
+    }
+
+    return { text: 'CERRADO', color: '#E74C3C', detail: 'Cerrado por hoy' };
   }
 
   // Fallback para lugares sin horario estructurado (Simulación simple)
-  if (day === 1) return { text: 'CERRADO', color: '#E74C3C' }; // Lunes cerrado por defecto
-  if (currentTime >= 1000 && currentTime < 2000) return { text: 'ABIERTO', color: '#2ECC71' };
-  return { text: 'CERRADO', color: '#E74C3C' };
+  if (day === 1) return { text: 'CERRADO', color: '#E74C3C', detail: 'Cerrado los lunes' }; 
+  
+  if (currentTime >= 1000 && currentTime < 2000) {
+    const diff = getMinutesDiff(currentTime, 2000);
+    return { text: 'ABIERTO', color: '#2ECC71', detail: `Cierra en ${formatDiff(diff)}` };
+  }
+  
+  if (currentTime < 1000) {
+    return { text: 'CERRADO', color: '#E74C3C', detail: 'Abre a las 10:00' };
+  }
+
+  return { text: 'CERRADO', color: '#E74C3C', detail: 'Cerrado hasta mañana' };
 };
+

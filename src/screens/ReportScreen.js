@@ -12,7 +12,7 @@ import {
 import { useTheme } from '../theme/ThemeContext';
 import { 
   ChevronLeft, 
-  AlertTriangle, 
+  TriangleAlert, 
   Camera, 
   Send,
   Building2,
@@ -87,7 +87,7 @@ export function ReportScreen({ navigation, route }) {
             ]}
             onPress={() => setReportType('barrier')}
           >
-            <AlertTriangle color={reportType === 'barrier' ? theme.primary : theme.textSecondary} size={24} />
+            <TriangleAlert color={reportType === 'barrier' ? theme.primary : theme.textSecondary} size={24} />
             <Text style={[styles.typeLabel, { color: theme.text }]}>Barrera</Text>
           </TouchableOpacity>
         </View>

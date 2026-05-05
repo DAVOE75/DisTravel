@@ -150,15 +150,21 @@ export function DigitalWalletScreen({ navigation }) {
 
         {/* Quick Scan QR Section */}
         <View style={styles.qrSection}>
-           <View style={[styles.qrContainer, { backgroundColor: '#FFF' }]}>
-              <View style={styles.qrPlaceholder}>
-                <View style={[styles.qrPixel, { top: 0, left: 0 }]} />
-                <View style={[styles.qrPixel, { top: 0, right: 0 }]} />
-                <View style={[styles.qrPixel, { bottom: 0, left: 0 }]} />
-                <View style={styles.qrCenter}>
+           <View style={[
+             styles.qrContainer, 
+             { 
+               backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : '#FFF',
+               borderColor: isDarkMode ? theme.border : '#EEE'
+             }
+           ]}>
+              <View style={[styles.qrPlaceholder, { borderColor: isDarkMode ? 'rgba(255,255,255,0.1)' : '#F0F0F0' }]}>
+                <View style={[styles.qrPixel, { top: 0, left: 0, borderColor: isDarkMode ? theme.primary : '#333' }]} />
+                <View style={[styles.qrPixel, { top: 0, right: 0, borderColor: isDarkMode ? theme.primary : '#333' }]} />
+                <View style={[styles.qrPixel, { bottom: 0, left: 0, borderColor: isDarkMode ? theme.primary : '#333' }]} />
+                <View style={[styles.qrCenter, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.1)' : theme.primary }]}>
                    <Image 
                      source={logo} 
-                     style={{ width: 40, height: 40, tintColor: theme.primary }} 
+                     style={{ width: 35, height: 35, tintColor: isDarkMode ? theme.primary : '#FFF' }} 
                    />
                 </View>
               </View>
@@ -533,13 +539,14 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   qrContainer: {
-    padding: 15,
-    borderRadius: 20,
+    padding: 20,
+    borderRadius: 28,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 3,
+    shadowRadius: 20,
+    elevation: 5,
+    borderWidth: 1,
   },
   qrPlaceholder: {
     width: 140,

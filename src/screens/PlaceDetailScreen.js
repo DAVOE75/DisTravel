@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   View, 
   Text, 
@@ -11,7 +11,8 @@ import {
   Linking,
   Alert,
   Dimensions,
-  TextInput
+  TextInput,
+  ActivityIndicator
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
@@ -28,7 +29,7 @@ import {
   Accessibility, 
   Navigation,
   CheckCircle,
-  AlertTriangle,
+  TriangleAlert,
   AlertCircle,
   Link,
   Edit,
@@ -43,6 +44,8 @@ import {
   Camera,
   PlusCircle,
   MinusCircle,
+  Mic,
+  Users,
   TrendingDown,
   ShieldCheck,
   Construction,
@@ -57,6 +60,7 @@ import MapView, { Marker } from 'react-native-maps';
 import { AutonomousCommunityMap } from '../components/AutonomousCommunityMap';
 import { PROVINCE_TO_REGION, INE_PROVINCES } from '../data/provinces';
 import MUNICIPIOS_DATA from '../data/municipios.json';
+import { GeminiService } from '../utils/gemini';
 
 const DARK_MAP_STYLE = [
   { "elementType": "geometry", "stylers": [{ "color": "#242f3e" }] },
@@ -83,11 +87,12 @@ const { width } = Dimensions.get('window');
 const DAYS_MAP = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
 export function PlaceDetailScreen({ route, navigation }) {
-  const { place: navigationPlace } = route.params;
-  const { theme, isDarkMode } = useTheme();
-  const { userData, updateUserData, awardExperience } = useUser();
-  const insets = useSafeAreaInsets();
-  const isAdmin = userData?.role === 'admin' || userData?.isAdmin;
+    const { place: navigationPlace } = route.params;
+    const { theme, isDarkMode } = useTheme();
+    const { userData, updateUserData, awardExperience } = useUser();
+    const insets = useSafeAreaInsets();
+    const scrollRef = useRef(null);
+    const isAdmin = userData?.role === 'admin' || userData?.isAdmin;
   
   const normalize = (text) => {
     if (!text) return '';
@@ -109,6 +114,7 @@ export function PlaceDetailScreen({ route, navigation }) {
 
 
   const [isAiProcessing, setIsAiProcessing] = useState(false);
+  const [aiProgress, setAiProgress] = useState(0);
   const [isAiEnhanced, setIsAiEnhanced] = useState(false);
   const [aiResults, setAiResults] = useState(null);
 
@@ -116,230 +122,65 @@ export function PlaceDetailScreen({ route, navigation }) {
   const displayPlace = aiResults ? { ...place, ...aiResults } : place;
 
   const handleAiEnhance = async () => {
-    const hasGemini = userData.aiApiKey && userData.aiApiKey.length > 10;
+    Keyboard.dismiss();
     setIsAiProcessing(true);
+    setAiProgress(0.1);
     
     const placeName = place.name;
     const cityName = place.city || 'este municipio';
-    const category = place.category || 'lugar de interés';
 
-    if (hasGemini) {
-      try {
-        const prompt = `Actúa como un experto en turismo e historia de España. 
-        Realiza una investigación profunda sobre "${placeName}" ubicado en "${cityName}". 
-        Devuelve la respuesta en formato JSON estricto.
-        
-        EJEMPLO DE ESTRUCTURA REQUERIDA:
-        {
-          "description": "...",
-          "touristTip": "...",
-          "address": "Calle Falsa 123, CP 03001, Ciudad",
-          "phone": "+34 900 000 000",
-          "website": "www.ejemplo.com",
-          "structuredSchedules": [
-            {
-              "name": "Horario General",
-              "startMonth": "1",
-              "endMonth": "12",
-              "days": {
-                "1": {"isOpen": true, "mOpen": "10:00", "mClose": "20:00", "aOpen": "", "aClose": ""},
-                "0": {"isOpen": true, "mOpen": "10:00", "mClose": "19:00", "aOpen": "", "aClose": ""}
-              }
+    const progressInterval = setInterval(() => {
+      setAiProgress(prev => {
+        if (prev >= 0.9) return prev;
+        return prev + (0.9 - prev) * 0.15;
+      });
+    }, 600);
+
+    const finishProcessing = (aiData, isReal) => {
+      clearInterval(progressInterval);
+      setAiProgress(1);
+      setTimeout(() => {
+        applyAiResults(aiData, isReal);
+        setAiProgress(0);
+      }, 600);
+    };
+
+    try {
+      const aiData = await GeminiService.getPlaceData(placeName, cityName, userData.aiApiKey, place.category || 'Cultura', userData.openaiApiKey);
+      if (aiData) {
+        // Adaptar el formato de horarios si es necesario
+        if (aiData.seasons && aiData.seasons.length > 0) {
+          aiData.structuredSchedules = aiData.seasons.map(s => ({
+            name: s.name,
+            startMonth: "1",
+            endMonth: "12",
+            days: {
+              "1": { isOpen: true, mOpen: s.weekday?.split(' ')?.[0] || '10:00', mClose: s.weekday?.split(' ')?.[2] || '18:00', aOpen: "", aClose: "" },
+              "2": { isOpen: true, mOpen: s.weekday?.split(' ')?.[0] || '10:00', mClose: s.weekday?.split(' ')?.[2] || '18:00', aOpen: "", aClose: "" },
+              "3": { isOpen: true, mOpen: s.weekday?.split(' ')?.[0] || '10:00', mClose: s.weekday?.split(' ')?.[2] || '18:00', aOpen: "", aClose: "" },
+              "4": { isOpen: true, mOpen: s.weekday?.split(' ')?.[0] || '10:00', mClose: s.weekday?.split(' ')?.[2] || '18:00', aOpen: "", aClose: "" },
+              "5": { isOpen: true, mOpen: s.weekday?.split(' ')?.[0] || '10:00', mClose: s.weekday?.split(' ')?.[2] || '18:00', aOpen: "", aClose: "" },
+              "6": { isOpen: true, mOpen: s.weekend?.split(' ')?.[0] || '10:00', mClose: s.weekend?.split(' ')?.[2] || '18:00', aOpen: "", aClose: "" },
+              "0": { isOpen: true, mOpen: s.weekend?.split(' ')?.[0] || '10:00', mClose: s.weekend?.split(' ')?.[2] || '18:00', aOpen: "", aClose: "" }
             }
-          ],
-          "tariffs": [
-            {"id": "t1", "label": "General", "price": "15.00 €"},
-            {"id": "t2", "label": "PCD + Acompañante", "price": "Gratis"}
-          ]
+          }));
         }
-        
-        IMPORTANTE: 0 es Domingo, 1 es Lunes... 6 es Sábado.
-        Investiga si el acompañante de personas con discapacidad (PCD) también entra gratis.
-        No incluyas markdown, solo el JSON puro.`;
-
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userData.aiApiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }]
-          })
-        });
-
-        const data = await response.json();
-        const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        
-        let aiContent;
-        try {
-          const cleanJson = aiText.replace(/```json/g, '').replace(/```/g, '').trim();
-          aiContent = JSON.parse(cleanJson);
-        } catch (e) {
-          aiContent = {
-            description: aiText.substring(0, 500),
-            touristTip: "Consulta la accesibilidad en la entrada.",
-            schedule: "No disponible",
-            price: "Consultar en taquilla"
-          };
+        finishProcessing(aiData, !aiData.isMock);
+        if (aiData.isMock) {
+          const detail = GeminiService.lastError ? `\n\nMotivo: ${GeminiService.lastError}` : '';
+          Alert.alert("Sugerencia Local", `Usando base de datos interna.${detail}`);
         }
-
-        applyAiResults(aiContent, true);
-      } catch (error) {
-        console.error('Error con Gemini:', error);
-        Alert.alert("Error de Conexión", "No se pudo contactar con Gemini PRO. Usando motor secundario.");
-        simulateAiEnhance();
+      } else {
+        finishProcessing(null, false);
       }
-    } else {
-      simulateAiEnhance();
+    } catch (error) {
+      console.error("Error al potenciar con IA:", error);
+      Alert.alert("Error de Investigación", "No hemos podido conectar con el centro de datos. Se usará la información local disponible.");
+    } finally {
+      setIsAiProcessing(false);
+      setAiProgress(0);
+      clearInterval(progressInterval);
     }
-  };
-
-  const simulateAiEnhance = () => {
-    const placeName = place.name;
-    const cityName = place.city || 'este municipio';
-    const normName = normalize(placeName);
-    
-    setTimeout(() => {
-      let aiContent = {
-        description: `${placeName} es un enclave de gran valor patrimonial ubicado en ${cityName}. Su arquitectura y emplazamiento reflejan la rica historia de la región, habiendo servido como punto de encuentro cultural a lo largo de las décadas. La preservación de su estructura original permite a los visitantes de hoy en día conectar con el pasado de una forma única y accesible.`,
-        touristTip: `Para disfrutar plenamente de ${placeName}, recomendamos visitarlo en días laborables. El acceso principal ha sido evaluado como apto para sillas de ruedas.`,
-        schedule: "Lunes a Domingo: 10:00 - 19:00",
-        price: "General: 8€. Gratis para PCD y acompañante."
-      };
-
-      // Simulador avanzado si no hay API Key
-      if (normName.includes('belmonte')) {
-        aiContent = {
-          description: "El Castillo de Belmonte es una de las fortalezas más singulares y mejor conservadas de España. Mandado construir en 1456 por Juan Pacheco, primer Marqués de Villena, destaca por su planta en forma de estrella de seis puntas, una rareza en la arquitectura militar gótico-mudéjar. Durante el siglo XIX, la emperatriz Eugenia de Montijo impulsó una ambiciosa restauración que dotó al castillo de sus impresionantes artesonados y decoraciones neogóticas. Sus muros han servido de escenario para numerosas superproducciones de Hollywood, consolidándose como un icono cultural que fusiona la dureza militar con el refinamiento palaciego.",
-          touristTip: "El castillo dispone de un ascensor moderno integrado discretamente para acceder a las plantas superiores, permitiendo que personas con movilidad reducida disfruten de las salas palaciegas sin barreras.",
-          schedule: "Mañanas: 10:00 - 14:00. Tardes: 15:30 - 18:30. Lunes cerrado.",
-          price: "General: 10€. Reducida (PCD): 8€."
-        };
-      } else if (normName.includes('prado')) {
-        aiContent = {
-          description: "El Museo Nacional del Prado es una de las pinacotecas más importantes del mundo. Situado en Madrid, alberga obras maestras de Velázquez, Goya, El Greco, Tiziano y El Bosco, entre otros.",
-          touristTip: "El museo es completamente accesible. Recomendamos entrar por la Puerta de Jerónimos. ¡Recuerda que las dos últimas horas de apertura son GRATIS!",
-          structuredSchedules: [
-            {
-              name: "Horario General",
-              startMonth: "1",
-              endMonth: "12",
-              days: {
-                1: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
-                2: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
-                3: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
-                4: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
-                5: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
-                6: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
-                0: { isOpen: true, mOpen: '10:00', mClose: '19:00', aOpen: '', aClose: '' }
-              }
-            }
-          ],
-          tariffs: [
-            { id: 'prado-gen', label: 'Entrada General', price: '15.00 €' },
-            { id: 'prado-pcd', label: 'PCD + Acompañante', price: 'Gratis' },
-            { id: 'prado-free', label: 'Horario Gratuito', price: 'Gratis (L-S 18-20h)' }
-          ],
-          importantNotices: [
-            "Entrada GRATUITA para PCD y un acompañante.",
-            "Acceso gratuito: Lunes a Sábado de 18:00 a 20:00.",
-            "Acceso gratuito: Domingos y Festivos de 17:00 a 19:00."
-          ]
-        };
-      } else if (normName.includes('almudena')) {
-        aiContent = {
-          description: "La Catedral de Santa María la Real de la Almudena es un templo de dimensiones monumentales que refleja la compleja historia de Madrid. El diseño original neogótico evolucionó hacia un exterior neoclásico para armonizar con el Palacio Real. En su interior, destaca el contraste entre las vidrieras contemporáneas de colores vibrantes y la solemnidad de la Cripta neorrománica. Es el primer templo consagrado por un Papa fuera de Roma.",
-          touristTip: "La entrada principal por la Plaza de la Armería es totalmente accesible. Existe un ascensor para subir a la cúpula con vistas panorámicas accesibles del Madrid de los Austrias.",
-          schedule: "Catedral: 10:00 - 20:00. Museo: 10:00 - 14:30 (L-S).",
-          price: "Catedral: Donativo sugerido 1€. Museo: 6€. PCD: 4€."
-        };
-      } else if (normName.includes('morella')) {
-        aiContent = {
-          description: "El Castillo de Morella, imponente fortaleza construida sobre una muela de roca a más de mil metros de altitud, domina el paisaje castellonense. Sus murallas han visto pasar a romanos, visigodos, árabes y cristianos.",
-          touristTip: "Se recomienda visitar el Palacio del Gobernador, que es la zona más accesible del conjunto.",
-          schedule: "Invierno: 11:00 - 17:00. Verano: 11:00 - 19:00.",
-          price: "General: 3.50€. Reducida (PCD): 2.50€."
-        };
-      } else if (normName.includes('marq') || normName.includes('arqueologico de alicante')) {
-        aiContent = {
-          description: "El Museo Arqueológico de Alicante (MARQ) es un referente internacional en arqueología del siglo XXI. Ubicado en el antiguo hospital de San Juan de Dios, ofrece un recorrido desde la Prehistoria hasta la Edad Moderna con un montaje vanguardista y didáctico.",
-          touristTip: "Los domingos y festivos la entrada general cuesta solo 3€. Si vienes en AVE o Larga Distancia de RENFE, ¡tienes entrada gratuita presentando tu billete nominativo!",
-          address: "Plaza Dr. Gómez Ulla, s/n. 03013 Alicante",
-          phone: "+34 965 14 90 00",
-          website: "www.marqalicante.com",
-          importantNotices: [
-            "Personas con discapacidad + 1 Acompañante: GRATIS.",
-            "Desempleados y Menores de 8 años: GRATIS.",
-            "Signoguías y Guías Multimedia disponibles por 1€.",
-            "Pago en Torre Almudaina solo en EFECTIVO."
-          ],
-          structuredSchedules: [
-            {
-              "name": "Horario General",
-              "startMonth": "1",
-              "endMonth": "12",
-              "days": {
-                "1": { "isOpen": false, "mOpen": "", "mClose": "", "aOpen": "", "aClose": "" },
-                "2": { "isOpen": true, "mOpen": "10:00", "mClose": "19:00", "aOpen": "", "aClose": "" },
-                "3": { "isOpen": true, "mOpen": "10:00", "mClose": "19:00", "aOpen": "", "aClose": "" },
-                "4": { "isOpen": true, "mOpen": "10:00", "mClose": "19:00", "aOpen": "", "aClose": "" },
-                "5": { "isOpen": true, "mOpen": "10:00", "mClose": "19:00", "aOpen": "", "aClose": "" },
-                "6": { "isOpen": true, "mOpen": "10:00", "mClose": "19:00", "aOpen": "", "aClose": "" },
-                "0": { "isOpen": true, "mOpen": "10:00", "mClose": "14:00", "aOpen": "", "aClose": "" }
-              }
-            }
-          ],
-          tariffs: [
-            { id: 'm1', label: 'General MARQ', price: '6.00 €' },
-            { id: 'm2', label: 'Dom. y Festivos', price: '3.00 €' },
-            { id: 'm3', label: 'Conjunta (MARQ + Yacimientos)', price: '8.00 €' },
-            { id: 'm4', label: 'Reducida (Est./Jub./Fam.Num)', price: '3.00 €' },
-            { id: 'm5', label: 'PCD + Acompañante', price: 'Gratis' },
-            { id: 'm6', label: 'Desempleados / Menores 8a', price: 'Gratis' },
-            { id: 'm7', label: 'Visita Guiada (Extra)', price: '+3.00 €' }
-          ]
-        };
-      } else if (normName.includes('maca') || normName.includes('arte contemporaneo de alicante')) {
-        aiContent = {
-          description: "El MACA (Museo de Arte Contemporáneo de Alicante) es un espacio cultural de vanguardia ubicado en el edificio civil más antiguo de la ciudad: La Asegurada (1685). Alberga una de las colecciones de arte del siglo XX más importantes de España, con obras de Picasso, Dalí, Miró y Chillida, centradas especialmente en el legado de Eusebio Sempere.",
-          touristTip: "Accesibilidad universal en todas sus plantas mediante ascensores amplios. Entrada gratuita.",
-          structuredSchedules: [
-            {
-              name: "Temporada Invierno (Oct-Jun)",
-              startMonth: "10",
-              endMonth: "6",
-              days: {
-                1: { isOpen: false, mOpen: '', mClose: '', aOpen: '', aClose: '' },
-                2: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
-                3: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
-                4: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
-                5: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
-                6: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
-                0: { isOpen: true, mOpen: '10:00', mClose: '14:00', aOpen: '', aClose: '' }
-              }
-            },
-            {
-              name: "Temporada Verano (Jul-Sep)",
-              startMonth: "7",
-              endMonth: "9",
-              days: {
-                1: { isOpen: false, mOpen: '', mClose: '', aOpen: '', aClose: '' },
-                2: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
-                3: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
-                4: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
-                5: { isOpen: true, mOpen: '10:00', mClose: '20:00', aOpen: '', aClose: '' },
-                6: { isOpen: true, mOpen: '11:00', mClose: '20:00', aOpen: '', aClose: '' },
-                0: { isOpen: true, mOpen: '10:00', mClose: '14:00', aOpen: '', aClose: '' }
-              }
-            }
-          ],
-          tariffs: [
-            { id: 'maca-1', label: 'Entrada General', price: 'Gratis' },
-            { id: 'maca-2', label: 'Personas con Discapacidad', price: 'Gratis' }
-          ]
-        };
-      }
-
-      applyAiResults(aiContent, false);
-    }, 2000);
   };
 
   const applyAiResults = (aiContent, isRealGemini) => {
@@ -414,7 +255,7 @@ export function PlaceDetailScreen({ route, navigation }) {
       const descLen = (aiContent.description || '').length;
       Alert.alert(
         isRealGemini ? "🚀 MOTOR GEMINI PRO 1.5: ÉLITE" : "✨ IA DISTRAVEL ACTIVADA",
-        `Investigación finalizada.\n\nSe han recuperado ${descLen} caracteres de información detallada sobre ${displayPlace.name}.`,
+        `Investigación finalizada para "${displayPlace.name}".\n\nGemini ha analizado su historia, horarios oficiales y detalles de accesibilidad basándose en una consulta de chat en tiempo real.`,
         [{ text: "¡ENTENDIDO!", onPress: () => awardExperience(20, 'Investigación IA') }]
       );
     }, 100);
@@ -846,8 +687,12 @@ export function PlaceDetailScreen({ route, navigation }) {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
-      
-      <ScrollView showsVerticalScrollIndicator={false} bounces={false}>
+      <ScrollView 
+        ref={scrollRef}
+        style={styles.container} 
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+      >
         <View style={styles.heroContainer}>
           <Image source={{ uri: image }} style={styles.heroImage} />
           <View style={styles.overlay} />
@@ -927,35 +772,63 @@ export function PlaceDetailScreen({ route, navigation }) {
           </SafeAreaView>
 
           <View style={styles.heroContent}>
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <View style={[styles.badge, { backgroundColor: theme.primary }]}>
-                <Text style={[styles.badgeText, { color: isDarkMode ? '#000000' : '#FFFFFF' }]}>{category.toUpperCase()}</Text>
-              </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+              {isEditing ? (
+                <TextInput
+                  style={[styles.badgeEdit, { backgroundColor: theme.primary, color: isDarkMode ? '#000' : '#FFF' }]}
+                  value={place.category}
+                  onChangeText={(v) => setPlace({...place, category: v})}
+                  placeholder="Categoría"
+                  placeholderTextColor="rgba(255,255,255,0.6)"
+                />
+              ) : (
+                <View style={[styles.badge, { backgroundColor: theme.primary }]}>
+                  <Text style={[styles.badgeText, { color: isDarkMode ? '#000000' : '#FFFFFF' }]}>{category.toUpperCase()}</Text>
+                </View>
+              )}
               
-              {timeInfo && (
-                <View style={[styles.timeBadge, { backgroundColor: 'rgba(0,0,0,0.6)', marginLeft: 10 }]}>
+              {timeInfo && !isEditing && (
+                <View style={[styles.timeBadge, { backgroundColor: 'rgba(0,0,0,0.6)' }]}>
                   <Clock color={timeInfo.color || '#FFF'} size={14} />
                   <Text style={[styles.timeBadgeText, { color: timeInfo.color || '#FFF' }]}>{timeInfo.text}</Text>
                 </View>
               )}
             </View>
             {isEditing ? (
-              <TextInput
-                style={[styles.placeNameEdit, typography.h1]}
-                value={displayPlace.name}
-                onChangeText={(v) => setPlace({...place, name: v})}
-                multiline
-              />
+              <View>
+                <TextInput
+                  style={[styles.placeNameEdit, typography.h1]}
+                  value={place.name}
+                  onChangeText={(v) => setPlace({...place, name: v})}
+                  multiline
+                />
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, gap: 10 }}>
+                  <TextInput
+                    style={[styles.cityEditInput, { color: '#FFF', borderColor: 'rgba(255,255,255,0.4)' }]}
+                    value={place.city || place.cityName}
+                    onChangeText={(v) => setPlace({...place, city: v, cityName: v})}
+                    placeholder="Municipio"
+                    placeholderTextColor="rgba(255,255,255,0.5)"
+                  />
+                  <TextInput
+                    style={[styles.cityEditInput, { color: '#FFF', borderColor: 'rgba(255,255,255,0.4)' }]}
+                    value={place.province}
+                    onChangeText={(v) => setPlace({...place, province: v})}
+                    placeholder="Provincia"
+                    placeholderTextColor="rgba(255,255,255,0.5)"
+                  />
+                </View>
+              </View>
             ) : (
               <View>
                 <Text style={[styles.placeName, typography.h1]}>{displayPlace.name}</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 }}>
                   <TouchableOpacity 
                     onPress={handleGoToCity}
-                    style={[styles.cityChip, { backgroundColor: 'rgba(255,255,255,0.2)' }]}
+                    style={[styles.cityChip, { backgroundColor: 'rgba(0,0,0,0.5)', borderColor: 'rgba(255,255,255,0.3)', borderWidth: 1 }]}
                   >
-                    <MapPin color="#FFF" size={12} />
-                    <Text style={styles.cityChipText}>{displayPlace.city}</Text>
+                    <MapPin color="#FFF" size={14} />
+                    <Text style={styles.cityChipText}>{displayPlace.city || displayPlace.cityName}</Text>
                   </TouchableOpacity>
                   {savings && (
                     <View style={styles.savingsBadge}>
@@ -1070,36 +943,38 @@ export function PlaceDetailScreen({ route, navigation }) {
               )}
             </View>
 
-            {/* BOTÓN IA ELITE PARA LUGARES */}
-            <TouchableOpacity 
-              style={[
-                styles.aiButton, 
-                userData.aiApiKey && { backgroundColor: '#8E44AD' },
-                { marginTop: 15 }
-              ]} 
-              onPress={handleAiEnhance}
-              disabled={isAiProcessing}
-            >
-              {isAiProcessing ? (
-                <Zap color="#FFF" size={20} />
-              ) : (
-                userData.aiApiKey ? <Sparkles color="#FFF" size={20} fill={isAiEnhanced ? "#FFF" : "transparent"} /> : <Zap color="#FFF" size={20} fill={isAiEnhanced ? "#FFF" : "transparent"} />
-              )}
-              <Text style={styles.aiButtonText}>
-                {isAiProcessing 
-                  ? (userData.aiApiKey ? "Gemini analizando..." : "Buscando datos...") 
-                  : isAiEnhanced 
-                    ? (userData.aiApiKey ? "Análisis Gemini Pro Finalizado" : "Datos mejorados con IA") 
-                    : (userData.aiApiKey ? "Investigar con Gemini Pro" : "Mejorar info con IA")}
-              </Text>
-              {!isAiProcessing && !isAiEnhanced && (
-                <View style={[styles.aiBadge, userData.aiApiKey && { backgroundColor: '#FFF' }]}>
-                  <Text style={[styles.aiBadgeText, userData.aiApiKey && { color: '#8E44AD' }]}>
-                    {userData.aiApiKey ? "GEMINI" : "IA"}
-                  </Text>
-                </View>
-              )}
-            </TouchableOpacity>
+            {/* BOTÓN IA ELITE PARA LUGARES - SOLO ADMIN */}
+            {isAdmin && (
+              <TouchableOpacity 
+                style={[
+                  styles.aiButton, 
+                  userData.aiApiKey && { backgroundColor: '#8E44AD' },
+                  { marginTop: 15 }
+                ]} 
+                onPress={handleAiEnhance}
+                disabled={isAiProcessing}
+              >
+                {isAiProcessing ? (
+                  <Zap color="#FFF" size={20} />
+                ) : (
+                  userData.aiApiKey ? <Sparkles color="#FFF" size={20} fill={isAiEnhanced ? "#FFF" : "transparent"} /> : <Zap color="#FFF" size={20} fill={isAiEnhanced ? "#FFF" : "transparent"} />
+                )}
+                <Text style={styles.aiButtonText}>
+                  {isAiProcessing 
+                    ? (userData.aiApiKey ? "Analizando Patrimonio..." : "Buscando datos...") 
+                    : isAiEnhanced 
+                      ? (userData.aiApiKey ? "Análisis Finalizado" : "Datos mejorados con IA") 
+                      : (userData.aiApiKey ? "Investigar con IA" : "Mejorar info con IA")}
+                </Text>
+                {!isAiProcessing && !isAiEnhanced && (
+                  <View style={[styles.aiBadge, userData.aiApiKey && { backgroundColor: '#FFF' }]}>
+                    <Text style={[styles.aiBadgeText, userData.aiApiKey && { color: '#8E44AD' }]}>
+                      {userData.aiApiKey ? "GEMINI" : "IA"}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            )}
           </View>
 
 
@@ -1180,34 +1055,65 @@ export function PlaceDetailScreen({ route, navigation }) {
           )}
 
           {/* Ficha Técnica "Océano Azul" */}
-          {displayPlace.technicalSpecs && (
+          {(displayPlace.technicalSpecs || isEditing) && (
             <View style={styles.section}>
               <Text style={[styles.sectionTitle, { color: theme.text }]}>Especificaciones Técnicas</Text>
               <View style={styles.techGrid}>
-                {displayPlace.technicalSpecs.doorWidth && (
+                {(displayPlace.technicalSpecs?.doorWidth || isEditing) && (
                   <View style={[styles.techItem, { backgroundColor: theme.surface }]}>
                     <Info color={theme.primary} size={18} />
-                    <View>
+                    <View style={{ flex: 1 }}>
                       <Text style={styles.techLabel}>Ancho Puerta</Text>
-                      <Text style={[styles.techValue, { color: theme.text }]}>{displayPlace.technicalSpecs.doorWidth}</Text>
+                      {isEditing ? (
+                        <TextInput
+                          style={[styles.techInput, { color: theme.text, borderBottomWidth: 1, borderBottomColor: theme.border }]}
+                          value={place.technicalSpecs?.doorWidth}
+                          onChangeText={(v) => setPlace({...place, technicalSpecs: { ...place.technicalSpecs, doorWidth: v }})}
+                          placeholder="Ej: 120cm"
+                        />
+                      ) : (
+                        <Text style={[styles.techValue, { color: theme.text }]}>{displayPlace.technicalSpecs?.doorWidth}</Text>
+                      )}
                     </View>
                   </View>
                 )}
-                {displayPlace.technicalSpecs.adaptedToilet && (
+                {(displayPlace.technicalSpecs?.adaptedToilet !== undefined || isEditing) && (
                   <View style={[styles.techItem, { backgroundColor: theme.surface }]}>
                     <ShieldCheck color="#2ECC71" size={18} />
-                    <View>
+                    <View style={{ flex: 1 }}>
                       <Text style={styles.techLabel}>Baño Adaptado</Text>
-                      <Text style={[styles.techValue, { color: theme.text }]}>Sí, Verificado</Text>
+                      {isEditing ? (
+                        <TouchableOpacity 
+                          onPress={() => setPlace({...place, technicalSpecs: { ...place.technicalSpecs, adaptedToilet: !place.technicalSpecs?.adaptedToilet }})}
+                          style={styles.toggleRow}
+                        >
+                          <Text style={[styles.techValue, { color: theme.text }]}>
+                            {place.technicalSpecs?.adaptedToilet ? 'SÍ' : 'NO'}
+                          </Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <Text style={[styles.techValue, { color: theme.text }]}>
+                          {displayPlace.technicalSpecs?.adaptedToilet ? 'Sí, Verificado' : 'No disponible'}
+                        </Text>
+                      )}
                     </View>
                   </View>
                 )}
-                {displayPlace.technicalSpecs.elevatorDimensions && (
+                {(displayPlace.technicalSpecs?.elevatorDimensions || isEditing) && (
                   <View style={[styles.techItem, { backgroundColor: theme.surface }]}>
                     <Construction color={theme.primary} size={18} />
-                    <View>
+                    <View style={{ flex: 1 }}>
                       <Text style={styles.techLabel}>Ascensor</Text>
-                      <Text style={[styles.techValue, { color: theme.text }]}>{displayPlace.technicalSpecs.elevatorDimensions}</Text>
+                      {isEditing ? (
+                        <TextInput
+                          style={[styles.techInput, { color: theme.text, borderBottomWidth: 1, borderBottomColor: theme.border }]}
+                          value={place.technicalSpecs?.elevatorDimensions}
+                          onChangeText={(v) => setPlace({...place, technicalSpecs: { ...place.technicalSpecs, elevatorDimensions: v }})}
+                          placeholder="Dimensiones"
+                        />
+                      ) : (
+                        <Text style={[styles.techValue, { color: theme.text }]}>{displayPlace.technicalSpecs?.elevatorDimensions}</Text>
+                      )}
                     </View>
                   </View>
                 )}
@@ -1235,7 +1141,7 @@ export function PlaceDetailScreen({ route, navigation }) {
           {(displayPlace.importantNotices?.length > 0 || isEditing) && (
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <AlertTriangle color="#E74C3C" size={22} />
+                <TriangleAlert color="#E74C3C" size={22} />
                 <Text style={[styles.sectionTitle, { color: '#E74C3C', marginLeft: 10, marginBottom: 0 }]}>Avisos Importantes</Text>
                 {isEditing && (
                   <TouchableOpacity 
@@ -1593,21 +1499,26 @@ export function PlaceDetailScreen({ route, navigation }) {
           </View>
 
           {/* Audioguía y Servicios Digitales */}
-          {(displayPlace.audioguide || isEditing) && (
+          {(displayPlace.audioguide || displayPlace.guidedVisits || isEditing) && (
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Languages color={theme.primary} size={22} />
-                <Text style={[styles.sectionTitle, { color: theme.text, marginLeft: 10, marginBottom: 0 }]}>Servicios Digitales</Text>
+                <Sparkles color={theme.primary} size={22} />
+                <Text style={[styles.sectionTitle, { color: theme.text, marginLeft: 10, marginBottom: 0 }]}>Servicios de Visita</Text>
               </View>
-              <View style={[styles.audioguideCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                <View style={styles.audioguideRow}>
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.audioguideLabel, { color: theme.text }]}>Audioguía Oficial</Text>
+              
+              {/* Audioguide Card */}
+              {(displayPlace.audioguide || isEditing) && (
+                <View style={[styles.audioguideCard, { backgroundColor: theme.surface, borderColor: theme.border, marginBottom: 15 }]}>
+                  <View style={styles.audioguideRow}>
+                    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                      <Mic color={theme.primary} size={18} />
+                      <Text style={[styles.audioguideLabel, { color: theme.text, marginLeft: 8 }]}>Audioguía Oficial</Text>
+                    </View>
                     {isEditing ? (
                       <TextInput 
                         style={[styles.audioguidePriceEdit, { color: theme.primary }]}
                         value={place.audioguide?.price}
-                        placeholder="Precio (ej. 5€ o Incluida)"
+                        placeholder="Precio"
                         onChangeText={(v) => setPlace({ ...place, audioguide: { ...(place.audioguide || {}), price: v, available: true }})}
                       />
                     ) : (
@@ -1616,33 +1527,60 @@ export function PlaceDetailScreen({ route, navigation }) {
                       </Text>
                     )}
                   </View>
-                  <View style={[styles.digitalBadge, { backgroundColor: place.audioguide?.accessible ? '#2ECC7120' : '#E74C3C20' }]}>
-                    <ShieldCheck color={place.audioguide?.accessible ? '#2ECC71' : '#E74C3C'} size={14} />
-                    <Text style={[styles.digitalBadgeText, { color: place.audioguide?.accessible ? '#2ECC71' : '#E74C3C' }]}>
-                      {place.audioguide?.accessible ? 'ADAPTADA' : 'BÁSICA'}
-                    </Text>
+                  
+                  <View style={styles.languagesContainer}>
+                    {(place.audioguide?.languages || ['Español']).map((lang, lIdx) => (
+                      <View key={lIdx} style={[styles.langTag, { backgroundColor: theme.background }]}>
+                        <Text style={[styles.langText, { color: theme.textSecondary }]}>{lang}</Text>
+                      </View>
+                    ))}
                   </View>
                 </View>
-                
-                <View style={styles.languagesContainer}>
-                  {(place.audioguide?.languages || ['Español']).map((lang, lIdx) => (
-                    <View key={lIdx} style={[styles.langTag, { backgroundColor: theme.background }]}>
-                      <Text style={[styles.langText, { color: theme.textSecondary }]}>{lang}</Text>
+              )}
+
+              {/* Guided Visits Card */}
+              {(displayPlace.guidedVisits || isEditing) && (
+                <View style={[styles.audioguideCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                  <View style={styles.audioguideRow}>
+                    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
+                      <Users color={theme.primary} size={18} />
+                      <Text style={[styles.audioguideLabel, { color: theme.text, marginLeft: 8 }]}>Visitas Guiadas</Text>
                     </View>
-                  ))}
-                  {isEditing && (
-                    <TouchableOpacity 
-                      style={[styles.langTag, { backgroundColor: theme.primary + '20', borderStyle: 'dashed', borderWidth: 1, borderColor: theme.primary }]}
-                      onPress={() => {
-                        const currentLangs = place.audioguide?.languages || [];
-                        setPlace({ ...place, audioguide: { ...place.audioguide, languages: [...currentLangs, 'Nuevo Idioma'] }});
-                      }}
-                    >
-                      <Text style={[styles.langText, { color: theme.primary }]}>+ Añadir</Text>
-                    </TouchableOpacity>
+                    {isEditing ? (
+                      <TextInput 
+                        style={[styles.audioguidePriceEdit, { color: theme.primary }]}
+                        value={place.guidedVisits?.price}
+                        placeholder="Precio"
+                        onChangeText={(v) => setPlace({ ...place, guidedVisits: { ...(place.guidedVisits || {}), price: v, available: true }})}
+                      />
+                    ) : (
+                      <Text style={[styles.audioguidePrice, { color: theme.primary }]}>
+                        {place.guidedVisits?.available ? place.guidedVisits.price : 'Bajo consulta'}
+                      </Text>
+                    )}
+                  </View>
+
+                  {/* Visit Schedules */}
+                  {(place.guidedVisits?.schedules || []).length > 0 && (
+                    <View style={{ marginTop: 10, paddingHorizontal: 5 }}>
+                      {(place.guidedVisits.schedules).map((sched, sidx) => (
+                        <View key={sidx} style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 }}>
+                          <Text style={{ color: theme.textSecondary, fontSize: 13 }}>{sched.days}</Text>
+                          <Text style={{ color: theme.primary, fontSize: 13, fontWeight: '700' }}>{sched.time}</Text>
+                        </View>
+                      ))}
+                    </View>
                   )}
+                  
+                  <View style={styles.languagesContainer}>
+                    {(place.guidedVisits?.languages || ['Español']).map((lang, lIdx) => (
+                      <View key={lIdx} style={[styles.langTag, { backgroundColor: theme.background }]}>
+                        <Text style={[styles.langText, { color: theme.textSecondary }]}>{lang}</Text>
+                      </View>
+                    ))}
+                  </View>
                 </View>
-              </View>
+              )}
             </View>
           )}
 
@@ -1678,23 +1616,61 @@ export function PlaceDetailScreen({ route, navigation }) {
               )}
             </View>
             
+            {isEditing && (
+              <View style={[styles.coordEditContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                <Text style={[styles.coordTitle, { color: theme.text }]}>Coordenadas Geográficas</Text>
+                <View style={styles.coordRow}>
+                  <View style={styles.coordInputGroup}>
+                    <Text style={[styles.coordLabel, { color: theme.textSecondary }]}>Latitud</Text>
+                    <TextInput
+                      style={[styles.coordInput, { color: theme.text, borderColor: theme.border }]}
+                      value={String(place.location?.latitude || '')}
+                      onChangeText={(v) => setPlace({...place, location: { ...place.location, latitude: parseFloat(v) || 0 }})}
+                      keyboardType="numeric"
+                    />
+                  </View>
+                  <View style={styles.coordInputGroup}>
+                    <Text style={[styles.coordLabel, { color: theme.textSecondary }]}>Longitud</Text>
+                    <TextInput
+                      style={[styles.coordInput, { color: theme.text, borderColor: theme.border }]}
+                      value={String(place.location?.longitude || '')}
+                      onChangeText={(v) => setPlace({...place, location: { ...place.location, longitude: parseFloat(v) || 0 }})}
+                      keyboardType="numeric"
+                    />
+                  </View>
+                </View>
+              </View>
+            )}
+
             <View style={styles.addressBar}>
-              <Text style={[styles.addressText, { color: theme.textSecondary }]}>
-                {displayPlace.address || `${displayPlace.city}, ${displayPlace.province || ''}`}
-              </Text>
-              <TouchableOpacity 
-                style={[styles.navBtn, { backgroundColor: theme.primary }]}
-                onPress={() => {
-                  const lat = displayPlace.location?.latitude || 40.4168;
-                  const lon = displayPlace.location?.longitude || -3.7038;
-                  const label = encodeURI(displayPlace.name);
-                  const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
-                  Linking.openURL(url);
-                }}
-              >
-                <Navigation color={isDarkMode ? "#0A192F" : "#FFF"} size={18} />
-                <Text style={[styles.navBtnText, { color: isDarkMode ? "#0A192F" : "#FFF" }]}>Cómo llegar</Text>
-              </TouchableOpacity>
+              {isEditing ? (
+                <TextInput
+                  style={[styles.addressEdit, { color: theme.textSecondary, borderColor: theme.border }]}
+                  value={place.address}
+                  onChangeText={(v) => setPlace({...place, address: v})}
+                  placeholder="Dirección exacta..."
+                  placeholderTextColor={theme.textSecondary + '80'}
+                />
+              ) : (
+                <Text style={[styles.addressText, { color: theme.textSecondary }]}>
+                  {displayPlace.address || `${displayPlace.city}, ${displayPlace.province || ''}`}
+                </Text>
+              )}
+              {!isEditing && (
+                <TouchableOpacity 
+                  style={[styles.navBtn, { backgroundColor: theme.primary }]}
+                  onPress={() => {
+                    const lat = displayPlace.location?.latitude || 40.4168;
+                    const lon = displayPlace.location?.longitude || -3.7038;
+                    const label = encodeURI(displayPlace.name);
+                    const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+                    Linking.openURL(url);
+                  }}
+                >
+                  <Navigation color={isDarkMode ? "#0A192F" : "#FFF"} size={18} />
+                  <Text style={[styles.navBtnText, { color: isDarkMode ? "#0A192F" : "#FFF" }]}>Cómo llegar</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
 
@@ -1706,9 +1682,19 @@ export function PlaceDetailScreen({ route, navigation }) {
                 Detalles de Accesibilidad
               </Text>
             </View>
-            <Text style={[styles.accessibilityText, { color: theme.textSecondary }]}>
-              {displayPlace.freeInfo || 'Lugar adaptado con rampas de acceso, baños adaptados y personal formado para asistencia.'}
-            </Text>
+            {isEditing ? (
+              <TextInput
+                style={[styles.accessibilityEdit, { color: theme.textSecondary, borderColor: theme.border }]}
+                value={place.freeInfo}
+                onChangeText={(v) => setPlace({...place, freeInfo: v})}
+                multiline
+                placeholder="Describe los detalles de accesibilidad..."
+              />
+            ) : (
+              <Text style={[styles.accessibilityText, { color: theme.textSecondary }]}>
+                {displayPlace.freeInfo || 'Lugar adaptado con rampas de acceso, baños adaptados y personal formado para asistencia.'}
+              </Text>
+            )}
             <View style={styles.checkList}>
               <View style={styles.checkItem}>
                 <CheckCircle color="#2ECC71" size={18} />
@@ -1719,7 +1705,7 @@ export function PlaceDetailScreen({ route, navigation }) {
                 <Text style={[styles.checkText, { color: theme.text }]}>Ascensor panorámico</Text>
               </View>
               <View style={styles.checkItem}>
-                <AlertTriangle color="#F1C40F" size={18} />
+                <TriangleAlert color="#F1C40F" size={18} />
                 <Text style={[styles.checkText, { color: theme.text }]}>Aviso previo recomendado</Text>
               </View>
             </View>
@@ -1727,6 +1713,24 @@ export function PlaceDetailScreen({ route, navigation }) {
         </View>
         <View style={{ height: 40 }} />
       </ScrollView>
+
+      {isAiProcessing && (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 10000, justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ backgroundColor: theme.surface, padding: 35, borderRadius: 30, alignItems: 'center', width: '85%', borderWidth: 1, borderColor: theme.border, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.3, shadowRadius: 20, elevation: 10 }}>
+            <ActivityIndicator size="large" color={theme.primary} />
+            <Text style={[typography.h2, { color: theme.text, marginTop: 25, textAlign: 'center', fontSize: 22 }]}>Análisis de Patrimonio Distravel</Text>
+            <Text style={{ color: theme.textSecondary, marginTop: 12, textAlign: 'center', fontStyle: 'italic', fontSize: 14, lineHeight: 20 }}>
+              Actualizando historia, horarios y accesibilidad de "{place.name}"...
+            </Text>
+            <View style={{ height: 6, width: '100%', backgroundColor: theme.border, borderRadius: 3, marginTop: 25, overflow: 'hidden' }}>
+              <View style={{ height: '100%', width: `${aiProgress * 100}%`, backgroundColor: theme.primary }} />
+            </View>
+            <Text style={{ color: theme.primary, fontSize: 13, fontWeight: '900', marginTop: 15, letterSpacing: 1 }}>
+              {Math.round(aiProgress * 100)}% COMPLETADO
+            </Text>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -1752,6 +1756,19 @@ const styles = StyleSheet.create({
     gap: 6,
     alignSelf: 'flex-start',
     marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  cityChipText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '800',
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   headerActions: { position: 'absolute', top: 0, left: 0, right: 0, flexDirection: 'row', padding: 20, zIndex: 10 },
   circleButton: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
@@ -1760,6 +1777,32 @@ const styles = StyleSheet.create({
   badgeText: { color: '#FFFFFF', fontSize: 10, fontWeight: '800', letterSpacing: 1 },
   timeBadge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, gap: 6 },
   timeBadgeText: { fontSize: 12, fontWeight: '700' },
+  badgeEdit: {
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 8,
+    fontSize: 12,
+    fontWeight: '800',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
+  },
+  cityEditInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  coordEditContainer: { padding: 15, borderRadius: 12, borderWidth: 1, marginBottom: 10 },
+  coordTitle: { fontSize: 14, fontWeight: '700', marginBottom: 10 },
+  coordRow: { flexDirection: 'row', gap: 15 },
+  coordInputGroup: { flex: 1 },
+  coordLabel: { fontSize: 11, fontWeight: '700', marginBottom: 4, textTransform: 'uppercase' },
+  coordInput: { borderWidth: 1, borderRadius: 8, padding: 8, fontSize: 13 },
+  addressEdit: { flex: 1, borderWidth: 1, borderRadius: 8, padding: 8, fontSize: 13 },
+  accessibilityEdit: { borderWidth: 1, borderRadius: 12, padding: 12, fontSize: 14, marginTop: 10, minHeight: 80 },
   placeName: { color: '#FFFFFF', marginTop: 10, textShadowColor: 'rgba(0,0,0,0.5)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4, fontSize: 32, fontWeight: '900' },
   mainContent: { padding: 20 },
   aiButton: {

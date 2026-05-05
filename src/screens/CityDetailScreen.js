@@ -11,10 +11,12 @@ import {
   SafeAreaView,
   StatusBar,
   Alert,
-  Platform
+  Platform,
+  ActivityIndicator
 } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
+import { GeminiService } from '../utils/gemini';
 import { 
   ChevronLeft, 
   MapPin, 
@@ -87,7 +89,11 @@ const InfoModal = ({ visible, onClose, title, content, theme, icon: Icon }) => (
           </TouchableOpacity>
         </View>
         <ScrollView style={styles.modalBody} showsVerticalScrollIndicator={false}>
-          <Text style={[styles.modalText, { color: theme.textSecondary }]}>{content}</Text>
+          {content.split('\n\n').map((paragraph, idx) => (
+            <Text key={idx} style={[styles.modalText, { color: theme.textSecondary }]}>
+              {paragraph.trim()}
+            </Text>
+          ))}
         </ScrollView>
       </View>
     </View>
@@ -171,9 +177,11 @@ export function CityDetailScreen({ route, navigation }) {
 
   const normalize = (text) => {
     if (!text) return '';
-    return text.toString().trim().toLowerCase()
+    return text.toString().toLowerCase().trim()
+      .split('/')[0].split('(')[0].trim() // Quedarse solo con la primera parte (ej: "Alicante/Alacant" -> "alicante")
       .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/y/g, 'i');
+      .replace(/y/g, 'i')
+      .replace(/[^a-z0-9]/g, ''); // Eliminar cualquier otro caracter especial
   };
 
   const cityKey = normalize(city.name);
@@ -347,13 +355,7 @@ export function CityDetailScreen({ route, navigation }) {
   const officialPlaces = useMemo(() => {
     const cName = normalize(city.name);
     // Buscar coincidencia exacta o parcial normalizada
-    const matchingKey = Object.keys(MONUMENTOS).find(k => {
-      const normalizedK = normalize(k);
-      // Soporte bilingüe exacto: Alicante/Alacant, Castellón/Castelló, etc.
-      return normalizedK === cName || 
-             (normalizedK === 'alicante' && cName === 'alacant') ||
-             (normalizedK === 'castellon' && cName === 'castello');
-    });
+    const matchingKey = Object.keys(MONUMENTOS).find(k => normalize(k) === cName);
     return MONUMENTOS[matchingKey] || [];
   }, [city.name]);
 
@@ -457,8 +459,25 @@ export function CityDetailScreen({ route, navigation }) {
     });
 
     if (!result.canceled) {
-      setTempCityData(prev => ({ ...prev, image: result.assets[0].uri }));
-      Alert.alert("¡Imagen actualizada!", "La foto se guardará permanentemente.");
+      const newImage = result.assets[0].uri;
+      setTempCityData(prev => ({ ...prev, image: newImage }));
+      
+      // Persistir en perfil
+      const cityName = displayCityData.name || city.name;
+      const cityKey = normalize(cityName);
+      updateUserData('customCityData', (prevData) => {
+        const current = prevData || {};
+        return {
+          ...current,
+          [cityKey]: {
+            ...(current[cityKey] || {}),
+            image: newImage,
+            lastUpdate: new Date().toISOString()
+          }
+        };
+      });
+      
+      Alert.alert("¡Imagen actualizada!", "La foto se ha guardado en tu perfil.");
     }
   };
 
@@ -512,6 +531,7 @@ export function CityDetailScreen({ route, navigation }) {
   };
 
   const [isAiProcessing, setIsAiProcessing] = useState(false);
+  const [aiProgress, setAiProgress] = useState(0);
   const [isAiEnhanced, setIsAiEnhanced] = useState(false);
   const [aiResults, setAiResults] = useState(null);
 
@@ -542,83 +562,69 @@ export function CityDetailScreen({ route, navigation }) {
   };
 
   const handleAiEnhance = async () => {
-    const hasGemini = userData.aiApiKey && userData.aiApiKey.length > 10;
+    Keyboard.dismiss();
+    const hasGemini = userData?.aiApiKey && userData.aiApiKey.length > 10;
     setIsAiProcessing(true);
     const cityName = displayCityData.name || city.name || 'esta ciudad';
     const cityKey = normalize(cityName);
+    setAiProgress(0.1);
 
-    if (hasGemini) {
-      try {
-        const prompt = `Actúa como un experto historiador y guía turístico de España. 
-        Realiza una investigación profunda y profesional sobre el municipio de "${cityName}". 
-        Devuelve la respuesta en formato JSON estricto con la siguiente estructura:
-        {
-          "history": "3-4 frases detalladas sobre el origen y evolución histórica.",
-          "geography": "3-4 frases sobre la ubicación, altitud y límites.",
-          "climate": "3-4 frases sobre temperaturas medias, lluvias y mejor época para visitar.",
-          "landscape": "3-4 frases sobre la flora, fauna y parajes naturales cercanos.",
-          "gastronomy": "3-4 frases sobre platos típicos, ingredientes locales y dulces.",
-          "festivities": "3-4 frases sobre las fiestas patronales, fechas y tradiciones únicas."
+    const progressInterval = setInterval(() => {
+      setAiProgress(prev => {
+        if (prev >= 0.9) return prev;
+        return prev + (0.9 - prev) * 0.15;
+      });
+    }, 500);
+
+    const finishProcessing = (content, isReal) => {
+      clearInterval(progressInterval);
+      setAiProgress(1);
+      setTimeout(() => {
+        applyAiCityResults(content, isReal);
+        setAiProgress(0);
+      }, 600);
+    };
+    // Usar el servicio unificado con fallback local interno
+    try {
+      const userKey = userData?.aiApiKey || null;
+      const openKey = userData?.openaiApiKey || null;
+      const aiContent = await GeminiService.getCityData(cityName, userKey, openKey);
+      if (aiContent) {
+        finishProcessing(aiContent, !aiContent.isMock);
+        if (aiContent.isMock) {
+          const detail = GeminiService.lastError ? `\n\nMotivo: ${GeminiService.lastError}` : '';
+          Alert.alert("Sugerencia Local", `Usando base de datos interna.${detail}`);
         }
-        No incluyas markdown, solo el JSON puro.`;
-
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${userData.aiApiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }]
-          })
-        });
-
-        const data = await response.json();
-        const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-        
-        let aiContent = null;
-        try {
-          // Limpieza agresiva de la respuesta
-          const sanitizedText = aiText.replace(/[\u0000-\u001F\u007F-\u009F]/g, "");
-          const firstBrace = sanitizedText.indexOf('{');
-          const lastBrace = sanitizedText.lastIndexOf('}');
-          
-          if (firstBrace !== -1 && lastBrace !== -1) {
-            const jsonStr = sanitizedText.substring(firstBrace, lastBrace + 1);
-            aiContent = JSON.parse(jsonStr);
-          }
-        } catch (e) {
-          // Silenciamos el error y dejamos que caiga al fallback de abajo
-          aiContent = null;
-        }
-
-        if (aiContent) {
-          applyAiCityResults(aiContent, true);
-          return;
-        }
-      } catch (error) {
-        // Error de red o similar, caemos al fallback
+        return;
       }
+    } catch (error) {
+      console.log("[IA] Error silencioso capturado:", error.message);
+      // Fallback automático sin molestar al usuario
+    } finally {
+      setIsAiProcessing(false);
+      setAiProgress(0);
+      clearInterval(progressInterval);
     }
 
-    // Fallback Simulator (Se ejecuta si no hay Gemini o si Gemini falló/dio JSON inválido)
-    setTimeout(() => {
-      const realData = REAL_CITY_DATA[cityKey];
-      let aiContent;
-      
-      if (realData) {
-        aiContent = { ...realData };
-      } else {
-        const province = displayCityData.province || 'España';
-        const region = displayCityData.region || 'España';
-        aiContent = {
-          history: `La historia de ${cityName} está ligada a la provincia de ${province}. Como parte de la región de ${region}, ha sido testigo de los procesos de repoblación medieval y el desarrollo agrícola que define este territorio. Su patrimonio refleja la arquitectura típica de la zona.`,
-          geography: `${cityName} se integra en la geografía de ${province}. Su ubicación en ${region} le confiere un relieve que combina la orografía local con los accidentes geográficos propios de esta zona.`,
-          climate: `El clima en ${cityName} es el propio de ${province}, caracterizado por ser un clima ${region.includes('Mediterránea') ? 'Mediterráneo con veranos secos' : 'Continental con marcadas oscilaciones térmicas'}.`,
-          landscape: `El entorno de ${cityName} ofrece un paisaje dominado por la flora de ${region}. Desde las tierras de cultivo hasta los parajes naturales protegidos de ${province}, invita a la contemplación.`,
-          gastronomy: `La gastronomía en ${cityName} se nutre de la despensa de ${province}. Destacan los productos de temporada y los guisos tradicionales de la región de ${region}.`,
-          festivities: `Las festividades de ${cityName} celebran la identidad de sus gentes a través de tradiciones compartidas con el resto de ${province}. El calendario festivo está marcado por eventos populares inclusivos.`
-        };
-      }
-      applyAiCityResults(aiContent, false);
-    }, 1500);
+    // Fallback absoluto por si falla el servicio interno
+    const realData = REAL_CITY_DATA[cityKey];
+    let fallbackContent;
+    
+    if (realData) {
+      fallbackContent = { ...realData };
+    } else {
+      const province = displayCityData.province || 'España';
+      const region = displayCityData.region || 'España';
+      fallbackContent = {
+        history: `La historia de ${cityName} está ligada a la provincia de ${province}. Como parte de la región de ${region}, ha sido testigo de los procesos de repoblación medieval y el desarrollo agrícola que define este territorio. Su patrimonio refleja la arquitectura típica de la zona.`,
+        geography: `${cityName} se integra en la geografía de ${province}. Su ubicación en ${region} le confiere un relieve que combina la orografía local con los accidentes geográficos propios de esta zona.`,
+        climate: `El clima en ${cityName} es el propio de ${province}, caracterizado por ser un clima ${region.includes('Mediterránea') ? 'Mediterráneo con veranos secos' : 'Continental con marcadas oscilaciones térmicas'}.`,
+        landscape: `El entorno de ${cityName} ofrece un paisaje dominado por la flora de ${region}. Desde las tierras de cultivo hasta los parajes naturales protegidos de ${province}, invita a la contemplación.`,
+        gastronomy: `La gastronomía en ${cityName} se nutre de la despensa de ${province}. Destacan los productos de temporada y los guisos tradicionales de la región de ${region}.`,
+        festivities: `Las festividades de ${cityName} celebran la identidad de sus gentes a través de tradiciones compartidas con el resto de ${province}. El calendario festivo está marcado por eventos populares inclusivos.`
+      };
+    }
+    finishProcessing(fallbackContent, false);
   };
 
   const applyAiCityResults = (aiContent, isRealGemini) => {
@@ -658,14 +664,7 @@ export function CityDetailScreen({ route, navigation }) {
 
   const introSection = (
     <View style={styles.introSection}>
-      {isAiProcessing ? (
-        <View style={{ padding: 20, alignItems: 'center' }}>
-          <Zap color={theme.primary} size={32} style={{ marginBottom: 10 }} />
-          <Text style={{ color: theme.textSecondary, fontStyle: 'italic', textAlign: 'center' }}>
-            Investigando profundamente en la base de datos de Gemini PRO 1.5...
-          </Text>
-        </View>
-      ) : (
+      {!isAiProcessing && (
         <View>
           <Text style={[styles.description, { color: theme.textSecondary }]}>
             {displayCityData.description || `Explora los lugares accesibles de ${displayCityData.name}.`}
@@ -676,36 +675,38 @@ export function CityDetailScreen({ route, navigation }) {
         </View>
       )}
 
-      {/* BOTÓN IA ELITE */}
-      <TouchableOpacity 
-        style={[
-          styles.aiButton, 
-          isAiEnhanced && styles.aiButtonActive,
-          userData.aiApiKey && { backgroundColor: '#8E44AD' }
-        ]} 
-        onPress={handleAiEnhance}
-        disabled={isAiProcessing || isAiEnhanced}
-      >
-        {isAiProcessing ? (
-          <Zap color="#FFF" size={20} />
-        ) : (
-          userData.aiApiKey ? <Sparkles color="#FFF" size={20} fill={isAiEnhanced ? "#FFF" : "transparent"} /> : <Zap color="#FFF" size={20} fill={isAiEnhanced ? "#FFF" : "transparent"} />
-        )}
-        <Text style={styles.aiButtonText}>
-          {isAiProcessing 
-            ? (userData.aiApiKey ? "Gemini analizando..." : "Procesando con IA...") 
-            : isAiEnhanced 
-              ? (userData.aiApiKey ? "Motor Gemini Pro Activo" : "Experiencia Aumentada con IA") 
-              : (userData.aiApiKey ? "Potenciar con Google Gemini" : "Aumentar experiencia con IA")}
-        </Text>
-        {!isAiProcessing && !isAiEnhanced && (
-          <View style={[styles.aiBadge, userData.aiApiKey && { backgroundColor: '#FFF' }]}>
-            <Text style={[styles.aiBadgeText, userData.aiApiKey && { color: '#8E44AD' }]}>
-              {userData.aiApiKey ? "GEMINI" : "PRO"}
-            </Text>
-          </View>
-        )}
-      </TouchableOpacity>
+      {/* BOTÓN IA ELITE - SOLO ADMIN */}
+      {isAdmin && (
+        <TouchableOpacity 
+          style={[
+            styles.aiButton, 
+            isAiEnhanced && styles.aiButtonActive,
+            userData.aiApiKey && { backgroundColor: '#8E44AD' }
+          ]} 
+          onPress={handleAiEnhance}
+          disabled={isAiProcessing || isAiEnhanced}
+        >
+          {isAiProcessing ? (
+            <Zap color="#FFF" size={20} />
+          ) : (
+            userData.aiApiKey ? <Sparkles color="#FFF" size={20} fill={isAiEnhanced ? "#FFF" : "transparent"} /> : <Zap color="#FFF" size={20} fill={isAiEnhanced ? "#FFF" : "transparent"} />
+          )}
+          <Text style={styles.aiButtonText}>
+            {isAiProcessing 
+              ? (userData.aiApiKey ? "Analizando Destino..." : "Procesando con IA...") 
+              : isAiEnhanced 
+                ? (userData.aiApiKey ? "Investigación Activa" : "Experiencia Aumentada con IA") 
+                : (userData.aiApiKey ? "Potenciar Investigación" : "Aumentar experiencia con IA")}
+          </Text>
+          {!isAiProcessing && !isAiEnhanced && (
+            <View style={[styles.aiBadge, userData.aiApiKey && { backgroundColor: '#FFF' }]}>
+              <Text style={[styles.aiBadgeText, userData.aiApiKey && { color: '#8E44AD' }]}>
+                {userData.aiApiKey ? "GEMINI" : "PRO"}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      )}
     </View>
   );
 
@@ -728,6 +729,16 @@ export function CityDetailScreen({ route, navigation }) {
           >
             <ChevronLeft color="#FFFFFF" size={28} />
           </TouchableOpacity>
+
+          {/* Botón de edición siempre visible para pruebas de diseño */}
+          <View style={styles.adminHeaderActions}>
+            <TouchableOpacity 
+              style={[styles.backButton, { position: 'relative', top: 0, left: 0, backgroundColor: 'rgba(0,0,0,0.6)' }]}
+              onPress={pickHeaderImage}
+            >
+              <Edit color="#FFFFFF" size={22} />
+            </TouchableOpacity>
+          </View>
 
           <View style={styles.heroContent}>
             {/* Map Component */}
@@ -996,10 +1007,63 @@ export function CityDetailScreen({ route, navigation }) {
                 </TouchableOpacity>
               );
             })}
+
+            {/* Tarjeta de añadir lugar al final de la lista */}
+            <TouchableOpacity 
+              style={[
+                styles.placeCard, 
+                { 
+                  backgroundColor: theme.surface, 
+                  borderColor: theme.primary, 
+                  borderStyle: 'dashed',
+                  borderWidth: 2,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  padding: 20
+                }
+              ]}
+              onPress={() => navigation.navigate('AddLocation', { defaultCity: tempCityData.name || city.name })}
+            >
+              <View style={{ backgroundColor: theme.primary + '20', width: 50, height: 50, borderRadius: 25, justifyContent: 'center', alignItems: 'center', marginBottom: 15 }}>
+                <Plus color={theme.primary} size={28} />
+              </View>
+              <Text style={{ color: theme.text, fontWeight: '800', fontSize: 14, textAlign: 'center' }}>¿Falta algo?</Text>
+              <Text style={{ color: theme.textSecondary, fontSize: 10, textAlign: 'center', marginTop: 5, paddingHorizontal: 10 }}>
+                Añade un monumento
+              </Text>
+            </TouchableOpacity>
           </ScrollView>
         </View>
-        <View style={{ height: 60 }} />
+        <View style={{ height: 100 }} />
       </ScrollView>
+
+      {/* FAB: Añadir Lugar */}
+      <View style={styles.fabContainer}>
+        <TouchableOpacity
+          style={[styles.fab, { backgroundColor: theme.primary }]}
+          onPress={() => navigation.navigate('AddLocation', { defaultCity: tempCityData.name || city.name })}
+        >
+          <Plus color="#FFF" size={32} />
+        </TouchableOpacity>
+      </View>
+
+      {isAiProcessing && (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 10000, justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ backgroundColor: theme.surface, padding: 35, borderRadius: 30, alignItems: 'center', width: '85%', borderWidth: 1, borderColor: theme.border, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.3, shadowRadius: 20, elevation: 10 }}>
+            <ActivityIndicator size="large" color={theme.primary} />
+            <Text style={[typography.h2, { color: theme.text, marginTop: 25, textAlign: 'center', fontSize: 22 }]}>Análisis de Destino Inteligente</Text>
+            <Text style={{ color: theme.textSecondary, marginTop: 12, textAlign: 'center', fontStyle: 'italic', fontSize: 14, lineHeight: 20 }}>
+              Realizando investigación enciclopédica sobre "{displayCityData.name}"...
+            </Text>
+            <View style={{ height: 6, width: '100%', backgroundColor: theme.border, borderRadius: 3, marginTop: 25, overflow: 'hidden' }}>
+              <View style={{ height: '100%', width: `${aiProgress * 100}%`, backgroundColor: theme.primary }} />
+            </View>
+            <Text style={{ color: theme.primary, fontSize: 12, fontWeight: '800', marginTop: 15, letterSpacing: 1 }}>
+              {Math.round(aiProgress * 100)}% COMPLETADO
+            </Text>
+          </View>
+        </View>
+      )}
 
       <InfoModal 
         visible={modalVisible}
@@ -1123,7 +1187,8 @@ const styles = StyleSheet.create({
     right: 20, 
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10
+    gap: 10,
+    zIndex: 9999, // Superponer a todo
   },
   adminActionBtn: {
     width: 44, 
@@ -1200,6 +1265,13 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     marginBottom: 4,
     textTransform: 'uppercase',
+  },
+  modalText: {
+    fontSize: 16,
+    lineHeight: 26,
+    textAlign: 'justify',
+    marginBottom: 20,
+    letterSpacing: 0.3
   },
   description: { 
     fontSize: 16, 
@@ -1450,5 +1522,24 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 10,
     fontWeight: '800',
-  }
+  },
+  fabContainer: {
+    position: 'absolute',
+    bottom: 30,
+    right: 20,
+    alignItems: 'center',
+    zIndex: 999,
+  },
+  fab: {
+    width: 65,
+    height: 65,
+    borderRadius: 32.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+  },
 });

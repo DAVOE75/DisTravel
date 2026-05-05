@@ -35,7 +35,8 @@ import {
   Waves,
   Users,
   PlusCircle,
-  AlertTriangle,
+  Plus,
+  TriangleAlert,
   Sparkles,
   Info,
   Map as MapIcon,
@@ -425,6 +426,33 @@ export function HomeScreen({ navigation }) {
             </TouchableOpacity>
 
             <TouchableOpacity 
+              onPress={() => navigation.navigate('AddLocation')}
+              style={[
+                styles.missionCard, 
+                { 
+                  backgroundColor: '#2ECC71', 
+                  width: 160, 
+                  height: 160,
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowRadius: 3,
+                  shadowOpacity: 0.03,
+                  elevation: 1
+                }
+              ]}
+            >
+              <View style={[styles.missionIconBox, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
+                <PlusCircle color="#FFF" size={24} />
+              </View>
+              <View style={[styles.xpBadge, { top: 10, right: 10, backgroundColor: 'rgba(255,255,255,0.3)' }]}>
+                <Text style={[styles.xpBadgeText, { fontSize: 10, color: '#FFF' }]}>NUEVO</Text>
+              </View>
+              <Text style={[styles.missionTitle, { color: '#FFF', fontSize: 15, marginTop: 4 }]}>Añadir Lugar</Text>
+              <Text style={[styles.missionDesc, { color: '#FFF', fontSize: 11, lineHeight: 14 }]}>
+                Contribuye con la comunidad y gana puntos.
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
               onPress={() => setShowAboutModal(true)}
               style={[
                 styles.missionCard, 
@@ -524,7 +552,6 @@ export function HomeScreen({ navigation }) {
                             {item.province}, {item.region}
                           </Text>
                         </View>
-                        
                         <View style={{ flexDirection: 'row', gap: 6, marginTop: 4 }}>
                           <View style={styles.searchFiestaBadge}>
                             <Text style={styles.searchFiestaText}>
@@ -538,6 +565,20 @@ export function HomeScreen({ navigation }) {
                           </View>
                         </View>
                       </View>
+                      <TouchableOpacity 
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          navigation.navigate('AddLocation', { defaultCity: item.name });
+                        }}
+                        style={{ 
+                          padding: 10, 
+                          backgroundColor: theme.primary + '15', 
+                          borderRadius: 12,
+                          marginRight: 8
+                        }}
+                      >
+                        <Plus color={theme.primary} size={20} />
+                      </TouchableOpacity>
                       <ChevronRight color={theme.textSecondary} size={16} />
                     </TouchableOpacity>
                   ))}
@@ -554,7 +595,7 @@ export function HomeScreen({ navigation }) {
               style={[styles.serviceCard, { backgroundColor: '#FF3B30' }]} 
               onPress={() => navigation.navigate('Emergency')}
             >
-              <AlertTriangle color="#FFF" size={24} />
+              <TriangleAlert color="#FFF" size={24} />
               <Text style={styles.serviceText}>SOS</Text>
             </TouchableOpacity>
 
@@ -634,7 +675,7 @@ export function HomeScreen({ navigation }) {
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
                       <Clock size={12} color={status.color} />
                       <Text style={{ fontSize: 11, color: status.color, fontWeight: '700', marginLeft: 4 }}>
-                        {status.text}
+                        {status.text} • {status.detail}
                       </Text>
                     </View>
                   </View>
@@ -721,7 +762,7 @@ export function HomeScreen({ navigation }) {
                           <>
                             <Clock size={10} color={status.color} />
                             <Text style={{ fontSize: 10, color: status.color, fontWeight: '700', marginLeft: 4 }}>
-                              {status.text}
+                              {status.text} • {status.detail}
                             </Text>
                           </>
                         );
@@ -799,7 +840,7 @@ export function HomeScreen({ navigation }) {
               style={[styles.miniFab, { backgroundColor: '#FF3B30' }]} 
               onPress={() => { toggleMenu(); navigation.navigate('Emergency'); }}
             >
-              <AlertTriangle color="#FFF" size={20} />
+              <TriangleAlert color="#FFF" size={20} />
             </TouchableOpacity>
             <TouchableOpacity 
               style={[styles.miniFab, { backgroundColor: '#3498DB' }]} 
@@ -943,6 +984,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   missionCardsContainer: {
+    marginTop: -40,
     zIndex: 10,
   },
   missionCard: {

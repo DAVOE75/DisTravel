@@ -5,67 +5,19 @@
 
 export const REAL_CITY_DATA = {
   "morella": {
-    history: "Villa de origen antiquísimo (íberos, romanos, árabes) y estratégica en la Corona de Aragón. Conquistada por Jaume I en 1232. Fue protagonista en guerras (Germanías, Sucesión, Carlistas) y enclave clave en la época medieval.",
-    geography: "Situada en la comarca de Els Ports, sobre una montaña a 984 metros de altitud.",
-    climate: "Continentalizado con veranos templados e inviernos duros, con frecuentes heladas y nevadas ocasionales.",
-    landscape: "Paisaje de alta montaña dominado por sus imponentes murallas, el castillo medieval y bancales agrícolas tradicionales.",
-    gastronomy: "Basada en productos locales: guisos tradicionales, embutidos, miel y su famosa repostería (flaons).",
-    festivities: "Destaca el Sexenni, fiesta mayor dedicada a la Virgen de la Vallivana que se celebra cada seis años."
+    history: "Morella es una de las ciudades más impresionantes de la geografía española. Su historia es una cronología de resistencia y poder estratégico. Poblada desde la prehistoria, por sus calles han pasado íberos, romanos, visigodos y árabes.\n\nEn 1232, Blasco de Alagón la conquistó para el Reino de Aragón, comenzando una era de esplendor medieval que aún se respira en sus murallas. Fue pieza clave en la Guerra de Sucesión y residencia temporal del Papa Luna durante el Cisma de Occidente. Su castillo, testigo de batallas carlistas lideradas por el general Cabrera, sigue dominando el horizonte como un guardián eterno del maestrazgo.\n\nHoy en día, Morella es Patrimonio de la Humanidad por la UNESCO gracias a sus pinturas rupestres y un conjunto histórico artístico que conserva casi intactas sus murallas de más de dos kilómetros y sus catorce torres.",
+    geography: "Situada en el extremo norte de la provincia de Castellón, Morella se asienta de forma inverosímil sobre una gran mole rocosa a 984 metros sobre el nivel del mar. Es el corazón de la comarca de Els Ports, rodeada de montañas y barrancos que han definido su carácter aislado y fuerte durante siglos.\n\nSu casco urbano se organiza de forma radial y ascendente hacia el castillo, aprovechando cada rellano de la montaña para levantar sus casonas solariegas y templos góticos.",
+    climate: "El clima de Morella es de tipo mediterráneo continentalizado de montaña. Esto se traduce en una oscilación térmica muy marcada.\n\nLos inviernos son rigurosos, con heladas frecuentes y precipitaciones en forma de nieve que cubren de blanco sus murallas varias veces al año. Los veranos son suaves y muy agradables, con noches frescas que invitan al descanso, lo que la convierte en un refugio ideal frente al calor de la costa valenciana.",
+    landscape: "El entorno de Morella es un mosaico de naturaleza virgen y rastros de actividad humana milenaria. Los bosques de pino negro y encinas se alternan con antiguos bancales de piedra seca, declarados Patrimonio Inmaterial.\n\nDesde lo alto del castillo se divisa un mar de montañas que se extiende hacia Teruel y Tarragona, formando un paisaje quebrado de gran belleza geológica donde es frecuente avistar buitres leonados sobrevolando los riscos.",
+    gastronomy: "La cocina morellana es recia, honesta y llena de sabor. El producto estrella es la trufa negra, el 'diamante negro' de Els Ports, que aromatiza guisos y revueltos.\n\nNo se puede visitar Morella sin probar el 'flaón', un pastel de origen medieval relleno de requesón y almendra que es la insignia de su repostería. Las carnes de caza, el cordero al horno y los embutidos curados al aire de la montaña completan una oferta gastronómica que es un viaje directo a las raíces del Maestrazgo.",
+    festivities: "El evento más importante es el Sexenni, una fiesta declarada de Interés Turístico Nacional que se celebra solo cada seis años en honor a la Virgen de la Vallivana.\n\nDurante nueve días, las calles se visten de tapices de papel de seda hechos a mano y se celebran danzas tradicionales de origen medieval (Els Torneros, Els Teixidors). Es una explosión de color, fe y orgullo local que paraliza la comarca entera."
   },
   "alcoy": {
-    history: "Ciudad de gran relevancia industrial desde la Revolución Industrial (textil, metalúrgico y papelero). Conocida por su carácter emprendedor y su historia ligada a los puentes.",
-    geography: "Conocida como la 'Ciudad de los Puentes', situada en un valle rodeado por las sierras de Mariola y la Font Roja.",
-    climate: "Mediterráneo con matices continentales debido a su altitud (561m). Inviernos fríos y veranos cálidos.",
-    landscape: "Orografía accidentada marcada por barrancos, ríos y parques naturales protegidos de gran valor ecológico.",
-    gastronomy: "Olleta alcoyana, pericana, bajoques farcides (pimientos rellenos) y el licor de hierbas local 'herbero'.",
-    festivities: "Mundialmente famosa por sus Moros y Cristianos y su Cabalgata de Reyes Magos (una de las más antiguas de Europa)."
-  },
-  "villatuelda": {
-    history: "Fundada en el siglo X por el visigodo Théudila. Vinculada históricamente al Ducado de Medinaceli.",
-    geography: "Localidad de la Ribera del Duero situada en el Valle del Esgueva (Burgos).",
-    climate: "Continental típico de la Meseta Norte: inviernos muy fríos y veranos cortos con gran oscilación térmica.",
-    landscape: "Paisaje castellano de tierras de labor, el curso del río Esgueva y bodegas tradicionales excavadas.",
-    gastronomy: "Lechazo asado, morcilla de Burgos y vinos de la D.O. Ribera del Duero.",
-    festivities: "Devoción a San Mamés y a la Virgen de las Angustias; tradiciones ligadas al campo."
-  },
-  "madrid": {
-    history: "Capital de España desde el siglo XVI. Centro neurálgico del Imperio de los Austrias y posteriormente de los Borbones.",
-    geography: "Situada en el centro de la Península Ibérica, en la Meseta Central, a orillas del río Manzanares.",
-    climate: "Continental con veranos calurosos y secos, e inviernos fríos con cielos despejados.",
-    landscape: "Mezcla de urbanismo monumental, el histórico Parque del Retiro y la Casa de Campo.",
-    gastronomy: "Cocido madrileño, bocadillo de calamares y las tradicionales tapas de La Latina.",
-    festivities: "Fiestas de San Isidro en mayo, con verbenas y trajes de chulapo."
-  },
-  "barcelona": {
-    history: "Ciudad condal con legado romano (Barcino) y gótico medieval. Epicentro del Modernismo catalán.",
-    geography: "Ubicada a orillas del Mediterráneo, limitada por la sierra de Collserola y los ríos Llobregat y Besòs.",
-    climate: "Mediterráneo marítimo con veranos cálidos y húmedos e inviernos suaves.",
-    landscape: "Arquitectura única de Gaudí (Sagrada Familia), playas urbanas y el Parque de Montjuïc.",
-    gastronomy: "Cocina catalana de vanguardia, pa amb tomàquet, butifarra y mariscos frescos del Mediterráneo.",
-    festivities: "La Mercè en septiembre y el día de Sant Jordi en abril."
-  },
-  "valencia": {
-    history: "Fundada por los romanos en el 138 a.C. Esplendor medieval con el Siglo de Oro valenciano.",
-    geography: "Situada en la llanura de la huerta valenciana, junto al mar y el antiguo cauce del Turia.",
-    climate: "Mediterráneo suave y luminoso durante la mayor parte del año.",
-    landscape: "Contraste entre el casco histórico gótico y la futurista Ciudad de las Artes y las Ciencias.",
-    gastronomy: "Cuna de la paella valenciana auténtica, el arroz a banda y la refrescante horchata.",
-    festivities: "Las Fallas en marzo, declaradas Patrimonio Cultural Inmaterial de la Humanidad."
-  },
-  "sevilla": {
-    history: "Puerto de Indias y capital de Al-Ándalus en diversas épocas. Ciudad clave en el descubrimiento de América.",
-    geography: "Asentada en la vega del Guadalquivir, en el sur de España.",
-    climate: "Mediterráneo continental con veranos de calor extremo e inviernos muy templados.",
-    landscape: "La Giralda, el Real Alcázar y el río Guadalquivir dominan un horizonte de torres y naranjos.",
-    gastronomy: "Gazpacho, pescaíto frito, serranitos y una cultura del tapeo inigualable.",
-    festivities: "Semana Santa y la Feria de Abril, máximos exponentes del folclore y la fe andaluza."
-  },
-  "bilbao": {
-    history: "Histórica villa comercial e industrial que ha vivido una transformación urbana radical en las últimas décadas.",
-    geography: "Capital de Vizcaya, situada en la ría del Nervión rodeada de montañas verdes.",
-    climate: "Océanico templado y lluvioso ('sirimiri'), con temperaturas suaves.",
-    landscape: "Integración del Museo Guggenheim, arquitectura vanguardista y el Casco Viejo (Siete Calles).",
-    gastronomy: "Alta cocina vasca, famosos pintxos, bacalao al pil-pil y chuletón.",
-    festivities: "Aste Nagusia (Semana Grande) en agosto con Marijaia como protagonista."
+    history: "Alcoy es el gran ejemplo de la revolución industrial en el Mediterráneo. Su historia está marcada por la adaptación de sus gentes a una geografía difícil que convirtieron en motor económico a través del agua y la industria.\n\nDesde el siglo XVIII, Alcoy se especializó en el textil, el papel y la metalurgia, creando una burguesía pujante que dejó como legado impresionantes edificios modernistas. Fue la primera ciudad española en sufrir una huelga general de carácter anarquista (la Revolución del Petróleo en 1873), lo que demuestra su carácter obrero y combativo.\n\nSu trazado urbano está definido por los ríos Molinar y Serpis, lo que obligó a la construcción de numerosos puentes de diferentes estilos que hoy son el símbolo de la ciudad.",
+    geography: "Conocida como la 'Ciudad de los Puentes', Alcoy se ubica en un valle profundo rodeado por un cinturón de montañas de gran belleza. Se sitúa a unos 561 metros de altitud, en la confluencia de varios ríos que han erosionado el terreno creando barrancos espectaculares.\n\nEstá flanqueada por dos parques naturales de referencia: la Sierra de Mariola y el Carrascal de la Font Roja, lo que le otorga una ubicación privilegiada para el senderismo y el contacto con la naturaleza.",
+    climate: "Clima mediterráneo con una clara transición hacia el continental debido a su altitud y encajonamiento en el valle.\n\nPresenta veranos calurosos, aunque con cierta ventilación por las brisas de montaña, e inviernos fríos donde la nieve suele hacer acto de presencia en las cumbres de la Font Roja. El otoño es la estación más lluviosa, dotando a sus barrancos de un verdor intenso.",
+    landscape: "El paisaje de Alcoy es una mezcla fascinante de patrimonio industrial (chimeneas, fábricas de piedra) y naturaleza salvaje. Sus parques naturales albergan una de las mayores variedades de plantas medicinales de Europa.\n\nLas vistas desde los puentes de San Jorge o de María Cristina ofrecen una perspectiva única de cómo la ciudad se asoma a los abismos de sus barrancos, integrando la arquitectura con la roca.",
+    gastronomy: "La gastronomía alcoyana es rica en matices y muy propia. Destaca la 'olleta alcoyana', un guiso contundente de alubias, pencas y cerdo ideal para el clima de montaña.\n\nLas 'bajoques farcides' (pimientos rellenos de arroz y carne) y la 'pericana' (bacalao seco, pimientos y aceite) son platos obligatorios. Para finalizar, el 'herbero' (licor de hierbas de la Mariola) y el 'café-licor' son las bebidas espirituosas que definen cualquier celebración social.",
+    festivities: "Mundialmente conocida por su fiesta de Moros y Cristianos, declarada de Interés Turístico Internacional, que recrea la batalla contra Al-Azraq en 1276.\n\nAdemás, Alcoy presume de tener la Cabalgata de Reyes Magos más antigua de España (1885), donde cientos de pajes suben por largas escaleras de mano a los balcones de las casas para entregar los regalos, una tradición mágica que atrae a visitantes de todo el país."
   }
 };

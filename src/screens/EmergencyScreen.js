@@ -18,7 +18,7 @@ import {
   Share2, 
   ShieldAlert,
   Hospital,
-  AlertTriangle
+  TriangleAlert
 } from 'lucide-react-native';
 import * as Location from 'expo-location';
 import { typography } from '../theme/typography';
@@ -133,7 +133,7 @@ export function EmergencyScreen({ navigation }) {
             style={[styles.serviceItem, { backgroundColor: theme.surface, borderColor: theme.border }]}
             onPress={() => Linking.openURL(`https://www.google.com/maps/search/comisaria+cerca+de+mi/@${coords?.latitude},${coords?.longitude},15z`)}
           >
-            <AlertTriangle color="#F1C40F" size={24} />
+            <TriangleAlert color="#F1C40F" size={24} />
             <Text style={[styles.serviceLabel, { color: theme.text }]}>Comisarías</Text>
           </TouchableOpacity>
         </View>

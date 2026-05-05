@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { 
   View, 
   Text, 
@@ -10,12 +10,18 @@ import {
   Switch,
   Alert,
   ActivityIndicator,
-  StatusBar
+  StatusBar,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
-import { API_BASE_URL } from '../config/api';
+import { API_BASE_URL, API_ENDPOINTS } from '../config/api';
+import { GeminiService } from '../utils/gemini';
+import MUNICIPIOS_DATA from '../data/municipios.json';
+import { INE_PROVINCES, PROVINCE_TO_REGION } from '../data/provinces';
 import { 
   ChevronLeft, 
   Camera, 
@@ -39,7 +45,12 @@ import {
   Eye,
   Ear,
   Brain,
-  Accessibility
+  Accessibility,
+  TriangleAlert,
+  Mic,
+  Users,
+  Construction,
+  ShieldCheck
 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { typography } from '../theme/typography';
@@ -49,20 +60,43 @@ import * as Location from 'expo-location';
 const CATEGORIES = ['Museo', 'Iglesia', 'Parque', 'Restaurante', 'Hotel', 'Atracción'];
 const DAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
 
+const LOCAL_FALLBACK_MUNICIPIOS = MUNICIPIOS_DATA.map(m => {
+  const provinceName = INE_PROVINCES[m.parent_code] || 'Desconocida';
+  const regionName = PROVINCE_TO_REGION[provinceName] || 'España';
+  const cityName = m.label || '';
+  return { 
+    ...m, 
+    name: cityName, 
+    normalizedName: cityName.toString().trim().toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/y/g, 'i'),
+    province: provinceName, 
+    region: regionName 
+  };
+});
+
 export function AddLocationScreen({ route, navigation }) {
   const { defaultCity } = route.params || {};
   const { theme, isDarkMode } = useTheme();
-  const { updateUserData, persistImage, uploadImageToServer } = useUser();
+  const { userData, updateUserData, persistImage, uploadImageToServer } = useUser();
+
+  // Buscar datos iniciales si hay defaultCity
+  const initialCityData = React.useMemo(() => {
+    if (!defaultCity) return null;
+    return LOCAL_FALLBACK_MUNICIPIOS.find(m => m.name === defaultCity);
+  }, [defaultCity]);
 
   const [formData, setFormData] = useState({
     name: '',
     category: 'Museo',
     city: defaultCity || '',
-    province: '',
+    province: initialCityData?.province || '',
+    region: initialCityData?.region || '',
     description: '',
     touristTip: '',
     website: '',
     phone: '',
+    address: '',
     tags: '',
     freeInfo: '',
     importantNotices: [],
@@ -79,6 +113,13 @@ export function AddLocationScreen({ route, navigation }) {
     ],
     isLinkedEntrance: false,
     linkedEntranceName: '',
+    technicalSpecs: {
+      doorWidth: '',
+      adaptedToilet: false,
+      elevatorDimensions: '',
+      magneticLoop: false,
+      brailleSignage: false
+    }
   });
 
   const [accessibilityFeatures, setAccessibilityFeatures] = useState({
@@ -89,6 +130,7 @@ export function AddLocationScreen({ route, navigation }) {
   });
 
   const [isRecognizing, setIsRecognizing] = useState(false);
+  const [aiProgress, setAiProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
 
   const [tariffs, setTariffs] = useState([
@@ -107,15 +149,33 @@ export function AddLocationScreen({ route, navigation }) {
     longitudeDelta: 0.005,
   });
 
+  const scrollRef = useRef(null);
+
   const [audioguide, setAudioguide] = useState({
     available: false,
-    price: 'No disponible',
-    accessible: false,
+    price: '0',
+    accessible: true,
+    languages: ['Español']
+  });
+
+  const [guidedVisits, setGuidedVisits] = useState({
+    available: false,
+    price: '',
+    description: '',
+    schedules: [
+      { id: 'gv1', time: '11:00', days: 'Todos los días' }
+    ],
     languages: ['Español']
   });
 
   const [isSearchingLocation, setIsSearchingLocation] = useState(false);
   const [isMapExpanded, setIsMapExpanded] = useState(false);
+  
+  const [citySearchResults, setCitySearchResults] = useState([]);
+  const [isSearchingCity, setIsSearchingCity] = useState(false);
+  const [showCityResults, setShowCityResults] = useState(false);
+  const [isUserTypingCity, setIsUserTypingCity] = useState(false);
+  const searchTimeout = React.useRef(null);
 
   React.useEffect(() => {
     (async () => {
@@ -129,9 +189,62 @@ export function AddLocationScreen({ route, navigation }) {
           longitudeDelta: 0.005,
         };
         setLocation(newRegion);
+        mapRef.current?.animateToRegion(newRegion, 1000);
       }
     })();
   }, []);
+
+  // Búsqueda de municipios
+  React.useEffect(() => {
+    if (!formData.city || formData.city.length < 2 || defaultCity || !isUserTypingCity) {
+      setCitySearchResults([]);
+      setShowCityResults(false);
+      return;
+    }
+
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+
+    searchTimeout.current = setTimeout(async () => {
+      setIsSearchingCity(true);
+      setShowCityResults(true);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 2500);
+
+      try {
+        const response = await fetch(`${API_ENDPOINTS.MUNICIPALITIES}?search=${encodeURIComponent(formData.city)}&limit=8`, {
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          const data = await response.json();
+          setCitySearchResults(data.map(m => ({
+            ...m,
+            name: m.name || m.label,
+            province: INE_PROVINCES[m.parent_code] || 'Provincia',
+            region: PROVINCE_TO_REGION[INE_PROVINCES[m.parent_code]] || 'España'
+          })));
+        } else {
+          performLocalCitySearch();
+        }
+      } catch (error) {
+        performLocalCitySearch();
+      } finally {
+        setIsSearchingCity(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(searchTimeout.current);
+  }, [formData.city]);
+
+  const performLocalCitySearch = () => {
+    const normQuery = normalize(formData.city);
+    const filtered = LOCAL_FALLBACK_MUNICIPIOS
+      .filter(m => m.normalizedName.includes(normQuery))
+      .slice(0, 8);
+    setCitySearchResults(filtered);
+  };
 
   const normalize = (text) => {
     if (!text) return '';
@@ -148,616 +261,129 @@ export function AddLocationScreen({ route, navigation }) {
       return;
     }
 
+    Keyboard.dismiss();
     setIsRecognizing(true);
+    setAiProgress(0.1);
     
-    setTimeout(async () => {
-      const nameNorm = normalize(formData.name);
-      let aiData = null;
+    // Simular progreso dinámico
+    const progressInterval = setInterval(() => {
+      setAiProgress(prev => {
+        if (prev >= 0.95) return prev;
+        const increment = (0.95 - prev) * 0.1;
+        return prev + increment;
+      });
+    }, 400);
+    
+    try {
+      // Usar el nuevo servicio dinámico de Gemini 1.5
+      const aiData = await GeminiService.getPlaceData(formData.name, formData.city, userData.aiApiKey, formData.category, userData.openaiApiKey);
 
-      if (nameNorm.includes('mubag') || nameNorm.includes('bellas artes gravina')) {
-        aiData = {
-          name: "MUBAG - Museo de Bellas Artes Gravina",
-          category: "Museo",
-          city: "Alicante",
-          province: "Alicante",
-          description: "Ubicado en el Palacio del Conde de Lumiares, edificio del siglo XVIII. Recorre la historia del arte alicantino desde el siglo XVI al XX.",
-          touristTip: "La entrada es gratuita. No te pierdas la colección de pintura del siglo XIX.",
-          website: "www.mubag.es",
-          phone: "+34 965 14 67 80",
-          tags: "Arte, Historia, Palacio",
-          freeInfo: "Entrada GRATUITA para todos los públicos.",
-          importantNotices: ["Totalmente accesible con ascensores y rampas.", "Dispone de aseos adaptados."],
-          seasons: [{ name: 'Anual', period: 'Todo el año', weekday: '10:00 a 20:00', weekend: '10:00 a 14:00' }],
-          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/MUBAG_Alicante.jpg/1200px-MUBAG_Alicante.jpg",
-          location: { latitude: 38.3444, longitude: -0.4795, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
-          accessibility: { physical: true, visual: true, auditory: true, cognitive: true },
-          history: "El Museo de Bellas Artes Gravina (MUBAG) se ubica en el antiguo Palacio del Conde de Lumiares, una joya arquitectónica del siglo XVIII restaurada para albergar el legado pictórico y escultórico de Alicante. Es el referente del arte clásico en la provincia.",
-          geography: "Situado en el casco histórico de Alicante, muy cerca del Ayuntamiento y de la Explanada de España.",
-          climate: "Alicante disfruta de un clima mediterráneo árido, con inviernos suaves y veranos cálidos, ideal para pasear por su centro histórico.",
-          landscape: "Rodeado de la arquitectura tradicional del barrio de Santa Cruz y la brisa marina del puerto de Alicante."
-        };
-      } else if (nameNorm.includes('volvo') || nameNorm.includes('ocean race')) {
-        aiData = {
-          name: "Museo The Ocean Race",
-          category: "Museo",
-          city: "Alicante",
-          province: "Alicante",
-          description: "Museo interactivo dedicado a la regata de vela más dura del mundo. Situado en el puerto de Alicante.",
-          touristTip: "Prueba el simulador de navegación. La tienda tiene productos náuticos exclusivos.",
-          website: "www.theoceanrace.com",
-          phone: "+34 966 01 11 00",
-          tags: "Deporte, Náutica, interactivo",
-          freeInfo: "Entrada gratuita al museo.",
-          importantNotices: ["Edificio moderno 100% accesible.", "Suelo nivelado y amplios espacios."],
-          seasons: [{ name: 'Verano', period: 'Anual', weekday: '11:00 a 20:00', weekend: '10:00 a 14:00' }],
-          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Museo_Volvo_Ocean_Race.jpg/1200px-Museo_Volvo_Ocean_Race.jpg",
-          location: { latitude: 38.3401, longitude: -0.4815, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
-          accessibility: { physical: true, visual: false, auditory: true, cognitive: true },
-          history: "Inaugurado en 2012 para celebrar el papel de Alicante como puerto de salida de la Volvo Ocean Race. Es el único museo en el mundo dedicado exclusivamente a esta legendaria competición de vela.",
-          geography: "En pleno Muelle de Levante, dentro de la zona portuaria de Alicante.",
-          climate: "Clima mediterráneo marítimo, con inviernos templados y mucha luminosidad durante todo el año.",
-          landscape: "Vistas directas al mar Mediterráneo y a los yates del puerto deportivo de Alicante."
-        };
-      } else if (nameNorm.includes('musa') || (nameNorm.includes('ciudad') && nameNorm.includes('alicante')) || nameNorm.includes('santa barbara') || nameNorm.includes('santabarbara')) {
-        aiData = {
-          name: "Castillo de Santa Bárbara",
-          category: "Monumento",
-          city: "Alicante",
-          province: "Alicante",
-          description: "Imponente fortaleza medieval situada sobre el Monte Benacantil. Es el símbolo más emblemático de Alicante, ofreciendo vistas de 360º sobre la ciudad y el mar Mediterráneo.",
-          touristTip: "Sube por el ascensor frente a la playa del Postiguet. La entrada al castillo es gratuita.",
-          tags: "Historia, Castillo, Vistas, Alicante",
-          freeInfo: "Acceso al castillo GRATUITO. El ascensor tiene un pequeño coste (gratis para PMR y jubilados).",
-          importantNotices: [
-            "Ascensor disponible en la Playa del Postiguet.",
-            "Zonas con pavimento de piedra irregular.",
-            "Existen baños adaptados en el patio de armas."
-          ],
-          seasons: [{ name: 'Anual', period: 'Todo el año', weekday: '10:00 a 20:00', weekend: '10:00 a 20:00' }],
-          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Castello_de_Santa_B%C3%A0rbara_Alicante.jpg/1200px-Castello_de_Santa_B%C3%A0rbara_Alicante.jpg",
-          location: { latitude: 38.3491, longitude: -0.4777, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [{ id: 1, label: 'Entrada Recinto', price: '0' }, { id: 2, label: 'Ascensor', price: '2.70' }],
-          accessibility: { physical: true, visual: true, auditory: true, cognitive: true },
-          history: "Fortaleza de origen árabe reconstruida en los siglos XIV, XVI y XVIII. Su nombre proviene de la festividad de Santa Bárbara, día en que fue conquistada por el infante Alfonso de Castilla.",
-          geography: "Asentado sobre una mole rocosa a 166 metros de altitud frente al mar.",
-          climate: "Muy soleado, se recomienda gorra y agua.",
-          landscape: "Vistas espectaculares del puerto de Alicante y la isla de Tabarca."
-        };
-      } else if (nameNorm.includes('refugios') || nameNorm.includes('antiaereos')) {
-        aiData = {
-          name: "Centro de Interpretación de los Refugios Antiaéreos",
-          category: "Museo",
-          city: "Alicante",
-          province: "Alicante",
-          description: "Espacio de memoria histórica que permite visitar los refugios construidos durante la Guerra Civil en Alicante.",
-          touristTip: "Es obligatorio reservar la visita guiada con antelación.",
-          website: "alicanteturismo.com",
-          tags: "Historia, Guerra Civil, Memoria",
-          freeInfo: "Entrada reducida para personas con discapacidad.",
-          importantNotices: ["Algunos refugios tienen acceso limitado para sillas de ruedas (consultar al reservar).", "Ambiente cerrado y húmedo."],
-          seasons: [{ name: 'Visitas Guiadas', period: 'Bajo reserva', weekday: '10:00 a 14:00', weekend: '10:00 a 14:00' }],
-          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Refugio_Plaza_Castellon_Alicante.jpg/1200px-Refugio_Plaza_Castellon_Alicante.jpg",
-          location: { latitude: 38.3456, longitude: -0.4851, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [{ id: 1, label: 'General', price: '5' }, { id: 2, label: 'PCD', price: '3' }],
-          accessibility: { physical: false, visual: false, auditory: true, cognitive: true },
-          history: "Alicante fue una de las ciudades más bombardeadas durante la Guerra Civil. Se construyeron más de 90 refugios para proteger a la población, de los cuales varios han sido recuperados para la visita pública.",
-          geography: "Los refugios están repartidos por todo el casco urbano, principalmente bajo plazas públicas.",
-          climate: "Temperatura constante y fresca dentro de los túneles, independientemente del calor exterior.",
-          landscape: "Una experiencia subterránea que contrasta con la luminosidad de la superficie alicantina."
-        };
-      } else if (nameNorm.includes('hogueras') || nameNorm.includes('fogueres')) {
-        aiData = {
-          name: "Museo de Fogueres",
-          category: "Museo",
-          city: "Alicante",
-          province: "Alicante",
-          description: "Dedicado a las fiestas oficiales de la ciudad, las Hogueras de San Juan. Expone 'ninots indultados' y trajes típicos.",
-          touristTip: "Situado en la Rambla, muy céntrico. Entrada gratuita.",
-          tags: "Fiesta, Cultura, Tradición",
-          freeInfo: "Entrada GRATUITA.",
-          importantNotices: ["Edificio accesible de varias plantas con ascensor.", "Aseos adaptados disponibles."],
-          seasons: [{ name: 'Anual', period: 'Todo el año', weekday: '10:00 a 20:00', weekend: '10:00 a 14:00' }],
-          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/Museo_de_Hogueras_Alicante.jpg/1200px-Museo_de_Hogueras_Alicante.jpg",
-          location: { latitude: 38.3452, longitude: -0.4828, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
-          accessibility: { physical: true, visual: true, auditory: true, cognitive: true },
-          history: "Recoge la evolución de las Hogueras de San Juan, declaradas Fiestas de Interés Turístico Internacional, desde 1928 hasta la actualidad.",
-          geography: "En la Rambla de Méndez Núñez, la arteria principal del centro de Alicante.",
-          climate: "Mediterráneo subtropical, cálido y soleado durante la mayor parte del año.",
-          landscape: "Centro neurálgico comercial y festivo rodeado de edificios señoriales."
-        };
-      } else if (nameNorm.includes('belenes')) {
-        aiData = {
-          name: "Museo de Belenes",
-          category: "Museo",
-          city: "Alicante",
-          province: "Alicante",
-          description: "Situado en el casco antiguo, alberga una importante colección de belenes de todo el mundo.",
-          tags: "Navidad, Artesanía, Tradición",
-          freeInfo: "Entrada GRATUITA.",
-          importantNotices: ["Ubicado en una calle peatonal del casco antiguo.", "Planta baja accesible."],
-          seasons: [{ name: 'Anual', period: 'Todo el año', weekday: '10:00 a 14:00 y 17:00 a 20:00', weekend: '10:00 a 14:00' }],
-          location: { latitude: 38.3461, longitude: -0.4819, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
-          accessibility: { physical: true, visual: true, auditory: false, cognitive: true },
-          history: "Un museo entrañable que muestra la maestría de los belenistas alicantinos y obras de arte internacionales relacionadas con el nacimiento.",
-          geography: "En la calle San Agustín, una de las más pintorescas del Barrio de Santa Cruz.",
-          climate: "Suave en invierno y fresco dentro del museo gracias a sus gruesos muros de piedra.",
-          landscape: "Calles estrechas, fachadas blancas y macetas con flores en el corazón tradicional de Alicante."
-        };
-      } else if (nameNorm.includes('mua') || nameNorm.includes('universidad')) {
-        aiData = {
-          name: "MUA - Museo de la Universidad de Alicante",
-          category: "Museo",
-          city: "Alicante (San Vicente)",
-          province: "Alicante",
-          description: "Espacio de arte contemporáneo dentro del campus universitario. Arquitectura vanguardista y exposiciones temporales.",
-          touristTip: "El campus es un ejemplo de accesibilidad universal.",
-          website: "www.mua.ua.es",
-          tags: "Arte Contemporáneo, Universidad, Cultura",
-          freeInfo: "Entrada GRATUITA.",
-          importantNotices: ["100% accesible.", "Gran cantidad de plazas de aparcamiento reservadas cerca."],
-          location: { latitude: 38.3845, longitude: -0.5135, latitudeDelta: 0.005, latitudeDelta: 0.005 },
-          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
-          accessibility: { physical: true, visual: true, auditory: true, cognitive: true },
-          history: "Fundado en 1999, es un centro pionero en la investigación y difusión del arte contemporáneo dentro de una universidad pública.",
-          geography: "En el campus de San Vicente del Raspeig, una ciudad universitaria perfectamente conectada con el centro de Alicante.",
-          climate: "Clima mediterráneo de interior, un poco más cálido que la costa en verano.",
-          landscape: "Campus moderno con amplias zonas verdes, fuentes y esculturas al aire libre."
-        };
-      } else if (nameNorm.includes('sede') && nameNorm.includes('universitaria')) {
-        aiData = {
-          name: "Sede Universitaria Ciudad de Alicante",
-          category: "Cultura",
-          city: "Alicante",
-          province: "Alicante",
-          description: "Espacio cultural de la Universidad de Alicante en el centro de la ciudad. Complemento al MUA donde se realizan actos, charlas y muestras artísticas.",
-          tags: "Cultura, Universidad, Conferencias",
-          freeInfo: "Entrada GRATUITA.",
-          importantNotices: ["Edificio histórico rehabilitado y accesible.", "Situado cerca de la calle San Fernando."],
-          location: { latitude: 38.3435, longitude: -0.4842, latitudeDelta: 0.005, latitudeDelta: 0.005 },
-          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
-          accessibility: { physical: true, visual: true, auditory: true, cognitive: true }
-        };
-      } else if (nameNorm.includes('prado')) {
-        aiData = {
-          name: "Museo Nacional del Prado",
-          category: "Museo",
-          city: "Madrid",
-          province: "Madrid",
-          description: "La pinacoteca más importante de España. Alberga obras de Velázquez, Goya y El Bosco. Completamente accesible para sillas de ruedas.",
-          touristTip: "Visita gratuita de 18:00 a 20:00 (L-S). Acceso por Puerta de Jerónimos.",
-          website: "www.museodelprado.es",
-          phone: "+34 913 30 28 00",
-          tags: "Arte, Historia, Cultura",
-          freeInfo: "Gratis para PCD + Acompañante.",
-          importantNotices: ["Reserva online obligatoria.", "Préstamo gratuito de sillas de ruedas disponible."],
-          seasons: [{ name: 'Anual', period: 'Todo el año', weekday: '10:00 a 20:00', weekend: '10:00 a 19:00' }],
-          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Museo_del_Prado_2016_%2825185969599%29.jpg/1200px-Museo_del_Prado_2016_%2825185969599%29.jpg",
-          location: { latitude: 40.4137, longitude: -3.6921, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [{ id: 1, label: 'General', price: '15' }, { id: 2, label: 'PCD', price: '0' }],
-          accessibility: { physical: true, visual: true, auditory: true, cognitive: true },
-          history: "El Museo del Prado fue diseñado por Juan de Villanueva en 1785. Originalmente concebido como Gabinete de Historia Natural, se convirtió en museo de arte en 1819.",
-          geography: "Situado en el Paseo del Prado de Madrid, forma parte del 'Paisaje de la Luz', declarado Patrimonio de la Humanidad.",
-          climate: "Madrid tiene un clima mediterráneo continentalizado, con inviernos fríos y veranos calurosos.",
-          landscape: "Entorno urbano monumental rodeado de jardines históricos y el cercano Parque del Retiro."
-        };
-      } else if (nameNorm.includes('aguas') || nameNorm.includes('garrigos')) {
-        aiData = {
-          name: "Museo de Aguas de Alicante - Pozos de Garrigós",
-          category: "Museo",
-          city: "Alicante",
-          province: "Alicante",
-          description: "Museo ubicado dentro de antiguos aljibes excavados en la roca del monte Benacantil. Explica el ciclo del agua y la historia del abastecimiento en la ciudad.",
-          touristTip: "Los Pozos de Garrigós son espectaculares por su arquitectura excavada.",
-          tags: "Agua, Ingeniería, Historia",
-          freeInfo: "Entrada GRATUITA.",
-          importantNotices: ["Acceso con rampas, aunque algunas zonas pueden ser estrechas.", "Fresco natural en el interior."],
-          seasons: [{ name: 'Horario Habitual', period: 'Anual', weekday: '10:00 a 14:00 y 17:00 a 20:00', weekend: '10:00 a 14:00' }],
-          location: { latitude: 38.3465, longitude: -0.4792, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
-          accessibility: { physical: true, visual: true, auditory: false, cognitive: true }
-        };
-      } else if (nameNorm.includes('archivo') || nameNorm.includes('maisonnave')) {
-        aiData = {
-          name: "Archivo Municipal - Palacio de Maisonnave",
-          category: "Cultura",
-          city: "Alicante",
-          province: "Alicante",
-          description: "Palacio del siglo XVIII que alberga el archivo histórico de la ciudad. Conserva restos de una necrópolis tardorromana.",
-          tags: "Palacio, Historia, Archivo",
-          freeInfo: "Entrada GRATUITA.",
-          importantNotices: ["Planta baja accesible.", "Consulta de documentos bajo petición."],
-          seasons: [{ name: 'Horario Archivo', period: 'Anual', weekday: '09:00 a 14:00', weekend: 'Cerrado' }],
-          location: { latitude: 38.3463, longitude: -0.4835, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
-          accessibility: { physical: true, visual: false, auditory: false, cognitive: true }
-        };
-      } else if (nameNorm.includes('cigarreras')) {
-        aiData = {
-          name: "Centro Cultural Las Cigarreras",
-          category: "Cultura",
-          city: "Alicante",
-          province: "Alicante",
-          description: "Antigua Fábrica de Tabacos reconvertida en un vibrante centro de cultura contemporánea, música y arte.",
-          touristTip: "Consulta su agenda, siempre hay conciertos o talleres interesantes.",
-          tags: "Cultura, Música, Arte",
-          freeInfo: "Entrada gratuita a las exposiciones.",
-          importantNotices: ["Recinto amplio y accesible.", "Dispone de cafetería y zonas de descanso."],
-          location: { latitude: 38.3512, longitude: -0.4885, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
-          accessibility: { physical: true, visual: true, auditory: true, cognitive: true }
-        };
-      } else if (nameNorm.includes('tabarca')) {
-        aiData = {
-          name: "Museo Nueva Tabarca",
-          category: "Museo",
-          city: "Isla de Tabarca (Alicante)",
-          province: "Alicante",
-          description: "Ubicado en el antiguo edificio del Almacén de la Almadraba. Muestra la historia y la biodiversidad de la reserva marina de la isla.",
-          touristTip: "Imprescindible si visitas la isla. El acceso en barco desde Alicante o Santa Pola es una aventura.",
-          tags: "Isla, Mar, Historia",
-          freeInfo: "Entrada GRATUITA.",
-          importantNotices: ["El museo es accesible, pero la isla tiene muchas calles de tierra y piedra.", "Transporte en barco adaptado disponible en algunas compañías."],
-          location: { latitude: 38.1611, longitude: -0.4735, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
-          accessibility: { physical: true, visual: false, auditory: false, cognitive: true }
-        };
-      } else if (nameNorm.includes('portalet')) {
-        aiData = {
-          name: "Palacio El Portalet",
-          category: "Cultura",
-          city: "Alicante",
-          province: "Alicante",
-          description: "Palacete del siglo XVIII que alberga una exposición permanente sobre la historia del edificio y la ciudad.",
-          tags: "Palacio, Historia, Arquitectura",
-          freeInfo: "Entrada GRATUITA.",
-          importantNotices: ["Totalmente rehabilitado y accesible con ascensor.", "Vistas interesantes al casco antiguo."],
-          location: { latitude: 38.3458, longitude: -0.4815, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
-          accessibility: { physical: true, visual: true, auditory: false, cognitive: true }
-        };
-      } else if (nameNorm.includes('taurino')) {
-        aiData = {
-          name: "Museo Taurino de Alicante",
-          category: "Museo",
-          city: "Alicante",
-          province: "Alicante",
-          description: "Situado en la Plaza de Toros, recorre la historia de la tauromaquia en la provincia con una amplia colección de objetos y trajes.",
-          tags: "Historia, Tradición, Plaza de Toros",
-          freeInfo: "Entrada GRATUITA.",
-          importantNotices: ["Acceso a nivel de calle.", "Situado dentro de la emblemática Plaza de Toros."],
-          location: { latitude: 38.3515, longitude: -0.4851, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
-          accessibility: { physical: true, visual: false, auditory: false, cognitive: true }
-        };
-      } else if (nameNorm.includes('lonja') || nameNorm.includes('pescado')) {
-        aiData = {
-          name: "Lonja de Pescado (Sala de Exposiciones)",
-          category: "Cultura",
-          city: "Alicante",
-          province: "Alicante",
-          description: "Antiguo edificio industrial reconvertido en la principal sala de exposiciones temporales de la ciudad, frente al puerto.",
-          touristTip: "Siempre hay exposiciones de gran nivel. El edificio en sí es una joya de la arquitectura industrial.",
-          tags: "Arte, Exposiciones, Arquitectura",
-          freeInfo: "Entrada gratuita a la mayoría de exposiciones.",
-          importantNotices: ["Espacio diáfano y 100% accesible.", "Entrada principal a nivel."],
-          location: { latitude: 38.3408, longitude: -0.4862, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
-          accessibility: { physical: true, visual: true, auditory: true, cognitive: true }
-        };
-      } else if (nameNorm.includes('artes') && nameNorm.includes('municipal')) {
-        aiData = {
-          name: "Centro Municipal de las Artes",
-          category: "Cultura",
-          city: "Alicante",
-          province: "Alicante",
-          description: "Espacio cultural en el casco antiguo que ofrece exposiciones temporales y formación artística.",
-          tags: "Cultura, Arte, Casco Antiguo",
-          freeInfo: "Entrada GRATUITA.",
-          importantNotices: ["Edificio moderno en el casco antiguo con ascensor.", "Fácil acceso desde la Plaza de Quijano."],
-          location: { latitude: 38.3468, longitude: -0.4821, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
-          accessibility: { physical: true, visual: false, auditory: false, cognitive: true }
-        };
-      } else if (nameNorm.includes('descubierta')) {
-        aiData = {
-          name: "La Ciudad Descubierta (Murallas)",
-          category: "Monumento",
-          city: "Alicante",
-          province: "Alicante",
-          description: "Espacio arqueológico que muestra tramos de la antigua muralla medieval y moderna de Alicante encontrados durante excavaciones.",
-          tags: "Arqueología, Historia, Murallas",
-          freeInfo: "Visitable desde el exterior o en horarios específicos.",
-          importantNotices: ["Pasarelas para observar los restos.", "Información histórica en paneles."],
-          location: { latitude: 38.3451, longitude: -0.4811, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [{ id: 1, label: 'General', price: '0' }, { id: 2, label: 'PCD', price: '0' }],
-          accessibility: { physical: true, visual: true, auditory: false, cognitive: true }
-        };
-      } else if (nameNorm.includes('iluciones') || nameNorm.includes('ilusiones')) {
-        aiData = {
-          name: "Museo de las Ilusiones Alicante",
-          category: "Museo",
-          city: "Alicante",
-          province: "Alicante",
-          description: "Espacio divertido con ilusiones ópticas, hologramas y salas temáticas para fotos sorprendentes.",
-          touristTip: "Lleva la cámara con mucha batería.",
-          tags: "Diversión, Fotos, Familia",
-          freeInfo: "Museo privado de pago. Descuento para PCD.",
-          importantNotices: ["Accesible en su mayoría.", "Puede haber luces parpadeantes o efectos visuales intensos."],
-          location: { latitude: 38.3448, longitude: -0.4831, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [{ id: 1, label: 'General', price: '12' }, { id: 2, label: 'PCD', price: '9' }],
-          accessibility: { physical: true, visual: false, auditory: true, cognitive: false }
-        };
-      } else if (nameNorm.includes('lucentum') || nameNorm.includes('tossal de manises')) {
-        aiData = {
-          name: "Lucentum (Yacimiento Arqueológico)",
-          category: "Monumento",
-          city: "Alicante",
-          province: "Alicante",
-          description: "Antigua ciudad romana de Lucentum, uno de los yacimientos más importantes de la Comunidad Valenciana. Dispone de pasarelas de madera adaptadas para el recorrido.",
-          touristTip: "Ideal para visitar al atardecer. Muy cerca de la parada de TRAM (L3, L4 y L5).",
-          website: "www.marqalicante.com",
-          phone: "+34 965 14 90 00",
-          tags: "Arqueología, Romano, Historia",
-          freeInfo: "Entrada reducida para personas con discapacidad.",
-          importantNotices: ["El recorrido es al aire libre, se recomienda protección solar.", "Accesible casi en su totalidad por rampas y pasarelas."],
-          seasons: [{ name: 'Horario MARQ', period: 'Todo el año', weekday: '10:00 a 14:00 y 16:00 a 19:00', weekend: '10:00 a 14:00' }],
-          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Lucentum_%282%29.jpg/1200px-Lucentum_%282%29.jpg",
-          location: { latitude: 38.3619, longitude: -0.4439, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [{ id: 1, label: 'General', price: '2' }, { id: 2, label: 'PCD', price: '1.20' }],
-          accessibility: { physical: true, visual: false, auditory: false, cognitive: false }
-        };
-      } else if (nameNorm.includes('alhambra')) {
-        aiData = {
-          name: "La Alhambra y el Generalife",
-          category: "Monumento",
-          city: "Granada",
-          province: "Granada",
-          description: "Ciudad palatina andalusí, joya de la arquitectura islámica. Patrimonio de la Humanidad.",
-          touristTip: "Existe un itinerario específico para personas con movilidad reducida (PMR). Solicite plano especial.",
-          website: "alhambra-patronato.es",
-          importantNotices: ["Es imprescindible llevar el DNI.", "Las entradas se agotan con meses de antelación."],
-          seasons: [{ name: 'Diurna', period: 'Anual', weekday: '08:30 a 20:00', weekend: '08:30 a 20:00' }],
-          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/View_of_Alhambra_from_Mirador_de_San_Nicol%C3%A1s.jpg/1200px-View_of_Alhambra_from_Mirador_de_San_Nicol%C3%A1s.jpg",
-          location: { latitude: 37.1769, longitude: -3.5897, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [{ id: 1, label: 'General', price: '14' }, { id: 2, label: 'PCD', price: '8' }],
-          accessibility: { physical: true, visual: true, auditory: false, cognitive: false }
-        };
-      } else if (nameNorm.includes('mezquita') || nameNorm.includes('cordoba')) {
-        aiData = {
-          name: "Mezquita-Catedral de Córdoba",
-          category: "Iglesia",
-          city: "Córdoba",
-          province: "Córdoba",
-          description: "Único en el mundo, este monumento combina el arte omeya con el gótico, renacentista y barroco.",
-          touristTip: "Acceso gratuito de 8:30 a 9:30 h (L-S). Impresionante bosque de columnas.",
-          website: "mezquita-catedraldecordoba.es",
-          importantNotices: ["No se permite el uso de trípodes.", "Acceso nivelado en gran parte del recinto."],
-          seasons: [{ name: 'Invierno', period: 'Anual', weekday: '10:00 a 18:00', weekend: '08:30 a 18:00' }],
-          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Mezquita_C%C3%B3rdoba_Interieur.jpg/1200px-Mezquita_C%C3%B3rdoba_Interieur.jpg",
-          location: { latitude: 37.8792, longitude: -4.7794, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [{ id: 1, label: 'General', price: '11' }, { id: 2, label: 'PCD', price: '0' }],
-          accessibility: { physical: true, visual: true, auditory: false, cognitive: false }
-        };
-      } else if (nameNorm.includes('sagrada familia')) {
-        aiData = {
-          name: "Basílica de la Sagrada Familia",
-          category: "Iglesia",
-          city: "Barcelona",
-          province: "Barcelona",
-          description: "La obra maestra inacabada de Antoni Gaudí.",
-          touristTip: "Reserva con antelación. La luz del atardecer es mágica.",
-          website: "sagradafamilia.org",
-          importantNotices: [
-            "Se requiere vestimenta adecuada para entrar al templo.",
-            "Los ascensores a las torres no son accesibles para sillas de ruedas."
-          ],
-          seasons: [
-            {
-              name: 'Horario Habitual',
-              period: 'Todo el año',
-              weekday: '09:00 a 18:00',
-              weekend: '09:00 a 18:00'
-            }
-          ],
-          image: "https://images.unsplash.com/photo-1583774558033-98898e144a0e",
-          location: { latitude: 41.4036, longitude: 2.1744, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [
-            { id: 1, label: 'Entrada General', price: '26' },
-            { id: 2, label: 'PCD + Acompañante', price: '0' }
-          ],
-          accessibility: { physical: true, visual: true, auditory: false, cognitive: false }
-        };
-      } else if (nameNorm.includes('belmonte')) {
-        aiData = {
-          name: "Castillo de Belmonte",
-          category: "Monumento",
-          city: "Belmonte",
-          province: "Cuenca",
-          description: "Fortaleza gótico-mudéjar del siglo XV muy bien conservada.",
-          touristTip: "Visitas teatralizadas espectaculares.",
-          importantNotices: [
-            "Sillas de ruedas gratis. Acompañante 50% dto.",
-            "Consulte disponibilidad de visitas teatralizadas en su web."
-          ],
-          seasons: [
-            {
-              name: 'Horario Único',
-              period: 'Todo el año',
-              weekday: '10:00 a 14:00 y 15:30 a 18:30',
-              weekend: '10:00 a 14:00 y 15:30 a 18:30'
-            }
-          ],
-          image: "https://images.unsplash.com/photo-1599423300746-b62533397364",
-          location: { latitude: 39.5583, longitude: -2.7011, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [
-            { id: 1, label: 'Entrada General', price: '10' },
-            { id: 2, label: 'Reducida (PCD)', price: '5' }
-          ],
-          accessibility: { physical: true, visual: false, auditory: false, cognitive: false },
-          history: "Mandado construir por don Juan Pacheco, Marqués de Villena, en 1456, este castillo es una joya única de la arquitectura gótico-mudéjar. Su planta estrellada y su patio de armas renacentista lo convierten en uno de los castillos mejor conservados de España. Ha servido como prisión y residencia señorial, albergando a personajes históricos clave durante la Guerra de Sucesión Castellana.",
-          geography: "Se alza majestuoso sobre el cerro de San Cristóbal, ofreciendo un control visual absoluto sobre la llanura manchega. Su estructura se adapta perfectamente al terreno elevado, con fosos excavados directamente en la roca que servían como defensa inexpugnable ante posibles asedios medievales.",
-          climate: "Situado en el corazón de la Mancha, experimenta un clima mediterráneo continentalizado. Los veranos son secos y calurosos, ideales para disfrutar de la brisa en sus almenas, mientras que los inviernos pueden ser fríos y ventosos, otorgando al castillo un aire místico y solitario bajo los cielos despejados de Cuenca.",
-          landscape: "Desde sus torres, el paisaje se extiende en un tapiz de campos de cereal, olivares y viñedos típicos de la región. El entorno conserva el aire medieval de la villa de Belmonte, con molinos de viento en el horizonte que completan una estampa icónica de la literatura cervantina."
-        };
-      } else if (nameNorm.includes('mota') || nameNorm.includes('medina')) {
-        aiData = {
-          name: "Castillo de la Mota",
-          category: "Monumento",
-          city: "Medina del Campo",
-          province: "Valladolid",
-          description: "Icono de la arquitectura militar de los Reyes Católicos.",
-          importantNotices: [
-            "Las visitas guiadas se realizan desde el Centro de Visitantes.",
-            "Entrada libre al patio y exteriores."
-          ],
-          seasons: [
-            {
-              name: 'Invierno',
-              period: '1 de octubre al 31 de marzo',
-              weekday: '11:00 a 14:00 y 16:00 a 18:00',
-              weekend: '11:00 a 14:00'
-            },
-            {
-              name: 'Verano',
-              period: '1 de abril al 30 de septiembre',
-              weekday: '11:00 a 14:00 y 16:00 a 19:00',
-              weekend: '11:00 a 14:00'
-            }
-          ],
-          image: "https://images.unsplash.com/photo-1543731068-7e0f5beff43a",
-          location: { latitude: 41.3094, longitude: -4.9103, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [
-            { id: 1, label: 'Visita Guiada', price: '5' },
-            { id: 2, label: 'PCD >70%', price: '0' }
-          ],
-          accessibility: { physical: true, visual: false, auditory: false, cognitive: false }
-        };
-      } else if (nameNorm.includes('morella') || nameNorm.includes('castillo de morella')) {
-        aiData = {
-          name: "Castillo de Morella",
-          category: "Monumento",
-          city: "Morella",
-          province: "Castellón",
-          description: "Imponente fortaleza que domina el casco histórico de Morella desde lo alto.",
-          importantNotices: [
-            "Acceso a través de la plaza de toros.",
-            "Audioguía gratuita en la app de Castillos y Palacios de España."
-          ],
-          seasons: [
-            {
-              name: 'Invierno',
-              period: 'octubre - marzo',
-              weekday: '11:00 a 17:00',
-              weekend: '11:00 a 17:00'
-            },
-            {
-              name: 'Verano',
-              period: 'abril - septiembre',
-              weekday: '11:00 a 19:00',
-              weekend: '11:00 a 19:00'
-            }
-          ],
-          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cf/Castillo_de_Morella_y_convento_de_San_Francisco.JPG/1200px-Castillo_de_Morella_y_convento_de_San_Francisco.JPG",
-          location: { latitude: 40.6192, longitude: -0.0989, latitudeDelta: 0.005, longitudeDelta: 0.005 },
-          tariffs: [
-            { id: 1, label: 'General', price: '5' },
-            { id: 2, label: 'Reducida (PCD, Estudiantes, +65)', price: '4' },
-            { id: 3, label: 'Grupos (+25 pax)', price: '3.5' },
-            { id: 4, label: 'Gratuita (Vecinos, <6 años)', price: '0' }
-          ],
-          accessibility: { physical: false, visual: false, auditory: true, cognitive: true },
-          website: "https://www.morella.net",
-          phone: "+34 964 173 032"
-        };
-      } else {
-        // Fallback inteligente mejorado para lugares desconocidos
-        const nameLower = formData.name.toLowerCase();
-        let guessedCategory = "Monumento";
-        let guessedPrice = "10";
-        let guessedFree = "Consulta descuentos para personas con discapacidad.";
+      if (aiData) {
+        console.log("[AI] Datos recibidos:", aiData.name, "Mock:", !!aiData.isMock);
+        setAiProgress(1);
         
-        if (nameLower.includes('museo') || nameLower.includes('mubag') || nameLower.includes('maca')) {
-          guessedCategory = "Museo";
-          guessedPrice = "5";
-        } else if (nameLower.includes('castillo') || nameLower.includes('fortaleza')) {
-          guessedCategory = "Monumento";
-          guessedPrice = "8";
-        } else if (nameLower.includes('catedral') || nameLower.includes('basilica') || nameLower.includes('monasterio')) {
-          guessedCategory = "Monumento";
-          guessedPrice = "6";
-          guessedFree = "Suele ser de pago como monumento. PCD normalmente gratis o reducido.";
-        } else if (nameLower.includes('iglesia') || nameLower.includes('parroquia') || nameLower.includes('ermita')) {
-          guessedCategory = "Iglesia";
-          guessedPrice = "0";
-          guessedFree = "Entrada generalmente gratuita para el culto.";
-        } else if (nameLower.includes('playa') || nameLower.includes('parque') || nameLower.includes('plaza')) {
-          guessedCategory = nameLower.includes('playa') ? "Playa" : "Parque";
-          guessedPrice = "0";
-          guessedFree = "Acceso público y gratuito.";
+        // Batch de actualizaciones en un solo objeto para evitar estados inconsistentes
+        const updatedData = {
+          ...formData,
+          ...aiData,
+          city: defaultCity || aiData.city || formData.city,
+          name: aiData.name || formData.name,
+          image: (keepUserImage && formData.image) ? formData.image : (aiData.image || formData.image)
+        };
+
+        if (aiData.technicalSpecs) {
+          updatedData.technicalSpecs = {
+            doorWidth: aiData.technicalSpecs.doorWidth || '',
+            adaptedToilet: !!aiData.technicalSpecs.adaptedToilet,
+            elevatorDimensions: aiData.technicalSpecs.elevatorDimensions || '',
+            magneticLoop: !!aiData.technicalSpecs.magneticLoop,
+            brailleSignage: !!aiData.technicalSpecs.brailleSignage
+          };
         }
 
-        let lat = 40.4168;
-        let lng = -3.7038;
+        setFormData(updatedData);
+        
+        if (aiData.accessibility) {
+          setAccessibilityFeatures({
+            physical: !!aiData.accessibility.physical,
+            visual: !!aiData.accessibility.visual,
+            auditory: !!aiData.accessibility.auditory,
+            cognitive: !!aiData.accessibility.cognitive
+          });
+        }
+
+        if (aiData.tariffs) setTariffs(Array.isArray(aiData.tariffs) ? aiData.tariffs : []);
+        if (aiData.audioguide) setAudioguide({
+          available: !!aiData.audioguide.available,
+          price: aiData.audioguide.price || '',
+          accessible: !!aiData.audioguide.accessible
+        });
+        
+        if (aiData.guidedVisits) {
+          setGuidedVisits({
+            available: !!aiData.guidedVisits.available,
+            price: aiData.guidedVisits.price || '',
+            languages: Array.isArray(aiData.guidedVisits.languages) ? aiData.guidedVisits.languages : ['Español'],
+            schedules: Array.isArray(aiData.guidedVisits.schedules) ? aiData.guidedVisits.schedules : []
+          });
+        }
+        
+        // Geolocalización inteligente (con protección ante fallos)
         try {
-          const geocodeLocation = `${formData.name}, ${formData.city || ''}, España`;
-          const geocodeResult = await Location.geocodeAsync(geocodeLocation);
-          if (geocodeResult && geocodeResult.length > 0) {
-            lat = geocodeResult[0].latitude;
-            lng = geocodeResult[0].longitude;
-          }
-        } catch(e) {}
-
-        aiData = {
-          name: formData.name,
-          city: formData.city,
-          category: guessedCategory,
-          description: `Descubre ${formData.name} en ${formData.city || 'la provincia'}. Un lugar de gran interés ${guessedCategory.toLowerCase()} que destaca por su historia y relevancia local.`,
-          importantNotices: [
-            "Se recomienda verificar horarios en días festivos.",
-            "Accesibilidad física bajo revisión en zonas antiguas."
-          ],
-          freeInfo: guessedFree,
-          accessibility: { physical: true, visual: true, auditory: true, cognitive: true },
-          image: "https://images.unsplash.com/photo-1519677100203-a0e668c92439",
-          tariffs: [
-            { id: 1, label: 'Entrada General (Est.)', price: guessedPrice },
-            { id: 2, label: 'PCD / Discapacidad', price: '0' }
-          ],
-          location: { latitude: lat, longitude: lng, latitudeDelta: 0.01, longitudeDelta: 0.01 },
-          seasons: [
-            { 
-              name: 'Horario Estándar', 
-              period: 'Todo el año', 
-              weekday: guessedPrice === "0" ? 'Abierto 24h' : '10:00 a 20:00', 
-              weekend: guessedPrice === "0" ? 'Abierto 24h' : '10:00 a 14:00' 
+          if (aiData.location && aiData.location.latitude) {
+            const region = {
+              latitude: Number(aiData.location.latitude),
+              longitude: Number(aiData.location.longitude),
+              latitudeDelta: 0.005,
+              longitudeDelta: 0.005
+            };
+            setLocation(region);
+            mapRef.current?.animateToRegion(region, 1000);
+          } else if (aiData.address || aiData.city) {
+            // Intentar geocodificar si no vino en el JSON pero hay dirección
+            const query = `${aiData.name}, ${aiData.address || aiData.city}, España`;
+            const geocodeResult = await Location.geocodeAsync(query);
+            if (geocodeResult && geocodeResult.length > 0) {
+              const region = {
+                latitude: geocodeResult[0].latitude,
+                longitude: geocodeResult[0].longitude,
+                latitudeDelta: 0.005,
+                longitudeDelta: 0.005
+              };
+              setLocation(region);
+              mapRef.current?.animateToRegion(region, 1000);
             }
-          ]
-        };
+          }
+        } catch (geoError) {
+          // El geocoding falló, pero la ficha se sigue rellenando correctamente
+          console.warn('[AI] Geocodificación no disponible, el pin queda en posición actual:', geoError.message);
+        }
+        
+        if (aiData.isMock) {
+          Alert.alert(
+            "Información Optimizada",
+            `Hemos generado una ficha base profesional para "${formData.name}". Puedes completar los detalles específicos manualmente para asegurar la máxima precisión.`
+          );
+        } else {
+          Alert.alert(
+            "🚀 Investigación Completada", 
+            `Gemini ha analizado "${formData.name}" en "${formData.city}" y ha completado todos los campos técnicos, incluyendo accesibilidad, horarios y tarifas reales.`
+          );
+        }
+      } else {
+        Alert.alert("Error de IA", "No pudimos obtener datos reales. Por favor, completa la ficha manualmente.");
       }
-
-      setFormData(prev => ({
-        ...prev,
-        ...aiData,
-        city: defaultCity || aiData.city || prev.city,
-        name: aiData.name || prev.name,
-        image: (keepUserImage && prev.image) ? prev.image : (aiData.image || prev.image)
-      }));
-      
-      if (aiData.tariffs) setTariffs(aiData.tariffs);
-      if (aiData.audioguide) setAudioguide(aiData.audioguide);
-      if (aiData.location) {
-        setLocation(aiData.location);
-        mapRef.current?.animateToRegion(aiData.location, 1000);
-      }
-      if (aiData.accessibility) setAccessibilityFeatures(aiData.accessibility);
-      
-      setIsRecognizing(false);
-      Alert.alert("¡IA Distravel!", `Información cargada para ${aiData.name || formData.name}.`);
-    }, 1500);
+    } catch (error) {
+      console.error("Error in AI Enhance:", error);
+      Alert.alert("Error", "Hubo un problema al conectar con la IA.");
+    } finally {
+      clearInterval(progressInterval);
+      setTimeout(() => {
+        setIsRecognizing(false);
+        setIsUserTypingCity(false);
+        setAiProgress(0);
+      }, 500);
+    }
   };
 
   const toggleDay = (day) => {
@@ -765,6 +391,7 @@ export function AddLocationScreen({ route, navigation }) {
   };
 
   const handleAIRecognition = async () => {
+    Keyboard.dismiss();
     const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
     if (permissionResult.granted === false) {
       Alert.alert("Permiso denegado", "Necesitamos acceso a la cámara para reconocer el lugar.");
@@ -889,6 +516,7 @@ export function AddLocationScreen({ route, navigation }) {
           tariffs,
           openingDays,
           audioguide,
+          guidedVisits,
           accessibility: accessibilityFeatures,
           isUserAdded: true,
           rating: 5.0,
@@ -938,23 +566,64 @@ export function AddLocationScreen({ route, navigation }) {
           <Sparkles color={theme.primary} size={22} />
         </TouchableOpacity>
       </SafeAreaView>
-
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        {/* Photo Upload Section */}
-        <TouchableOpacity style={[styles.photoUpload, { backgroundColor: theme.surface, borderColor: theme.border }]} onPress={pickImage}>
-          {formData.image ? (
-            <Image 
-              key={formData.image}
-              source={{ uri: formData.image }} 
-              style={styles.previewImage} 
-            />
-          ) : (
-            <View style={styles.photoPlaceholder}>
-              <Camera color={theme.textSecondary} size={40} />
-              <Text style={[styles.photoText, { color: theme.textSecondary }]}>Subir Foto Principal</Text>
+      
+      {isRecognizing && (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 10000, justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ backgroundColor: theme.surface, padding: 30, borderRadius: 25, alignItems: 'center', width: '85%', borderWidth: 1, borderColor: theme.border }}>
+            <ActivityIndicator size="large" color={theme.primary} />
+            <Text style={[typography.h2, { color: theme.text, marginTop: 20, textAlign: 'center' }]}>Análisis de Inteligencia Turística</Text>
+            <Text style={{ color: theme.textSecondary, marginTop: 10, textAlign: 'center', fontStyle: 'italic' }}>
+              Investigando historia, horarios y accesibilidad de "{formData.name}"...
+            </Text>
+            <View style={{ height: 6, width: '100%', backgroundColor: theme.border, borderRadius: 3, marginTop: 20, overflow: 'hidden' }}>
+              <View style={{ height: '100%', width: `${aiProgress * 100}%`, backgroundColor: theme.primary }} />
             </View>
+            <Text style={{ color: theme.primary, fontSize: 12, fontWeight: '800', marginTop: 10 }}>
+              {Math.round(aiProgress * 100)}% COMPLETADO
+            </Text>
+          </View>
+        </View>
+      )}
+
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 20}
+      >
+        <ScrollView 
+          ref={scrollRef}
+          showsVerticalScrollIndicator={false} 
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
+        
+        {/* Photo Upload Section */}
+        <View style={styles.photoContainer}>
+          <TouchableOpacity style={[styles.photoUpload, { backgroundColor: theme.surface, borderColor: theme.border }]} onPress={pickImage}>
+            {formData.image ? (
+              <Image 
+                key={formData.image}
+                source={{ uri: formData.image }} 
+                style={styles.previewImage} 
+              />
+            ) : (
+              <View style={styles.photoPlaceholder}>
+                <Camera color={theme.textSecondary} size={40} />
+                <Text style={[styles.photoText, { color: theme.textSecondary }]}>Subir Foto Principal</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+          
+          {formData.image && !isRecognizing && (
+            <TouchableOpacity 
+              style={[styles.aiAnalyzeBtn, { backgroundColor: theme.primary }]}
+              onPress={() => handleAIAutoFill(true)}
+            >
+              <Sparkles color="#FFF" size={16} />
+              <Text style={styles.aiAnalyzeBtnText}>Analizar con IA</Text>
+            </TouchableOpacity>
           )}
-        </TouchableOpacity>
+        </View>
 
         {/* Form Sections */}
         <View style={styles.formSection}>
@@ -993,7 +662,16 @@ export function AddLocationScreen({ route, navigation }) {
                 placeholder="Ciudad"
                 placeholderTextColor={theme.textSecondary}
                 value={formData.city}
-                onChangeText={(text) => setFormData(prev => ({...prev, city: text}))}
+                onFocus={() => {
+                  // Desplazar hacia arriba para que los resultados no queden tapados
+                  setTimeout(() => {
+                    scrollRef.current?.scrollTo({ y: 350, animated: true });
+                  }, 100);
+                }}
+                onChangeText={(text) => {
+                  setIsUserTypingCity(true);
+                  setFormData(prev => ({...prev, city: text}));
+                }}
                 editable={!defaultCity}
               />
               {defaultCity && (
@@ -1002,6 +680,41 @@ export function AddLocationScreen({ route, navigation }) {
                 </View>
               )}
             </View>
+
+            {/* City Search Results */}
+            {showCityResults && (
+              <View style={[styles.citySearchResults, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                {isSearchingCity ? (
+                  <View style={{ padding: 15, alignItems: 'center' }}>
+                    <ActivityIndicator size="small" color={theme.primary} />
+                  </View>
+                ) : citySearchResults.length > 0 ? (
+                  citySearchResults.map((city, idx) => (
+                    <TouchableOpacity 
+                      key={idx} 
+                      style={[styles.cityResultItem, { borderBottomWidth: idx === citySearchResults.length - 1 ? 0 : 0.5, borderBottomColor: theme.border }]}
+                      onPress={() => {
+                        setIsUserTypingCity(false);
+                        setFormData(prev => ({ ...prev, city: city.name, province: city.province }));
+                        setShowCityResults(false);
+                        setCitySearchResults([]);
+                        Keyboard.dismiss();
+                      }}
+                    >
+                      <MapPin color={theme.primary} size={14} />
+                      <View style={{ marginLeft: 10 }}>
+                        <Text style={[styles.cityResultName, { color: theme.text }]}>{city.name}</Text>
+                        <Text style={[styles.cityResultProvince, { color: theme.textSecondary }]}>{city.province}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))
+                ) : (
+                  <View style={{ padding: 15, alignItems: 'center' }}>
+                    <Text style={{ color: theme.textSecondary, fontSize: 12 }}>No se encontraron municipios</Text>
+                  </View>
+                )}
+              </View>
+            )}
 
             <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 10, height: 100, alignItems: 'flex-start', paddingTop: 12 }]}>
               <Info color={theme.primary} size={20} style={{ marginTop: 2 }} />
@@ -1027,15 +740,36 @@ export function AddLocationScreen({ route, navigation }) {
               />
             </View>
 
+            <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 10 }]}>
+              <MapPin color={theme.primary} size={20} />
+              <TextInput
+                style={[styles.input, { color: theme.text }]}
+                placeholder="Dirección exacta (Calle, número...)"
+                placeholderTextColor={theme.textSecondary}
+                value={formData.address}
+                onChangeText={(text) => setFormData(prev => ({...prev, address: text}))}
+              />
+            </View>
+
             <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
-              <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, flex: 1 }]}>
+              <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, flex: 1.2 }]}>
                 <Globe color={theme.primary} size={20} />
                 <TextInput
                   style={[styles.input, { color: theme.text }]}
-                  placeholder="Web"
+                  placeholder="Web oficial"
                   placeholderTextColor={theme.textSecondary}
                   value={formData.website}
                   onChangeText={(text) => setFormData(prev => ({...prev, website: text}))}
+                />
+              </View>
+              <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, flex: 0.8 }]}>
+                <Phone color={theme.primary} size={20} />
+                <TextInput
+                  style={[styles.input, { color: theme.text }]}
+                  placeholder="Teléfono"
+                  placeholderTextColor={theme.textSecondary}
+                  value={formData.phone}
+                  onChangeText={(text) => setFormData(prev => ({...prev, phone: text}))}
                 />
               </View>
             </View>
@@ -1219,7 +953,7 @@ export function AddLocationScreen({ route, navigation }) {
           </View>
 
           <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 20, height: 'auto', paddingVertical: 10 }]}>
-            <AlertTriangle color="#E74C3C" size={20} />
+            <TriangleAlert color="#E74C3C" size={20} />
             <TextInput
               style={[styles.input, { color: theme.text }]}
               placeholder="Cierres especiales (Ej: Cerrado 25 Dic...)"
@@ -1379,6 +1113,186 @@ export function AddLocationScreen({ route, navigation }) {
           </View>
         </View>
 
+        {/* Services Section: Audioguide & Guided Visits */}
+        <View style={styles.formSection}>
+          <View style={styles.sectionHeader}>
+            <Sparkles color={theme.primary} size={20} />
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>Servicios Adicionales</Text>
+          </View>
+
+          {/* Audioguide */}
+          <View style={[styles.serviceToggleCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+            <View style={styles.serviceToggleHeader}>
+              <View style={styles.serviceIconTitle}>
+                <Mic color={theme.primary} size={22} />
+                <Text style={[styles.serviceLabel, { color: theme.text, marginLeft: 10, fontWeight: '800' }]}>Audioguía</Text>
+              </View>
+              <Switch 
+                value={audioguide.available} 
+                onValueChange={(val) => setAudioguide({...audioguide, available: val})}
+                trackColor={{ false: '#767577', true: theme.primary }}
+              />
+            </View>
+            
+            {audioguide.available && (
+              <View style={styles.serviceDetails}>
+                <TextInput 
+                  style={[styles.serviceInput, { color: theme.text, borderBottomColor: theme.border, borderBottomWidth: 1 }]}
+                  placeholder="Precio (Ej: 3€ o Gratis)"
+                  placeholderTextColor={theme.textSecondary}
+                  value={audioguide.price}
+                  onChangeText={(val) => setAudioguide({...audioguide, price: val})}
+                />
+                <View style={styles.serviceCheckRow}>
+                  <Text style={[styles.serviceCheckLabel, { color: theme.textSecondary, fontSize: 13 }]}>Accesible (LSE / Audio)</Text>
+                  <Switch 
+                    value={audioguide.accessible} 
+                    onValueChange={(val) => setAudioguide({...audioguide, accessible: val})}
+                    trackColor={{ false: '#767577', true: theme.primary }}
+                  />
+                </View>
+              </View>
+            )}
+          </View>
+
+          {/* Guided Visits */}
+          <View style={[styles.serviceToggleCard, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 15 }]}>
+            <View style={styles.serviceToggleHeader}>
+              <View style={styles.serviceIconTitle}>
+                <Users color={theme.primary} size={22} />
+                <Text style={[styles.serviceLabel, { color: theme.text, marginLeft: 10, fontWeight: '800' }]}>Visitas Guiadas</Text>
+              </View>
+              <Switch 
+                value={guidedVisits.available} 
+                onValueChange={(val) => setGuidedVisits({...guidedVisits, available: val})}
+                trackColor={{ false: '#767577', true: theme.primary }}
+              />
+            </View>
+            
+            {guidedVisits.available && (
+              <View style={styles.serviceDetails}>
+                <TextInput 
+                  style={[styles.serviceInput, { color: theme.text, borderBottomColor: theme.border, borderBottomWidth: 1 }]}
+                  placeholder="Precio de la visita"
+                  placeholderTextColor={theme.textSecondary}
+                  value={guidedVisits.price}
+                  onChangeText={(val) => setGuidedVisits({...guidedVisits, price: val})}
+                />
+
+                <TextInput 
+                  style={[styles.serviceInput, { color: theme.text, borderBottomColor: theme.border, borderBottomWidth: 1 }]}
+                  placeholder="Idiomas (Ej: Español, Inglés, LSE)"
+                  placeholderTextColor={theme.textSecondary}
+                  value={guidedVisits.languages?.join(', ')}
+                  onChangeText={(val) => setGuidedVisits({...guidedVisits, languages: val.split(',').map(s => s.trim())})}
+                />
+                
+                <Text style={[styles.miniLabel, { color: theme.textSecondary, marginTop: 15, fontSize: 12, fontWeight: '700' }]}>HORARIOS DE VISITAS:</Text>
+                {guidedVisits.schedules.map((vs, vidx) => (
+                  <View key={vs.id} style={styles.visitScheduleRow}>
+                    <TextInput 
+                      style={[styles.vSchedInput, { flex: 1, color: theme.text, fontWeight: '600' }]}
+                      placeholder="Días"
+                      value={vs.days}
+                      onChangeText={(val) => {
+                        const newVs = [...guidedVisits.schedules];
+                        newVs[vidx].days = val;
+                        setGuidedVisits({...guidedVisits, schedules: newVs});
+                      }}
+                    />
+                    <TextInput 
+                      style={[styles.vSchedInput, { width: 80, color: theme.primary, fontWeight: '700' }]}
+                      placeholder="Hora"
+                      value={vs.time}
+                      onChangeText={(val) => {
+                        const newVs = [...guidedVisits.schedules];
+                        newVs[vidx].time = val;
+                        setGuidedVisits({...guidedVisits, schedules: newVs});
+                      }}
+                    />
+                    <TouchableOpacity onPress={() => {
+                       const newVs = guidedVisits.schedules.filter((_, i) => i !== vidx);
+                       setGuidedVisits({...guidedVisits, schedules: newVs});
+                    }}>
+                      <Trash2 color="#E74C3C" size={16} />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+                <TouchableOpacity 
+                  style={[styles.addVisitBtn, { marginTop: 10 }]}
+                  onPress={() => setGuidedVisits({
+                    ...guidedVisits, 
+                    schedules: [...guidedVisits.schedules, { id: Date.now().toString(), time: '', days: '' }]
+                  })}
+                >
+                  <Plus color={theme.primary} size={14} />
+                  <Text style={[styles.addVisitText, { color: theme.primary, marginLeft: 5, fontWeight: '700', fontSize: 12 }]}>Añadir horario de visita</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* Especificaciones Técnicas */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Construction color={theme.primary} size={22} />
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>Especificaciones Técnicas</Text>
+          </View>
+          <Text style={[styles.sectionSubtitle, { color: theme.textSecondary }]}>
+            Datos técnicos precisos para usuarios con movilidad reducida o necesidades sensoriales.
+          </Text>
+
+          <View style={styles.technicalGrid}>
+            <View style={styles.technicalItem}>
+              <Text style={[styles.inputLabel, { color: theme.textSecondary, fontSize: 12 }]}>Ancho Puerta (cm)</Text>
+              <TextInput
+                style={[styles.input, { color: theme.text, borderColor: theme.border, height: 45 }]}
+                value={formData.technicalSpecs.doorWidth}
+                onChangeText={(v) => setFormData({...formData, technicalSpecs: {...formData.technicalSpecs, doorWidth: v}})}
+                placeholder="Ej: 120cm"
+                placeholderTextColor={theme.textSecondary + '80'}
+              />
+            </View>
+            <View style={styles.technicalItem}>
+              <Text style={[styles.inputLabel, { color: theme.textSecondary, fontSize: 12 }]}>Medidas Ascensor</Text>
+              <TextInput
+                style={[styles.input, { color: theme.text, borderColor: theme.border, height: 45 }]}
+                value={formData.technicalSpecs.elevatorDimensions}
+                onChangeText={(v) => setFormData({...formData, technicalSpecs: {...formData.technicalSpecs, elevatorDimensions: v}})}
+                placeholder="Ej: 140x110cm"
+                placeholderTextColor={theme.textSecondary + '80'}
+              />
+            </View>
+          </View>
+
+          <View style={styles.toggleGrid}>
+            <TouchableOpacity 
+              style={[styles.toggleBtn, { borderColor: theme.border }, formData.technicalSpecs.adaptedToilet && { backgroundColor: theme.primary + '20', borderColor: theme.primary }]}
+              onPress={() => setFormData({...formData, technicalSpecs: {...formData.technicalSpecs, adaptedToilet: !formData.technicalSpecs.adaptedToilet}})}
+            >
+              <ShieldCheck color={formData.technicalSpecs.adaptedToilet ? theme.primary : theme.textSecondary} size={18} />
+              <Text style={[styles.toggleBtnText, { color: formData.technicalSpecs.adaptedToilet ? theme.primary : theme.textSecondary }]}>Baño Adaptado</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.toggleBtn, { borderColor: theme.border }, formData.technicalSpecs.magneticLoop && { backgroundColor: theme.primary + '20', borderColor: theme.primary }]}
+              onPress={() => setFormData({...formData, technicalSpecs: {...formData.technicalSpecs, magneticLoop: !formData.technicalSpecs.magneticLoop}})}
+            >
+              <Ear color={formData.technicalSpecs.magneticLoop ? theme.primary : theme.textSecondary} size={18} />
+              <Text style={[styles.toggleBtnText, { color: formData.technicalSpecs.magneticLoop ? theme.primary : theme.textSecondary }]}>Bucle Magnético</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={[styles.toggleBtn, { borderColor: theme.border }, formData.technicalSpecs.brailleSignage && { backgroundColor: theme.primary + '20', borderColor: theme.primary }]}
+              onPress={() => setFormData({...formData, technicalSpecs: {...formData.technicalSpecs, brailleSignage: !formData.technicalSpecs.brailleSignage}})}
+            >
+              <Eye color={formData.technicalSpecs.brailleSignage ? theme.primary : theme.textSecondary} size={18} />
+              <Text style={[styles.toggleBtnText, { color: formData.technicalSpecs.brailleSignage ? theme.primary : theme.textSecondary }]}>Braille</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
         <TouchableOpacity 
           style={[styles.submitBtn, { backgroundColor: theme.primary }]}
           onPress={handleSubmit}
@@ -1395,7 +1309,8 @@ export function AddLocationScreen({ route, navigation }) {
         </TouchableOpacity>
 
         <View style={{ height: 40 }} />
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -1415,15 +1330,40 @@ const styles = StyleSheet.create({
   backBtn: { padding: 5 },
   aiHeaderBtn: { padding: 5 },
   scrollContent: { padding: 20 },
-  photoUpload: {
-    height: 180,
+  photoContainer: {
+    position: 'relative',
+    marginBottom: 20
+  },
+  aiAnalyzeBtn: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 15,
     borderRadius: 20,
-    borderWidth: 2,
+    gap: 8,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  aiAnalyzeBtnText: {
+    color: '#FFF',
+    fontSize: 12,
+    fontWeight: '700'
+  },
+  photoUpload: {
+    width: '100%',
+    height: 220,
+    borderRadius: 20,
+    borderWidth: 1,
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
-    overflow: 'hidden',
-    marginBottom: 25,
+    overflow: 'hidden'
   },
   previewImage: { width: '100%', height: '100%' },
   photoPlaceholder: { alignItems: 'center' },
@@ -1432,6 +1372,22 @@ const styles = StyleSheet.create({
   sectionHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
   sectionTitle: { fontSize: 16, fontWeight: '800', marginLeft: 10, flex: 1 },
   inputGroup: { gap: 0 },
+  sectionSubtitle: { fontSize: 13, marginBottom: 15, opacity: 0.7 },
+  technicalGrid: { flexDirection: 'row', gap: 15, marginBottom: 15 },
+  technicalItem: { flex: 1 },
+  toggleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  toggleBtn: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    paddingHorizontal: 12, 
+    paddingVertical: 8, 
+    borderRadius: 12, 
+    borderWidth: 1, 
+    borderColor: 'rgba(0,0,0,0.1)',
+    gap: 8,
+    minWidth: '45%'
+  },
+  toggleBtnText: { fontSize: 13, fontWeight: '600' },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1592,6 +1548,56 @@ const styles = StyleSheet.create({
   tariffLabelInput: { flex: 2, height: 50, borderRadius: 12, borderWidth: 1, paddingHorizontal: 15, fontWeight: '600' },
   tariffPriceInput: { flex: 1, height: 50, borderRadius: 12, borderWidth: 1, textAlign: 'center', fontWeight: '700' },
   removeBtn: { padding: 10 },
+  serviceToggleCard: {
+    padding: 20,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  serviceToggleHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  serviceIconTitle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  serviceDetails: {
+    marginTop: 15,
+    paddingTop: 15,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.05)',
+  },
+  serviceInput: {
+    height: 45,
+    fontSize: 14,
+    paddingHorizontal: 10,
+    marginBottom: 10,
+  },
+  serviceCheckRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 5,
+  },
+  visitScheduleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 10,
+    backgroundColor: 'rgba(0,0,0,0.02)',
+    padding: 10,
+    borderRadius: 12,
+  },
+  vSchedInput: {
+    fontSize: 14,
+    height: 40,
+  },
+  addVisitBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 10,
+  },
   submitBtn: {
     flexDirection: 'row',
     height: 65,
@@ -1606,4 +1612,29 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
   submitBtnText: { color: '#070B14', fontSize: 18, fontWeight: '900', marginLeft: 12 },
+  citySearchResults: {
+    marginTop: -5,
+    borderRadius: 15,
+    borderWidth: 1,
+    overflow: 'hidden',
+    zIndex: 1000,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    marginBottom: 10,
+  },
+  cityResultItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+  },
+  cityResultName: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  cityResultProvince: {
+    fontSize: 11,
+  },
 });

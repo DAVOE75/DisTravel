@@ -2,7 +2,7 @@
   "expo": {
     "name": "Distravel v3.0.2",
     "slug": "distravel",
-    "version": "8.0.1",
+    "version": "8.0.2",
     "orientation": "portrait",
     "icon": "./assets/logo_official.png",
     "userInterfaceStyle": "automatic",
@@ -18,7 +18,7 @@
     },
     "android": {
       "package": "com.distravel.app",
-      "versionCode": 8,
+      "versionCode": 9,
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo_official.png",
         "backgroundColor": "#0A192F"
