@@ -143,8 +143,8 @@ export const GeminiService = {
       description: `El ${name} es un punto de interés destacado en ${city}. Este lugar es fundamental para entender la oferta cultural y turística de la zona, atrayendo a numerosos visitantes cada año por su valor arquitectónico y social.`,
       history: `La historia de ${name} se remonta a épocas pasadas, habiendo evolucionado junto al municipio de ${city}. Ha servido como testigo de los cambios históricos más relevantes de la región, conservando hasta hoy la esencia que lo hace único y especial para sus habitantes.`,
       accessibility: { physical: true, visual: false, auditory: false, cognitive: true, details: "Cuenta con accesibilidad general en las zonas principales." },
-      tariffs: [{ label: "General", price: "Consultar" }, { label: "PCD", price: "Gratis" }],
-      schedules: [{ name: "Horario General", period: "Todo el año", weekday: "10:00 - 18:00", weekend: "10:00 - 14:00", festive: "Cerrado" }],
+      tariffs: [{ id: "t1", label: "General", price: "Consultar" }, { id: "t2", label: "PCD", price: "Gratis" }],
+      schedules: [{ id: "s1", name: "Horario General", period: "Todo el año", weekday: "10:00 - 18:00", weekend: "10:00 - 14:00", festive: "Cerrado" }],
       importantNotices: ["Se recomienda reserva previa", "Acceso gratuito para personas con discapacidad"],
       isMock: true
     };

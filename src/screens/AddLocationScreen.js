@@ -904,7 +904,7 @@ export function AddLocationScreen({ route, navigation }) {
           
           <View style={{ gap: 15, marginTop: 5 }}>
             {(formData.schedules || []).map((sched, idx) => (
-              <View key={sched.id} style={[styles.dynamicScheduleCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+              <View key={sched.id || `sched-${idx}`} style={[styles.dynamicScheduleCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
                 <View style={styles.scheduleRowTop}>
                   <TextInput 
                     style={[styles.scheduleInputLabel, { color: theme.text }]}
@@ -1054,8 +1054,8 @@ export function AddLocationScreen({ route, navigation }) {
             </TouchableOpacity>
           </View>
 
-          {tariffs.map((tariff) => (
-            <View key={tariff.id} style={styles.tariffRow}>
+          {tariffs.map((tariff, idx) => (
+            <View key={tariff.id || `tariff-${idx}`} style={styles.tariffRow}>
               <TextInput
                 style={[styles.tariffLabelInput, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
                 placeholder="Tipo (Ej: Adulto)"
