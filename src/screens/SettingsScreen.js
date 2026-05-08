@@ -6,7 +6,10 @@ import {
   TouchableOpacity, 
   Switch, 
   SafeAreaView,
-  ScrollView
+  ScrollView,
+  Alert,
+  Modal,
+  TextInput
 } from 'react-native';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
@@ -21,7 +24,8 @@ import {
   Globe,
   Languages,
   ChevronRight,
-  ShieldCheck
+  ShieldCheck,
+  Zap
 } from 'lucide-react-native';
 import { typography } from '../theme/typography';
 
@@ -55,9 +59,57 @@ const SettingRow = ({ icon: Icon, title, value, onToggle, isLast, theme, isDarkM
 export function SettingsScreen({ navigation }) {
   const { isDarkMode, toggleTheme, theme } = useTheme();
   const { userData, updateUserData } = useUser();
+  const [isKeyModalVisible, setIsKeyModalVisible] = React.useState(false);
+  const [tempKey, setTempKey] = React.useState(userData.aiApiKey || '');
+
+  const handleSaveKey = () => {
+    updateUserData({ aiApiKey: tempKey });
+    setIsKeyModalVisible(false);
+    Alert.alert('Configuración Guardada', 'Tu clave de API se ha actualizado correctamente.');
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <Modal
+        visible={isKeyModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setIsKeyModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+            <Text style={[styles.modalTitle, { color: theme.text }, typography.h3]}>Gemini API Key</Text>
+            <Text style={[styles.modalDesc, { color: theme.textSecondary }]}>
+              Introduce tu clave de Google Gemini para obtener datos reales. Puedes obtener una gratis en Google AI Studio.
+            </Text>
+            <TextInput
+              style={[styles.input, { color: theme.text, borderColor: theme.border, backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)' }]}
+              placeholder="AIzaSy..."
+              placeholderTextColor={theme.textSecondary}
+              value={tempKey}
+              onChangeText={setTempKey}
+              secureTextEntry={true}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity 
+                style={[styles.modalButton, { backgroundColor: 'transparent' }]}
+                onPress={() => setIsKeyModalVisible(false)}
+              >
+                <Text style={{ color: theme.textSecondary, fontWeight: '600' }}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.modalButton, { backgroundColor: theme.primary }]}
+                onPress={handleSaveKey}
+              >
+                <Text style={{ color: '#FFF', fontWeight: '700' }}>Guardar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backButton}
@@ -112,6 +164,20 @@ export function SettingsScreen({ navigation }) {
             value={userData.highContrast} 
             onToggle={(val) => updateUserData({ highContrast: val })}
             isLast={true}
+            theme={theme}
+            isDarkMode={isDarkMode}
+          />
+        </View>
+
+        <Text style={[styles.sectionTitle, { color: theme.textSecondary }]}>Servicios de IA</Text>
+        <View style={[styles.section, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+          <SettingRow 
+            icon={Zap} 
+            title="Gemini API Key" 
+            description={userData.aiApiKey ? 'Clave configurada (activa)' : 'Configurar para datos reales'}
+            type="select"
+            value={userData.aiApiKey ? '********' : 'Configurar'} 
+            onToggle={() => setIsKeyModalVisible(true)}
             theme={theme}
             isDarkMode={isDarkMode}
           />
@@ -220,5 +286,51 @@ const styles = StyleSheet.create({
   versionText: {
     fontSize: 12,
     marginBottom: 4,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    borderRadius: 32,
+    padding: 24,
+    borderWidth: 1,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    marginBottom: 8,
+  },
+  modalDesc: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  input: {
+    height: 56,
+    borderWidth: 1,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    marginBottom: 24,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 12,
+  },
+  modalButton: {
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 14,
+    minWidth: 100,
+    alignItems: 'center',
   },
 });

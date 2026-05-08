@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -7,588 +7,602 @@ import {
   TouchableOpacity, 
   TextInput, 
   Image, 
-  Switch,
-  Alert,
+  Alert, 
   ActivityIndicator,
   StatusBar,
+  Modal,
+  FlatList,
   KeyboardAvoidingView,
   Platform,
-  Keyboard
+  Keyboard,
+  Switch
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
-import { API_BASE_URL, API_ENDPOINTS } from '../config/api';
+import * as LucideIcons from 'lucide-react-native';
+
+// Normalización de iconos para evitar "Render Error"
+const getIcon = (name) => LucideIcons[name]?.default || LucideIcons[name] || LucideIcons.Info;
+
+const ChevronLeft = getIcon('ChevronLeft');
+const Camera = getIcon('Camera');
+const MapPin = getIcon('MapPin');
+const Clock = getIcon('Clock');
+const CreditCard = getIcon('CreditCard');
+const PlusCircle = getIcon('PlusCircle');
+const MinusCircle = getIcon('MinusCircle');
+const X = getIcon('X');
+const Save = getIcon('Save');
+const Zap = getIcon('Zap');
+const Info = getIcon('Info');
+const Building2 = getIcon('Building2');
+const LinkIcon = getIcon('Link');
+const Search = getIcon('Search');
+const Check = getIcon('Check');
+const LayoutGrid = getIcon('LayoutGrid');
+const Smartphone = getIcon('Smartphone');
+const Globe = getIcon('Globe');
+const Tag = getIcon('Tag');
+const AlertTriangle = getIcon('AlertTriangle');
+const Headphones = getIcon('Headphones');
+const Users = getIcon('Users');
+const Ruler = getIcon('Ruler');
+const Accessibility = getIcon('Accessibility');
+const Eye = getIcon('Eye');
+const Ear = getIcon('Ear');
+const Brain = getIcon('Brain');
+const CheckCircle2 = getIcon('CheckCircle2');
+const List = getIcon('List');
+const Construction = getIcon('Construction');
+const Sparkles = getIcon('Sparkles');
+const Phone = getIcon('Phone');
+import * as ImagePicker from 'expo-image-picker';
+import MapViewRaw, { Marker as MarkerRaw } from 'react-native-maps';
+const MapView = MapViewRaw?.default || MapViewRaw;
+const Marker = MarkerRaw?.default || MarkerRaw;
+import { typography } from '../theme/typography';
+import { API_ENDPOINTS, API_BASE_URL } from '../config/api';
 import { GeminiService } from '../utils/gemini';
 import MUNICIPIOS_DATA from '../data/municipios.json';
-import { INE_PROVINCES, PROVINCE_TO_REGION } from '../data/provinces';
-import { 
-  ChevronLeft, 
-  Camera, 
-  MapPin, 
-  Clock, 
-  CreditCard, 
-  Plus, 
-  Trash2, 
-  Info, 
-  Building2,
-  Calendar,
-  Maximize2,
-  Check,
-  Tag,
-  Languages,
-  Phone,
-  Globe,
-  Sparkles,
-  Zap,
-  LayoutList,
-  Eye,
-  Ear,
-  Brain,
-  Accessibility,
-  TriangleAlert,
-  Mic,
-  Users,
-  Construction,
-  ShieldCheck
-} from 'lucide-react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { typography } from '../theme/typography';
-import MapView, { Marker } from 'react-native-maps';
-import * as Location from 'expo-location';
 
-const CATEGORIES = ['Museo', 'Iglesia', 'Parque', 'Restaurante', 'Hotel', 'Atracción'];
-const DAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+const MONTHS = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+];
 
-const LOCAL_FALLBACK_MUNICIPIOS = MUNICIPIOS_DATA.map(m => {
-  const provinceName = INE_PROVINCES[m.parent_code] || 'Desconocida';
-  const regionName = PROVINCE_TO_REGION[provinceName] || 'España';
-  const cityName = m.label || '';
-  return { 
-    ...m, 
-    name: cityName, 
-    normalizedName: cityName.toString().trim().toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/y/g, 'i'),
-    province: provinceName, 
-    region: regionName 
-  };
-});
+const CATEGORIES = [
+  'Museo', 'Iglesia', 'Parque', 'Restaurante', 'Hotel', 'Atracción'
+];
 
-export function AddLocationScreen({ route, navigation }) {
-  const { defaultCity } = route.params || {};
+const HOURS = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
+const MINUTES = ['00', '15', '30', '45', 'Cerrado'];
+
+const TARIFF_PRESETS = [
+  'Entrada General',
+  'Entrada Reducida',
+  'Entrada Gratuita',
+  'Abono',
+  'Visita en Grupo',
+  'Otros / Personalizado'
+];
+
+const TARIFF_SUBTYPES = [
+  { id: 'none', label: 'Sin condiciones especiales' },
+  { id: 'age_range', label: 'Rango de Edad (X a Y años)' },
+  { id: 'senior', label: 'Mayores de (X años)' },
+  { id: 'youth_card', label: 'Carné Joven' },
+  { id: 'large_family', label: 'Familia Numerosa' },
+  { id: 'child', label: 'Menores de (X años)' },
+  { id: 'student', label: 'Estudiantes (X a Y años)' },
+  { id: 'disability', label: 'Personas con Discapacidad (X %)' },
+  { id: 'unemployed', label: 'Personas Desempleadas' },
+  { id: 'teacher', label: 'Personas Docentes' }
+];
+
+const PERCENTAGES = ['33', '65', '75', '100'];
+const AGES = Array.from({ length: 100 }, (_, i) => (i + 1).toString());
+
+export default function AddLocationScreen({ navigation, route }) {
   const { theme, isDarkMode } = useTheme();
-  const { userData, updateUserData, persistImage, uploadImageToServer } = useUser();
+  const { userData, updateUserData } = useUser();
+  const rawInsets = useSafeAreaInsets();
+  const insets = rawInsets || { top: 0, bottom: 0, left: 0, right: 0 };
+  const scrollRef = useRef(null);
+  const defaultCity = route.params?.defaultCity || '';
 
-  // Buscar datos iniciales si hay defaultCity
-  const initialCityData = React.useMemo(() => {
-    if (!defaultCity) return null;
-    return LOCAL_FALLBACK_MUNICIPIOS.find(m => m.name === defaultCity);
-  }, [defaultCity]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiProgress, setAiProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const mapRef = useRef(null);
+
+  const centerMap = (lat, lon) => {
+    if (mapRef.current && !isNaN(lat) && !isNaN(lon)) {
+      mapRef.current.animateToRegion({
+        latitude: lat,
+        longitude: lon,
+        latitudeDelta: 0.005,
+        longitudeDelta: 0.005,
+      }, 1000);
+    }
+  };
+
+  const isValidLocation = (loc) => {
+    return loc && !isNaN(loc.latitude) && !isNaN(loc.longitude);
+  };
 
   const [formData, setFormData] = useState({
     name: '',
+    city: defaultCity,
     category: 'Museo',
-    city: defaultCity || '',
-    province: initialCityData?.province || '',
-    region: initialCityData?.region || '',
     description: '',
     touristTip: '',
+    address: '',
     website: '',
     phone: '',
-    address: '',
     tags: '',
-    freeInfo: '',
-    importantNotices: [],
-    seasons: [],
-    isSplitSchedule: false,
-    morningOpen: '10:00',
-    morningClose: '14:00',
-    afternoonOpen: '16:00',
-    afternoonClose: '20:00',
-    closedHolidays: true,
     image: null,
-    schedules: [
-      { id: '1', days: 'De miércoles a domingo', hours: 'De 11.00 h a 19.00 h' }
+    location: { latitude: 40.4168, longitude: -3.7038 },
+    structuredSchedules: [],
+    tariffs: [
+      { 
+        id: '1', 
+        label: 'Entrada General', 
+        price: '15.00 €',
+        condition: { type: 'none', value: '', from: '', to: '' }
+      },
+      { 
+        id: '2', 
+        label: 'Entrada Gratuita', 
+        price: '0 €',
+        condition: { type: 'disability', value: '33', from: '', to: '' }
+      }
     ],
+    specialClosures: '',
+    criticalNotices: [],
     isLinkedEntrance: false,
     linkedEntranceName: '',
+    additionalInfo: '',
+    additionalServices: {
+      audioguide: { enabled: false, price: '0', freeForDisabled: false },
+      guidedVisits: { enabled: false, price: '0', freeForDisabled: false }
+    },
+    accessibility: {
+      physical: true,
+      visual: false,
+      auditory: false,
+      cognitive: false
+    },
     technicalSpecs: {
       doorWidth: '',
+      elevatorMeasures: '',
       adaptedToilet: false,
-      elevatorDimensions: '',
       magneticLoop: false,
-      brailleSignage: false
+      braille: false,
+      accessibleParking: false,
+      wheelchairRental: false
     }
   });
 
-  const [accessibilityFeatures, setAccessibilityFeatures] = useState({
-    physical: true,
-    visual: false,
-    auditory: false,
-    cognitive: false
-  });
-
-  const [isRecognizing, setIsRecognizing] = useState(false);
-  const [aiProgress, setAiProgress] = useState(0);
-  const [isUploading, setIsUploading] = useState(false);
-
-  const [tariffs, setTariffs] = useState([
-    { id: '1', label: 'Adulto', price: '' },
-    { id: '2', label: 'PCD / Discapacidad', price: '0' }
-  ]);
-
-  const [openingDays, setOpeningDays] = useState({
-    'Lun': true, 'Mar': true, 'Mié': true, 'Jue': true, 'Vie': true, 'Sáb': true, 'Dom': true
-  });
-
-  const [location, setLocation] = useState({
-    latitude: 40.4168,
-    longitude: -3.7038,
-    latitudeDelta: 0.005,
-    longitudeDelta: 0.005,
-  });
-
-  const scrollRef = useRef(null);
-
-  const [audioguide, setAudioguide] = useState({
-    available: false,
-    price: '0',
-    accessible: true,
-    languages: ['Español']
-  });
-
-  const [guidedVisits, setGuidedVisits] = useState({
-    available: false,
-    price: '',
-    description: '',
-    schedules: [
-      { id: 'gv1', time: '11:00', days: 'Todos los días' }
-    ],
-    languages: ['Español']
-  });
-
-  const [isSearchingLocation, setIsSearchingLocation] = useState(false);
-  const [isMapExpanded, setIsMapExpanded] = useState(false);
-  
-  const [citySearchResults, setCitySearchResults] = useState([]);
-  const [isSearchingCity, setIsSearchingCity] = useState(false);
-  const [showCityResults, setShowCityResults] = useState(false);
-  const [isUserTypingCity, setIsUserTypingCity] = useState(false);
-  const searchTimeout = React.useRef(null);
-
-  React.useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status === 'granted') {
-        let currentPos = await Location.getCurrentPositionAsync({});
-        const newRegion = {
-          latitude: currentPos.coords.latitude,
-          longitude: currentPos.coords.longitude,
-          latitudeDelta: 0.005,
-          longitudeDelta: 0.005,
-        };
-        setLocation(newRegion);
-        mapRef.current?.animateToRegion(newRegion, 1000);
-      }
-    })();
-  }, []);
-
-  // Búsqueda de municipios
-  React.useEffect(() => {
-    if (!formData.city || formData.city.length < 2 || defaultCity || !isUserTypingCity) {
-      setCitySearchResults([]);
-      setShowCityResults(false);
-      return;
-    }
-
-    if (searchTimeout.current) clearTimeout(searchTimeout.current);
-
-    searchTimeout.current = setTimeout(async () => {
-      setIsSearchingCity(true);
-      setShowCityResults(true);
-      
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 2500);
-
-      try {
-        const response = await fetch(`${API_ENDPOINTS.MUNICIPALITIES}?search=${encodeURIComponent(formData.city)}&limit=8`, {
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-
-        if (response.ok) {
-          const data = await response.json();
-          setCitySearchResults(data.map(m => ({
-            ...m,
-            name: m.name || m.label,
-            province: INE_PROVINCES[m.parent_code] || 'Provincia',
-            region: PROVINCE_TO_REGION[INE_PROVINCES[m.parent_code]] || 'España'
-          })));
-        } else {
-          performLocalCitySearch();
-        }
-      } catch (error) {
-        performLocalCitySearch();
-      } finally {
-        setIsSearchingCity(false);
-      }
-    }, 300);
-
-    return () => clearTimeout(searchTimeout.current);
-  }, [formData.city]);
-
-  const performLocalCitySearch = () => {
-    const normQuery = normalize(formData.city);
-    const filtered = LOCAL_FALLBACK_MUNICIPIOS
-      .filter(m => m.normalizedName.includes(normQuery))
-      .slice(0, 8);
-    setCitySearchResults(filtered);
-  };
-
-  const normalize = (text) => {
-    if (!text) return '';
-    return text.toString().trim().toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/y/g, 'i');
-  };
-
-  const mapRef = React.useRef(null);
-
-  const handleAIAutoFill = async (keepUserImage = false) => {
-    if (!formData.name) {
-      Alert.alert("Nombre necesario", "Escribe el nombre del lugar para que la IA pueda buscarlo.");
-      return;
-    }
-
-    Keyboard.dismiss();
-    setIsRecognizing(true);
-    setAiProgress(0.1);
-    
-    // Simular progreso dinámico
-    const progressInterval = setInterval(() => {
-      setAiProgress(prev => {
-        if (prev >= 0.95) return prev;
-        const increment = (0.95 - prev) * 0.1;
-        return prev + increment;
-      });
-    }, 400);
-    
-    try {
-      // Usar el nuevo servicio dinámico de Gemini 1.5
-      const aiData = await GeminiService.getPlaceData(formData.name, formData.city, userData.aiApiKey, formData.category, userData.openaiApiKey);
-
-      if (aiData) {
-        console.log("[AI] Datos recibidos:", aiData.name, "Mock:", !!aiData.isMock);
-        setAiProgress(1);
-        
-        // Batch de actualizaciones en un solo objeto para evitar estados inconsistentes
-        const updatedData = {
-          ...formData,
-          ...aiData,
-          city: defaultCity || aiData.city || formData.city,
-          name: aiData.name || formData.name,
-          image: (keepUserImage && formData.image) ? formData.image : (aiData.image || formData.image)
-        };
-
-        if (aiData.technicalSpecs) {
-          updatedData.technicalSpecs = {
-            doorWidth: aiData.technicalSpecs.doorWidth || '',
-            adaptedToilet: !!aiData.technicalSpecs.adaptedToilet,
-            elevatorDimensions: aiData.technicalSpecs.elevatorDimensions || '',
-            magneticLoop: !!aiData.technicalSpecs.magneticLoop,
-            brailleSignage: !!aiData.technicalSpecs.brailleSignage
-          };
-        }
-
-        setFormData(updatedData);
-        
-        if (aiData.accessibility) {
-          setAccessibilityFeatures({
-            physical: !!aiData.accessibility.physical,
-            visual: !!aiData.accessibility.visual,
-            auditory: !!aiData.accessibility.auditory,
-            cognitive: !!aiData.accessibility.cognitive
-          });
-        }
-
-        if (aiData.tariffs) setTariffs(Array.isArray(aiData.tariffs) ? aiData.tariffs : []);
-        if (aiData.audioguide) setAudioguide({
-          available: !!aiData.audioguide.available,
-          price: aiData.audioguide.price || '',
-          accessible: !!aiData.audioguide.accessible
-        });
-        
-        if (aiData.guidedVisits) {
-          setGuidedVisits({
-            available: !!aiData.guidedVisits.available,
-            price: aiData.guidedVisits.price || '',
-            languages: Array.isArray(aiData.guidedVisits.languages) ? aiData.guidedVisits.languages : ['Español'],
-            schedules: Array.isArray(aiData.guidedVisits.schedules) ? aiData.guidedVisits.schedules : []
-          });
-        }
-        
-        // Geolocalización inteligente (con protección ante fallos)
+  // Efecto para geolocalizar cuando cambia la dirección (si no es un cambio manual del mapa)
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (formData.address && formData.address.length > 5) {
         try {
-          if (aiData.location && aiData.location.latitude) {
-            const region = {
-              latitude: Number(aiData.location.latitude),
-              longitude: Number(aiData.location.longitude),
-              latitudeDelta: 0.005,
-              longitudeDelta: 0.005
-            };
-            setLocation(region);
-            mapRef.current?.animateToRegion(region, 1000);
-          } else if (aiData.address || aiData.city) {
-            // Intentar geocodificar si no vino en el JSON pero hay dirección
-            const query = `${aiData.name}, ${aiData.address || aiData.city}, España`;
-            const geocodeResult = await Location.geocodeAsync(query);
-            if (geocodeResult && geocodeResult.length > 0) {
-              const region = {
-                latitude: geocodeResult[0].latitude,
-                longitude: geocodeResult[0].longitude,
-                latitudeDelta: 0.005,
-                longitudeDelta: 0.005
-              };
-              setLocation(region);
-              mapRef.current?.animateToRegion(region, 1000);
+          const query = encodeURIComponent(`${formData.address}, ${formData.city}, Spain`);
+          const response = await fetch(`https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`, {
+            headers: { 'User-Agent': 'DistravelApp/1.0' }
+          });
+          const data = await response.json();
+          if (data && data.length > 0) {
+            const lat = parseFloat(data[0].lat);
+            const lon = parseFloat(data[0].lon);
+            if (!isNaN(lat) && !isNaN(lon)) {
+              setFormData(prev => ({
+                ...prev,
+                location: { latitude: lat, longitude: lon }
+              }));
+              centerMap(lat, lon);
             }
           }
-        } catch (geoError) {
-          // El geocoding falló, pero la ficha se sigue rellenando correctamente
-          console.warn('[AI] Geocodificación no disponible, el pin queda en posición actual:', geoError.message);
+        } catch (e) {
+          console.warn('Error en geolocalización:', e);
         }
-        
-        if (aiData.isMock) {
-          Alert.alert(
-            "Información Optimizada",
-            `Hemos generado una ficha base profesional para "${formData.name}". Puedes completar los detalles específicos manualmente para asegurar la máxima precisión.`
-          );
-        } else {
-          Alert.alert(
-            "🚀 Investigación Completada", 
-            `Gemini ha analizado "${formData.name}" en "${formData.city}" y ha completado todos los campos técnicos, incluyendo accesibilidad, horarios y tarifas reales.`
-          );
-        }
-      } else {
-        Alert.alert("Error de IA", "No pudimos obtener datos reales. Por favor, completa la ficha manualmente.");
       }
-    } catch (error) {
-      console.error("Error in AI Enhance:", error);
-      Alert.alert("Error", "Hubo un problema al conectar con la IA.");
-    } finally {
-      clearInterval(progressInterval);
-      setTimeout(() => {
-        setIsRecognizing(false);
-        setIsUserTypingCity(false);
-        setAiProgress(0);
-      }, 500);
-    }
-  };
+    }, 2000); // Debounce de 2 segundos para no saturar la API
 
-  const toggleDay = (day) => {
-    setOpeningDays({ ...openingDays, [day]: !openingDays[day] });
-  };
+    return () => clearTimeout(timer);
+  }, [formData.address, formData.city]);
 
-  const handleAIRecognition = async () => {
-    Keyboard.dismiss();
-    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
-    if (permissionResult.granted === false) {
-      Alert.alert("Permiso denegado", "Necesitamos acceso a la cámara para reconocer el lugar.");
+  const [searchQuery, setSearchQuery] = useState(defaultCity);
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+
+  const [pickerModal, setPickerModal] = useState({
+    visible: false,
+    type: '',
+    title: '',
+    options: [],
+    onSelect: () => {}
+  });
+
+  const handleAiEnhance = async () => {
+    if (!formData.name || !formData.city) {
+      Alert.alert('Información insuficiente', 'Por favor, introduce el nombre del lugar y el municipio para que la IA pueda investigar.');
       return;
     }
 
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 0.8,
-    });
+    setIsAiLoading(true);
+    Keyboard.dismiss();
+    setAiProgress(0);
+    const progressInterval = setInterval(() => {
+      setAiProgress(prev => (prev < 0.9 ? prev + 0.05 : prev));
+    }, 150);
 
-    if (!result.canceled) {
-      const capturedUri = result.assets[0].uri;
-      setFormData(prev => ({ ...prev, image: capturedUri })); // Save the actual photo!
-      setIsRecognizing(true);
-      
-      // Simulate AI recognition based on location or vision
-      setTimeout(() => {
-        setIsRecognizing(false);
-        // If we were at Castillo de Santa Barbara, we'd set that name
-        // For now, let's just trigger the fill logic but KEEP our image
-        handleAIAutoFill(true); // pass true to indicate it's from camera
-      }, 2000);
+    try {
+      const aiData = await GeminiService.getPlaceData(formData.name, formData.city, userData.aiApiKey, formData.category);
+      clearInterval(progressInterval);
+      setAiProgress(1);
+
+      if (aiData) {
+        setFormData(prev => {
+          const newState = {
+            ...prev,
+            description: (typeof aiData.description === 'object' ? JSON.stringify(aiData.description) : (aiData.description || prev.description)),
+            history: (typeof aiData.history === 'object' ? JSON.stringify(aiData.history) : (aiData.history || prev.history)),
+            address: aiData.address || prev.address,
+            phone: aiData.phone || prev.phone,
+            website: aiData.website || prev.website,
+            touristTip: aiData.touristTip || prev.touristTip,
+            tags: aiData.tags || prev.tags,
+            criticalNotices: aiData.criticalNotices || prev.criticalNotices,
+            location: aiData.location || prev.location,
+            structuredSchedules: aiData.schedules ? aiData.schedules.map((s, i) => {
+              const days = {};
+              [1, 2, 3, 4, 5].forEach(d => {
+                days[d] = { isOpen: true, mOpen: s.weekday?.split(' - ')?.[0] || '10:00', mClose: s.weekday?.split(' - ')?.[1] || '18:00', aOpen: '', aClose: '' };
+              });
+              [6, 0].forEach(d => {
+                days[d] = { isOpen: s.weekend?.toLowerCase() !== 'cerrado', mOpen: s.weekend?.split(' - ')?.[0] || '10:00', mClose: s.weekend?.split(' - ')?.[1] || '14:00', aOpen: '', aClose: '' };
+              });
+              return { id: String(Date.now() + i), name: s.name || 'Temporada Única', period: s.period || 'Todo el año', days: days, isEnabled: true };
+            }) : prev.structuredSchedules,
+            tariffs: aiData.tariffs ? aiData.tariffs.map((t, i) => ({
+              id: String(Date.now() + i + 10), preset: t.preset || 'Otros / Personalizado', label: t.label, price: t.price.includes('€') ? t.price : `${t.price} €`, condition: { type: 'none', value: '', from: '', to: '' }
+            })) : prev.tariffs,
+            additionalServices: aiData.services ? {
+              audioguide: { enabled: aiData.services.audioguide?.has || false, price: aiData.services.audioguide?.price || '0', freeForDisabled: aiData.services.audioguide?.isFreePCD || false },
+              guidedVisits: { enabled: aiData.services.guidedVisits?.has || false, price: aiData.services.guidedVisits?.price || '0', freeForDisabled: aiData.services.guidedVisits?.isFreePCD || false }
+            } : prev.additionalServices,
+            technicalSpecs: aiData.technicalSpecs ? { ...prev.technicalSpecs, ...aiData.technicalSpecs } : prev.technicalSpecs,
+            accessibility: aiData.accessibility ? {
+              physical: aiData.accessibility.physical ?? prev.accessibility.physical,
+              visual: aiData.accessibility.visual ?? prev.accessibility.visual,
+              auditory: aiData.accessibility.hearing ?? aiData.accessibility.auditory ?? prev.accessibility.auditory,
+              cognitive: aiData.accessibility.cognitive ?? prev.accessibility.cognitive,
+              details: aiData.accessibility.details || prev.accessibility.details
+            } : prev.accessibility
+          };
+
+          if (aiData.location) {
+            setTimeout(() => centerMap(aiData.location.latitude, aiData.location.longitude), 300);
+          }
+          
+          return newState;
+        });
+        
+        if (GeminiService.isRevoked || (GeminiService.lastError && GeminiService.lastError.includes('API key not valid'))) {
+          Alert.alert(
+            '🔑 Error de Autenticación', 
+            'La clave de API de Gemini no es válida o ha sido revocada. Para usar la IA real, por favor introduce tu propia clave en Configuración > Servicios de IA.',
+            [{ text: 'Ir a Configuración', onPress: () => navigation.navigate('Settings') }, { text: 'Cerrar', style: 'cancel' }]
+          );
+        } else if (aiData.isFamous) {
+          Alert.alert('🏛️ Patrimonio Detectado', `Hemos recuperado los datos oficiales y técnicos de ${formData.name} desde nuestra base de datos local verificada.`);
+        } else if (aiData.isMock) {
+          Alert.alert(
+            '⚠️ Usando Datos Estimados', 
+            'No se pudo conectar con la IA real (posible error de clave o conexión). Los datos mostrados son estimaciones locales. Por favor, configura tu propia API Key en Ajustes para precisión total.',
+            [{ text: 'Entendido' }]
+          );
+        } else {
+          Alert.alert('¡IA Completada!', `Se han rellenado los datos de ${formData.name} automáticamente con información real.`);
+        }
+      } else {
+        const errorMsg = GeminiService.lastError ? `\nDetalle: ${GeminiService.lastError}` : '';
+        Alert.alert('IA no disponible', `No se ha podido obtener información. Verifica tu API Key en Configuración.${errorMsg}`);
+      }
+    } catch (error) {
+      console.error('AI Enhance Error:', error);
+      Alert.alert('Error', 'Hubo un problema al consultar a la IA.');
+    } finally {
+      setIsAiLoading(false);
+      clearInterval(progressInterval);
     }
+  };
+
+  // Municipios local search (fallback)
+  const performLocalSearch = (query) => {
+    if (!query || query.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    const normQuery = query.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    const filtered = MUNICIPIOS_DATA.filter(m => 
+      m.label.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").includes(normQuery)
+    ).slice(0, 5);
+    setSearchResults(filtered);
   };
 
   const pickImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (permissionResult.granted === false) {
-      Alert.alert("Permiso denegado", "Necesitamos acceso a tu galería para subir la foto.");
-      return;
-    }
-
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [16, 9],
-      quality: 0.8,
+      quality: 0.4, // Calidad optimizada para subida rápida
     });
+
     if (!result.canceled) {
-      setFormData(prev => ({ ...prev, image: result.assets[0].uri }));
-    }
-  };
-
-  const addSeason = () => {
-    setFormData(prev => ({
-      ...prev,
-      seasons: [...(prev.seasons || []), { name: '', period: '', weekday: '', weekend: '' }]
-    }));
-  };
-
-  const removeSeason = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      seasons: prev.seasons.filter((_, i) => i !== index)
-    }));
-  };
-
-  const updateSeason = (index, field, value) => {
-    const newSeasons = [...formData.seasons];
-    newSeasons[index][field] = value;
-    setFormData({ ...formData, seasons: newSeasons });
-  };
-
-  const addNotice = () => {
-    setFormData(prev => ({
-      ...prev,
-      importantNotices: [...(prev.importantNotices || []), '']
-    }));
-  };
-
-  const removeNotice = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      importantNotices: prev.importantNotices.filter((_, i) => i !== index)
-    }));
-  };
-
-  const updateNotice = (index, value) => {
-    const newNotices = [...formData.importantNotices];
-    newNotices[index] = value;
-    setFormData({ ...formData, importantNotices: newNotices });
-  };
-
-  const handleSubmit = () => {
-    if (!formData.name || !formData.city) {
-      Alert.alert("Campos incompletos", "Por favor, introduce al menos el nombre y la ciudad.");
-      return;
-    }
-
-    if (!formData.image) {
-      Alert.alert("Foto necesaria", "Es obligatorio incluir una fotografía (puedes usar la IA para buscarla en Wikipedia).");
-      return;
-    }
-
-    setIsUploading(true);
-    
-    (async () => {
+      const newUri = result.assets[0].uri;
+      
+      // Upload to server
+      setIsUploading(true);
+      const controller = new AbortController();
+      
       try {
-        // Persistir la imagen localmente primero por seguridad
-        let finalImage = formData.image;
-        if (formData.image && formData.image.startsWith('file://')) {
-          const sanitizedName = formData.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-          const localUri = await persistImage(formData.image, `place_${sanitizedName}`);
-          
-          // Intentar subir al servidor para compartir con otros
-          const serverUrl = await uploadImageToServer(localUri);
-          if (serverUrl) {
-            finalImage = serverUrl;
-          } else {
-            finalImage = localUri; // Fallback a local si el servidor falla
-          }
-        }
+        const formDataUpload = new FormData();
+        formDataUpload.append('image', {
+          uri: newUri,
+          type: 'image/jpeg',
+          name: 'photo.jpg',
+        });
 
-        // Crear el objeto del nuevo lugar asegurando que la imagen de Wikipedia o Cámara se guarda
-        const newPlace = {
-          id: Date.now().toString(),
-          ...formData, // Incluye name, city, description, etc.
-          image: finalImage, // Usar la imagen persistida
-          location,
-          tariffs,
-          openingDays,
-          audioguide,
-          guidedVisits,
-          accessibility: accessibilityFeatures,
-          isUserAdded: true,
-          rating: 5.0,
-          reviews: 0,
-          verifiedStatus: 'Pendiente'
+        // Promise.race para asegurar que el timeout funcione pase lo que pase
+        const uploadPromise = fetch(`${API_BASE_URL}/api/upload`, {
+          method: 'POST',
+          body: formDataUpload,
+          // IMPORTANTE: Dejar que fetch ponga el boundary automático
+          signal: controller.signal
+        });
+
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => {
+            controller.abort();
+            reject(new Error('Timeout de subida'));
+          }, 60000)
+        );
+
+        const response = await Promise.race([uploadPromise, timeoutPromise]);
+        
+        const data = await response.json();
+        if (data.success) {
+          const finalImageUrl = `${API_BASE_URL}${data.url}`;
+          setFormData(prev => ({ ...prev, image: finalImageUrl }));
+        } else {
+          throw new Error('Servidor rechazó imagen');
+        }
+      } catch (error) {
+        console.warn('Subida fallida o lenta, usando local:', error.message);
+        // Fallback inmediato al URI local para que el usuario no espere más
+        setFormData(prev => ({ ...prev, image: newUri }));
+      } finally {
+        setIsUploading(false);
+      }
+    }
+  };
+
+  const handleAddSeason = () => {
+    const newSeason = {
+      name: formData.structuredSchedules.length === 0 ? 'Horario General' : 'Temporada Alta',
+      startMonth: 'Enero',
+      endMonth: 'Diciembre',
+      days: {
+        1: { isOpen: true, mOpen: '10:00', mClose: '14:00', aOpen: '16:00', aClose: '20:00' },
+        2: { isOpen: true, mOpen: '10:00', mClose: '14:00', aOpen: '16:00', aClose: '20:00' },
+        3: { isOpen: true, mOpen: '10:00', mClose: '14:00', aOpen: '16:00', aClose: '20:00' },
+        4: { isOpen: true, mOpen: '10:00', mClose: '14:00', aOpen: '16:00', aClose: '20:00' },
+        5: { isOpen: true, mOpen: '10:00', mClose: '14:00', aOpen: '16:00', aClose: '20:00' },
+        6: { isOpen: true, mOpen: '10:00', mClose: '14:00', aOpen: '', aClose: '' },
+        0: { isOpen: true, mOpen: '10:00', mClose: '14:00', aOpen: '', aClose: '' }
+      }
+    };
+    setFormData(prev => ({ ...prev, structuredSchedules: [...prev.structuredSchedules, newSeason] }));
+  };
+
+  const handleAddCriticalNotice = () => {
+    setFormData(prev => ({
+      ...prev,
+      criticalNotices: [...(prev.criticalNotices || []), '']
+    }));
+  };
+
+  const updateCriticalNotice = (index, text) => {
+    setFormData(prev => {
+      const newNotices = [...(prev.criticalNotices || [])];
+      newNotices[index] = text;
+      return { ...prev, criticalNotices: newNotices };
+    });
+  };
+
+  const removeCriticalNotice = (index) => {
+    setFormData(prev => {
+      const newNotices = [...(prev.criticalNotices || [])];
+      newNotices.splice(index, 1);
+      return { ...prev, criticalNotices: newNotices };
+    });
+  };
+
+  const handleSave = async () => {
+    if (!formData.name || !formData.city) {
+      Alert.alert('Faltan datos', 'Por favor, introduce el nombre del lugar y la ciudad.');
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const placeId = `custom-${Date.now()}`;
+      const newPlace = {
+        ...formData,
+        id: placeId,
+        isUserAdded: true,
+        verified: false,
+        verifiedStatus: 'Pendiente',
+        rating: 5.0,
+        createdAt: new Date().toISOString()
+      };
+
+      // Guardar en el contexto local inmediatamente
+      updateUserData('contributions', (prev) => [newPlace, ...(prev || [])]);
+      
+      // Intentar subir al servidor de forma asíncrona
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 segundos de gracia
+      
+      try {
+        const extraData = {
+          structuredSchedules: newPlace.structuredSchedules,
+          technicalSpecs: newPlace.technicalSpecs,
+          criticalNotices: newPlace.criticalNotices,
+          tariffs: newPlace.tariffs,
+          isLinkedEntrance: newPlace.isLinkedEntrance,
+          linkedEntranceName: newPlace.linkedEntranceName,
+          touristTip: newPlace.touristTip,
+          accessibility: newPlace.accessibility,
+          additionalServices: newPlace.additionalServices,
+          specialClosures: newPlace.specialClosures,
+          tags: newPlace.tags,
+          verifiedStatus: newPlace.verifiedStatus
         };
 
-        // Guardar en las contribuciones del usuario localmente (Asegurando persistencia)
-        updateUserData('contributions', (prev) => {
-          const list = prev || [];
-          // Evitar duplicados por nombre en la misma ciudad si es posible
-          const filtered = list.filter(p => !(p.name === newPlace.name && p.city === newPlace.city));
-          return [...filtered, newPlace];
+        const serverBody = {
+          id: placeId,
+          name: newPlace.name,
+          city: newPlace.city,
+          category: newPlace.category,
+          address: newPlace.address,
+          phone: newPlace.phone,
+          website: newPlace.website,
+          image: newPlace.image,
+          latitude: newPlace.location?.latitude,
+          longitude: newPlace.location?.longitude,
+          extra_data: extraData
+        };
+
+        await fetch(`${API_ENDPOINTS.PLACES}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(serverBody),
+          signal: controller.signal
         });
-        
-        // Timeout ligero para asegurar que el estado se procesa antes de salir
-        setTimeout(() => {
-          setIsUploading(false);
-          Alert.alert(
-            "¡Lugar Registrado!", 
-            "El Castillo de Santa Bárbara se ha guardado en tus descubrimientos con su fotografía.", 
-            [{ text: "Ver en mi Perfil", onPress: () => navigation.goBack() }]
-          );
-        }, 500);
-      } catch (error) {
-        console.error("Error al guardar:", error);
-        setIsUploading(false);
-        Alert.alert("Error de guardado", "No hemos podido guardar los datos. Revisa tu conexión o el espacio en el dispositivo.");
+      } catch (e) {
+        console.warn('Sincronización en segundo plano falló, datos guardados localmente');
+      } finally {
+        clearTimeout(timeoutId);
       }
-    })();
+
+      setIsLoading(false);
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowSuccess(false);
+        navigation.goBack();
+      }, 1500);
+    } catch (error) {
+      Alert.alert('Error', 'No se pudo completar el guardado.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const toggleAccessibility = (key) => {
-    setAccessibilityFeatures(prev => ({ ...prev, [key]: !prev[key] }));
+    setFormData(prev => ({
+      ...prev,
+      accessibility: {
+        ...prev.accessibility,
+        [key]: !prev.accessibility[key]
+      }
+    }));
+  };
+
+  const toggleService = (key) => {
+    setFormData(prev => ({
+      ...prev,
+      additionalServices: {
+        ...prev.additionalServices,
+        [key]: {
+          ...prev.additionalServices[key],
+          enabled: !prev.additionalServices[key].enabled
+        }
+      }
+    }));
+  };
+
+  const updateServiceDetail = (serviceKey, field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      additionalServices: {
+        ...prev.additionalServices,
+        [serviceKey]: {
+          ...prev.additionalServices[serviceKey],
+          [field]: value
+        }
+      }
+    }));
+  };
+
+  const toggleTechnical = (key) => {
+    setFormData(prev => ({
+      ...prev,
+      technicalSpecs: {
+        ...prev.technicalSpecs,
+        [key]: !prev.technicalSpecs[key]
+      }
+    }));
+  };
+
+  const updateTechnical = (key, value) => {
+    setFormData(prev => ({
+      ...prev,
+      technicalSpecs: {
+        ...prev.technicalSpecs,
+        [key]: value
+      }
+    }));
+  };
+
+  const updateTariffCondition = (idx, field, value) => {
+    setFormData(prev => {
+      const newTariffs = [...prev.tariffs];
+      newTariffs[idx] = {
+        ...newTariffs[idx],
+        condition: {
+          ...newTariffs[idx].condition,
+          [field]: value
+        }
+      };
+      return { ...prev, tariffs: newTariffs };
+    });
   };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
-      
-      <SafeAreaView style={styles.header}>
+      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
+      <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
           <ChevronLeft color={theme.text} size={28} />
         </TouchableOpacity>
         <Text style={[styles.headerTitle, { color: theme.text }]}>Añadir Nuevo Lugar</Text>
-        <TouchableOpacity onPress={handleAIRecognition} style={styles.aiHeaderBtn}>
-          <Sparkles color={theme.primary} size={22} />
+        <TouchableOpacity onPress={handleSave} style={[styles.saveBtn, { backgroundColor: theme.primary }]}>
+          {isLoading ? <ActivityIndicator size="small" color="#FFF" /> : <Save color="#FFF" size={20} />}
         </TouchableOpacity>
-      </SafeAreaView>
-      
-      {isRecognizing && (
-        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 10000, justifyContent: 'center', alignItems: 'center' }}>
-          <View style={{ backgroundColor: theme.surface, padding: 30, borderRadius: 25, alignItems: 'center', width: '85%', borderWidth: 1, borderColor: theme.border }}>
-            <ActivityIndicator size="large" color={theme.primary} />
-            <Text style={[typography.h2, { color: theme.text, marginTop: 20, textAlign: 'center' }]}>Análisis de Inteligencia Turística</Text>
-            <Text style={{ color: theme.textSecondary, marginTop: 10, textAlign: 'center', fontStyle: 'italic' }}>
-              Investigando historia, horarios y accesibilidad de "{formData.name}"...
-            </Text>
-            <View style={{ height: 6, width: '100%', backgroundColor: theme.border, borderRadius: 3, marginTop: 20, overflow: 'hidden' }}>
-              <View style={{ height: '100%', width: `${aiProgress * 100}%`, backgroundColor: theme.primary }} />
-            </View>
-            <Text style={{ color: theme.primary, fontSize: 12, fontWeight: '800', marginTop: 10 }}>
-              {Math.round(aiProgress * 100)}% COMPLETADO
-            </Text>
-          </View>
-        </View>
-      )}
+      </View>
 
       <KeyboardAvoidingView 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 20}
+        style={{ flex: 1 }}
       >
         <ScrollView 
           ref={scrollRef}
@@ -596,54 +610,46 @@ export function AddLocationScreen({ route, navigation }) {
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-        
-        {/* Photo Upload Section */}
-        <View style={styles.photoContainer}>
-          <TouchableOpacity style={[styles.photoUpload, { backgroundColor: theme.surface, borderColor: theme.border }]} onPress={pickImage}>
-            {formData.image ? (
-              <Image 
-                key={formData.image}
-                source={{ uri: formData.image }} 
-                style={styles.previewImage} 
-              />
+          
+          {/* Image Picker */}
+          <TouchableOpacity onPress={pickImage} style={[styles.imagePicker, { backgroundColor: theme.surface, borderColor: theme.border }]} disabled={isUploading}>
+            {isUploading ? (
+              <View style={styles.imagePlaceholder}>
+                <ActivityIndicator size="large" color={theme.primary} />
+                <Text style={{ color: theme.textSecondary, marginTop: 10 }}>Subiendo imagen...</Text>
+              </View>
+            ) : formData.image ? (
+              <Image source={{ uri: formData.image }} style={styles.pickedImage} />
             ) : (
-              <View style={styles.photoPlaceholder}>
+              <View style={styles.imagePlaceholder}>
                 <Camera color={theme.textSecondary} size={40} />
-                <Text style={[styles.photoText, { color: theme.textSecondary }]}>Subir Foto Principal</Text>
+                <Text style={{ color: theme.textSecondary, marginTop: 10, fontWeight: '700' }}>Añadir Foto</Text>
               </View>
             )}
           </TouchableOpacity>
-          
-          {formData.image && !isRecognizing && (
-            <TouchableOpacity 
-              style={[styles.aiAnalyzeBtn, { backgroundColor: theme.primary }]}
-              onPress={() => handleAIAutoFill(true)}
-            >
-              <Sparkles color="#FFF" size={16} />
-              <Text style={styles.aiAnalyzeBtnText}>Analizar con IA</Text>
-            </TouchableOpacity>
-          )}
-        </View>
 
-        {/* Form Sections */}
-        <View style={styles.formSection}>
-          <View style={styles.sectionHeader}>
-            <LayoutList color={theme.primary} size={20} />
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Información General</Text>
-          </View>
+          {/* Información General */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <List color={theme.primary} size={22} />
+              <Text style={[styles.sectionTitle, { color: theme.text, marginLeft: 10 }]}>Información General</Text>
+            </View>
 
-          <View style={styles.inputGroup}>
-            <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-              <Building2 color={theme.primary} size={20} />
+            <View style={styles.inputContainer}>
+              <Building2 color={theme.primary} size={20} style={styles.inputIcon} />
               <TextInput
-                style={[styles.input, { color: theme.text }]}
+                style={[styles.input, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
                 placeholder="Nombre del monumento o lugar"
                 placeholderTextColor={theme.textSecondary}
                 value={formData.name}
-                onChangeText={(text) => setFormData(prev => ({...prev, name: text}))}
+                onChangeText={(v) => setFormData(prev => ({ ...prev, name: v }))}
               />
-              <TouchableOpacity onPress={handleAIAutoFill} disabled={isRecognizing}>
-                {isRecognizing ? (
+              <TouchableOpacity 
+                style={styles.inputEndIcon} 
+                onPress={handleAiEnhance}
+                disabled={isAiLoading}
+              >
+                {isAiLoading ? (
                   <ActivityIndicator size="small" color={theme.primary} />
                 ) : (
                   <Sparkles color={theme.primary} size={20} />
@@ -651,990 +657,1070 @@ export function AddLocationScreen({ route, navigation }) {
               </TouchableOpacity>
             </View>
 
-            <View style={[
-              styles.inputContainer, 
-              { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 10 },
-              defaultCity && { opacity: 0.7, backgroundColor: theme.background }
-            ]}>
-              <MapPin color={defaultCity ? theme.textSecondary : theme.primary} size={20} />
-              <TextInput
-                style={[styles.input, { color: defaultCity ? theme.textSecondary : theme.text }]}
-                placeholder="Ciudad"
-                placeholderTextColor={theme.textSecondary}
-                value={formData.city}
-                onFocus={() => {
-                  // Desplazar hacia arriba para que los resultados no queden tapados
-                  setTimeout(() => {
-                    scrollRef.current?.scrollTo({ y: 350, animated: true });
-                  }, 100);
-                }}
-                onChangeText={(text) => {
-                  setIsUserTypingCity(true);
-                  setFormData(prev => ({...prev, city: text}));
-                }}
-                editable={!defaultCity}
-              />
-              {defaultCity && (
-                <View style={{ backgroundColor: theme.primary, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4, marginRight: 5 }}>
-                  <Text style={{ color: '#FFF', fontSize: 10, fontWeight: '800' }}>FIJO</Text>
+            <View style={{ position: 'relative', zIndex: 100 }}>
+              <View style={[styles.inputContainer, { marginTop: 15 }]}>
+                <MapPin color={theme.primary} size={20} style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
+                  placeholder="Ciudad o Municipio"
+                  placeholderTextColor={theme.textSecondary}
+                  value={formData.city}
+                  onFocus={() => {
+                    setTimeout(() => {
+                      scrollRef.current?.scrollTo({ y: 280, animated: true });
+                    }, 100);
+                  }}
+                  onChangeText={(v) => {
+                    setFormData(prev => ({ ...prev, city: v }));
+                    setSearchQuery(v);
+                    performLocalSearch(v);
+                    setShowSearchResults(v.length > 1);
+                    if (v.length > 1) {
+                      scrollRef.current?.scrollTo({ y: 280, animated: true });
+                    }
+                  }}
+                />
+              </View>
+              {showSearchResults && searchResults.length > 0 && (
+                <View style={[styles.searchResults, { backgroundColor: theme.surface, borderColor: theme.border, top: 65 }]}>
+                  {searchResults.map((item, idx) => (
+                    <TouchableOpacity 
+                      key={idx} 
+                      style={[styles.searchItem, { borderBottomWidth: idx === searchResults.length - 1 ? 0 : 0.5, borderBottomColor: theme.border }]}
+                      onPress={() => {
+                        setFormData(prev => ({ ...prev, city: item.label }));
+                        setSearchQuery(item.label);
+                        setShowSearchResults(false);
+                        Keyboard.dismiss();
+                      }}
+                    >
+                      <MapPin color={theme.primary} size={16} />
+                      <Text style={{ color: theme.text, marginLeft: 10, fontWeight: '600' }}>{item.label}</Text>
+                    </TouchableOpacity>
+                  ))}
                 </View>
               )}
             </View>
 
-            {/* City Search Results */}
-            {showCityResults && (
-              <View style={[styles.citySearchResults, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                {isSearchingCity ? (
-                  <View style={{ padding: 15, alignItems: 'center' }}>
-                    <ActivityIndicator size="small" color={theme.primary} />
-                  </View>
-                ) : citySearchResults.length > 0 ? (
-                  citySearchResults.map((city, idx) => (
-                    <TouchableOpacity 
-                      key={idx} 
-                      style={[styles.cityResultItem, { borderBottomWidth: idx === citySearchResults.length - 1 ? 0 : 0.5, borderBottomColor: theme.border }]}
-                      onPress={() => {
-                        setIsUserTypingCity(false);
-                        setFormData(prev => ({ ...prev, city: city.name, province: city.province }));
-                        setShowCityResults(false);
-                        setCitySearchResults([]);
-                        Keyboard.dismiss();
-                      }}
-                    >
-                      <MapPin color={theme.primary} size={14} />
-                      <View style={{ marginLeft: 10 }}>
-                        <Text style={[styles.cityResultName, { color: theme.text }]}>{city.name}</Text>
-                        <Text style={[styles.cityResultProvince, { color: theme.textSecondary }]}>{city.province}</Text>
-                      </View>
-                    </TouchableOpacity>
-                  ))
-                ) : (
-                  <View style={{ padding: 15, alignItems: 'center' }}>
-                    <Text style={{ color: theme.textSecondary, fontSize: 12 }}>No se encontraron municipios</Text>
-                  </View>
-                )}
-              </View>
-            )}
-
-            <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 10, height: 100, alignItems: 'flex-start', paddingTop: 12 }]}>
-              <Info color={theme.primary} size={20} style={{ marginTop: 2 }} />
+            <View style={[styles.inputContainer, { marginTop: 15 }]}>
+              <Info color={theme.primary} size={20} style={styles.inputIcon} />
               <TextInput
-                style={[styles.input, { color: theme.text, height: 80, textAlignVertical: 'top' }]}
+                style={[styles.textArea, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
                 placeholder="Descripción del lugar (Historia, qué ver...)"
                 placeholderTextColor={theme.textSecondary}
-                multiline
                 value={formData.description}
-                onChangeText={(text) => setFormData(prev => ({...prev, description: text}))}
+                onChangeText={(v) => setFormData(prev => ({ ...prev, description: v }))}
+                multiline
+                numberOfLines={4}
               />
             </View>
 
-            <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 10, height: 80, alignItems: 'flex-start', paddingTop: 12 }]}>
-              <Sparkles color="#F1C40F" size={20} style={{ marginTop: 2 }} />
+            <View style={[styles.inputContainer, { marginTop: 15 }]}>
+              <Zap color={theme.primary} size={20} style={styles.inputIcon} />
               <TextInput
-                style={[styles.input, { color: theme.text, height: 60, textAlignVertical: 'top' }]}
+                style={[styles.textArea, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
                 placeholder="Tip Turístico (Mejor hora, qué no perderse...)"
                 placeholderTextColor={theme.textSecondary}
-                multiline
                 value={formData.touristTip}
-                onChangeText={(text) => setFormData(prev => ({...prev, touristTip: text}))}
+                onChangeText={(v) => setFormData(prev => ({ ...prev, touristTip: v }))}
+                multiline
+                numberOfLines={2}
               />
             </View>
 
-            <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 10 }]}>
-              <MapPin color={theme.primary} size={20} />
+            <View style={[styles.inputContainer, { marginTop: 15 }]}>
+              <MapPin color={theme.primary} size={20} style={styles.inputIcon} />
               <TextInput
-                style={[styles.input, { color: theme.text }]}
+                style={[styles.input, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
                 placeholder="Dirección exacta (Calle, número...)"
                 placeholderTextColor={theme.textSecondary}
                 value={formData.address}
-                onChangeText={(text) => setFormData(prev => ({...prev, address: text}))}
+                onChangeText={(v) => setFormData(prev => ({ ...prev, address: v }))}
               />
             </View>
 
-            <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
-              <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, flex: 1.2 }]}>
-                <Globe color={theme.primary} size={20} />
+            <View style={styles.rowInputs}>
+              <View style={[styles.inputContainer, { flex: 1, marginTop: 15 }]}>
+                <Globe color={theme.primary} size={20} style={styles.inputIcon} />
                 <TextInput
-                  style={[styles.input, { color: theme.text }]}
+                  style={[styles.input, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
                   placeholder="Web oficial"
                   placeholderTextColor={theme.textSecondary}
                   value={formData.website}
-                  onChangeText={(text) => setFormData(prev => ({...prev, website: text}))}
+                  onChangeText={(v) => setFormData(prev => ({ ...prev, website: v }))}
                 />
               </View>
-              <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, flex: 0.8 }]}>
-                <Phone color={theme.primary} size={20} />
+              <View style={[styles.inputContainer, { flex: 1, marginTop: 15, marginLeft: 10 }]}>
+                <Smartphone color={theme.primary} size={20} style={styles.inputIcon} />
                 <TextInput
-                  style={[styles.input, { color: theme.text }]}
+                  style={[styles.input, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
                   placeholder="Teléfono"
                   placeholderTextColor={theme.textSecondary}
                   value={formData.phone}
-                  onChangeText={(text) => setFormData(prev => ({...prev, phone: text}))}
+                  onChangeText={(v) => setFormData(prev => ({ ...prev, phone: v }))}
+                  keyboardType="phone-pad"
                 />
               </View>
             </View>
 
-            <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 10 }]}>
-              <Tag color={theme.primary} size={20} />
+            <View style={[styles.inputContainer, { marginTop: 15 }]}>
+              <Tag color={theme.primary} size={20} style={styles.inputIcon} />
               <TextInput
-                style={[styles.input, { color: theme.text }]}
+                style={[styles.input, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
                 placeholder="Etiquetas (separadas por comas)"
                 placeholderTextColor={theme.textSecondary}
                 value={formData.tags}
-                onChangeText={(text) => setFormData(prev => ({...prev, tags: text}))}
+                onChangeText={(v) => setFormData(prev => ({ ...prev, tags: v }))}
               />
             </View>
-            
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
-              {CATEGORIES.map(cat => (
-                <TouchableOpacity 
-                  key={cat}
-                  onPress={() => setFormData(prev => ({...prev, category: cat}))}
-                  style={[
-                    styles.categoryBtn, 
-                    { backgroundColor: formData.category === cat ? theme.primary : theme.surface, borderColor: theme.border }
-                  ]}
-                >
-                  <Text style={[styles.categoryText, { color: formData.category === cat ? '#FFF' : theme.text }]}>{cat}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        </View>
 
+            <View style={styles.categoryContainer}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryScroll}>
+                {CATEGORIES.map((cat) => (
+                  <TouchableOpacity 
+                    key={cat}
+                    style={[
+                      styles.categoryButton, 
+                      { backgroundColor: formData.category === cat ? theme.primary : theme.surface, borderColor: theme.border }
+                    ]}
+                    onPress={() => setFormData(prev => ({ ...prev, category: cat }))}
+                  >
+                    <Text style={[styles.categoryText, { color: formData.category === cat ? '#FFF' : theme.text }]}>{cat}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          </View>
 
+          {/* Accesibilidad Adaptada */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Accessibility color={theme.primary} size={22} />
+              <Text style={[styles.sectionTitle, { color: theme.text, marginLeft: 10 }]}>Accesibilidad Adaptada</Text>
+            </View>
 
-        {/* Accessibility Features Section */}
-        <View style={styles.formSection}>
-          <View style={styles.sectionHeader}>
-            <Accessibility color={theme.primary} size={20} />
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Accesibilidad Adaptada</Text>
-          </View>
-          
-          <View style={styles.accessibilityGrid}>
-            <TouchableOpacity 
-              style={[
-                styles.accessCard, 
-                { 
-                  backgroundColor: accessibilityFeatures.physical ? theme.primary : theme.surface, 
-                  borderColor: accessibilityFeatures.physical ? theme.primary : theme.border 
-                }
-              ]}
-              onPress={() => toggleAccessibility('physical')}
-            >
-              <MapPin color={accessibilityFeatures.physical ? (isDarkMode ? '#070B14' : '#FFFFFF') : theme.primary} size={24} />
-              <Text style={[styles.accessText, { color: accessibilityFeatures.physical ? (isDarkMode ? '#070B14' : '#FFFFFF') : theme.text }]}>Física</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={[
-                styles.accessCard, 
-                { 
-                  backgroundColor: accessibilityFeatures.visual ? theme.primary : theme.surface, 
-                  borderColor: accessibilityFeatures.visual ? theme.primary : theme.border 
-                }
-              ]}
-              onPress={() => toggleAccessibility('visual')}
-            >
-              <Eye color={accessibilityFeatures.visual ? (isDarkMode ? '#070B14' : '#FFFFFF') : theme.primary} size={24} />
-              <Text style={[styles.accessText, { color: accessibilityFeatures.visual ? (isDarkMode ? '#070B14' : '#FFFFFF') : theme.text }]}>Visual</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={[
-                styles.accessCard, 
-                { 
-                  backgroundColor: accessibilityFeatures.auditory ? theme.primary : theme.surface, 
-                  borderColor: accessibilityFeatures.auditory ? theme.primary : theme.border 
-                }
-              ]}
-              onPress={() => toggleAccessibility('auditory')}
-            >
-              <Ear color={accessibilityFeatures.auditory ? (isDarkMode ? '#070B14' : '#FFFFFF') : theme.primary} size={24} />
-              <Text style={[styles.accessText, { color: accessibilityFeatures.auditory ? (isDarkMode ? '#070B14' : '#FFFFFF') : theme.text }]}>Auditiva</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={[
-                styles.accessCard, 
-                { 
-                  backgroundColor: accessibilityFeatures.cognitive ? theme.primary : theme.surface, 
-                  borderColor: accessibilityFeatures.cognitive ? theme.primary : theme.border 
-                }
-              ]}
-              onPress={() => toggleAccessibility('cognitive')}
-            >
-              <Brain color={accessibilityFeatures.cognitive ? (isDarkMode ? '#070B14' : '#FFFFFF') : theme.primary} size={24} />
-              <Text style={[styles.accessText, { color: accessibilityFeatures.cognitive ? (isDarkMode ? '#070B14' : '#FFFFFF') : theme.text }]}>Cognitiva</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+            <View style={styles.accessibilityGrid}>
+              <TouchableOpacity 
+                style={[styles.accessCard, { backgroundColor: formData.accessibility.physical ? theme.primary : theme.surface, borderColor: theme.border }]}
+                onPress={() => toggleAccessibility('physical')}
+              >
+                <MapPin color={formData.accessibility.physical ? '#FFF' : theme.primary} size={32} />
+                <Text style={[styles.accessLabel, { color: formData.accessibility.physical ? '#FFF' : theme.text }]}>Física</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.accessCard, { backgroundColor: formData.accessibility.visual ? theme.primary : theme.surface, borderColor: theme.border }]}
+                onPress={() => toggleAccessibility('visual')}
+              >
+                <Eye color={formData.accessibility.visual ? '#FFF' : theme.primary} size={32} />
+                <Text style={[styles.accessLabel, { color: formData.accessibility.visual ? '#FFF' : theme.text }]}>Visual</Text>
+              </TouchableOpacity>
 
-        {/* Location Section */}
-        <View style={styles.formSection}>
-          <View style={styles.sectionHeader}>
-            <MapPin color={theme.primary} size={20} />
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Ubicación Geográfica</Text>
-          </View>
-          <View style={[styles.mapPreview, { borderColor: theme.border, height: isMapExpanded ? 300 : 150 }]}>
-            <MapView
-              ref={mapRef}
-              style={StyleSheet.absoluteFill}
-              initialRegion={location}
-              onRegionChangeComplete={setLocation}
-            >
-              <Marker coordinate={location} />
-            </MapView>
-            <TouchableOpacity 
-              style={styles.expandMapBtn}
-              onPress={() => setIsMapExpanded(!isMapExpanded)}
-            >
-              <Maximize2 color="#FFF" size={18} />
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.mapHint}>Mueve el mapa para ajustar el pin en la entrada principal.</Text>
-        </View>
+              <TouchableOpacity 
+                style={[styles.accessCard, { backgroundColor: formData.accessibility.auditory ? theme.primary : theme.surface, borderColor: theme.border }]}
+                onPress={() => toggleAccessibility('auditory')}
+              >
+                <Ear color={formData.accessibility.auditory ? '#FFF' : theme.primary} size={32} />
+                <Text style={[styles.accessLabel, { color: formData.accessibility.auditory ? '#FFF' : theme.text }]}>Auditiva</Text>
+              </TouchableOpacity>
 
-        {/* Schedule Section */}
-        <View style={styles.formSection}>
-          <View style={styles.sectionHeader}>
-            <Clock color={theme.primary} size={20} />
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Horarios de Visita</Text>
+              <TouchableOpacity 
+                style={[styles.accessCard, { backgroundColor: formData.accessibility.cognitive ? theme.primary : theme.surface, borderColor: theme.border }]}
+                onPress={() => toggleAccessibility('cognitive')}
+              >
+                <Brain color={formData.accessibility.cognitive ? '#FFF' : theme.primary} size={32} />
+                <Text style={[styles.accessLabel, { color: formData.accessibility.cognitive ? '#FFF' : theme.text }]}>Cognitiva</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          
-          <View style={{ gap: 15, marginTop: 5 }}>
-            {(formData.schedules || []).map((sched, idx) => (
-              <View key={sched.id || `sched-${idx}`} style={[styles.dynamicScheduleCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                <View style={styles.scheduleRowTop}>
+
+          {/* Ubicación Geográfica */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <MapPin color={theme.primary} size={22} />
+              <Text style={[styles.sectionTitle, { color: theme.text, marginLeft: 10 }]}>Ubicación Geográfica</Text>
+            </View>
+            <View style={[styles.mapContainer, { borderColor: theme.border }]}>
+              <MapView
+                ref={mapRef}
+                style={styles.map}
+                initialRegion={{
+                  latitude: !isNaN(formData.location?.latitude) ? formData.location.latitude : 40.4168,
+                  longitude: !isNaN(formData.location?.longitude) ? formData.location.longitude : -3.7038,
+                  latitudeDelta: 0.0922,
+                  longitudeDelta: 0.0421,
+                }}
+                onRegionChangeComplete={(region) => {
+                  if (!isNaN(region.latitude) && !isNaN(region.longitude)) {
+                    setFormData(prev => ({
+                      ...prev,
+                      location: { latitude: region.latitude, longitude: region.longitude }
+                    }));
+                  }
+                }}
+              >
+                {isValidLocation(formData.location) && (
+                  <Marker coordinate={formData.location} />
+                )}
+              </MapView>
+              <View style={styles.mapOverlay}>
+                <Text style={styles.mapOverlayText}>Mueve el mapa para ajustar el pin en la entrada principal.</Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Horarios */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Clock color={theme.primary} size={22} />
+              <Text style={[styles.sectionTitle, { color: theme.text, marginLeft: 10 }]}>Configuración de Horarios</Text>
+              <TouchableOpacity onPress={handleAddSeason} style={styles.addBtn}>
+                <PlusCircle color={theme.primary} size={24} />
+              </TouchableOpacity>
+            </View>
+
+            {formData.structuredSchedules.map((season, sIdx) => (
+              <View key={sIdx} style={[styles.seasonCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                <View style={styles.seasonHeaderRow}>
                   <TextInput 
-                    style={[styles.scheduleInputLabel, { color: theme.text }]}
-                    placeholder="Días (Ej: Lunes y Martes)"
-                    placeholderTextColor={theme.textSecondary}
-                    value={sched.days}
-                    onChangeText={(val) => {
-                      const newScheds = [...formData.schedules];
-                      newScheds[idx].days = val;
-                      setFormData({...formData, schedules: newScheds});
+                    style={[styles.seasonNameInput, { color: theme.primary }]}
+                    value={season.name}
+                    onChangeText={(v) => {
+                      const newSchedules = [...formData.structuredSchedules];
+                      newSchedules[sIdx].name = v;
+                      setFormData(prev => ({ ...prev, structuredSchedules: newSchedules }));
                     }}
                   />
-                  {idx > 0 && (
-                    <TouchableOpacity onPress={() => {
-                      const newScheds = formData.schedules.filter((_, i) => i !== idx);
-                      setFormData({...formData, schedules: newScheds});
-                    }}>
-                      <Trash2 color="#E74C3C" size={18} />
-                    </TouchableOpacity>
-                  )}
+                  <TouchableOpacity onPress={() => {
+                    const newSchedules = [...formData.structuredSchedules];
+                    newSchedules.splice(sIdx, 1);
+                    setFormData(prev => ({ ...prev, structuredSchedules: newSchedules }));
+                  }}>
+                    <X color="#E74C3C" size={20} />
+                  </TouchableOpacity>
                 </View>
-                <TextInput 
-                  style={[styles.scheduleInputTime, { color: theme.primary }]}
-                  placeholder="Horas (Ej: De 11:00 a 15:00 h)"
-                  placeholderTextColor={theme.textSecondary}
-                  value={sched.hours}
-                  onChangeText={(val) => {
-                    const newScheds = [...formData.schedules];
-                    newScheds[idx].hours = val;
-                    setFormData({...formData, schedules: newScheds});
-                  }}
-                />
+
+                <View style={styles.monthRow}>
+                  <Text style={{ color: theme.textSecondary, fontSize: 12 }}>De:</Text>
+                  <TouchableOpacity 
+                    style={[styles.selector, { borderColor: theme.border, backgroundColor: theme.background }]}
+                    onPress={() => setPickerModal({
+                      visible: true,
+                      title: 'Mes de Inicio',
+                      options: MONTHS,
+                      onSelect: (val) => {
+                        const newSchedules = [...formData.structuredSchedules];
+                        newSchedules[sIdx].startMonth = val;
+                        setFormData(prev => ({ ...prev, structuredSchedules: newSchedules }));
+                      }
+                    })}
+                  >
+                    <Text style={{ color: theme.text, fontSize: 12, fontWeight: '700' }}>{season.startMonth}</Text>
+                  </TouchableOpacity>
+                  <Text style={{ color: theme.textSecondary, fontSize: 12 }}>A:</Text>
+                  <TouchableOpacity 
+                    style={[styles.selector, { borderColor: theme.border, backgroundColor: theme.background }]}
+                    onPress={() => setPickerModal({
+                      visible: true,
+                      title: 'Mes de Fin',
+                      options: MONTHS,
+                      onSelect: (val) => {
+                        const newSchedules = [...formData.structuredSchedules];
+                        newSchedules[sIdx].endMonth = val;
+                        setFormData(prev => ({ ...prev, structuredSchedules: newSchedules }));
+                      }
+                    })}
+                  >
+                    <Text style={{ color: theme.text, fontSize: 12, fontWeight: '700' }}>{season.endMonth}</Text>
+                  </TouchableOpacity>
+                </View>
+
+                <View style={styles.daysGrid}>
+                  {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((dayName, index) => {
+                    const dayKey = index === 6 ? 0 : index + 1;
+                    const dayData = season.days[dayKey] || { isOpen: false };
+                    
+                    const timeOptions = HOURS.flatMap(h => MINUTES.filter(m => m !== 'Cerrado').map(m => `${h}:${m}`));
+                    timeOptions.unshift('Cerrado');
+
+                    const TimeTrigger = ({ value, field, label }) => (
+                      <TouchableOpacity 
+                        style={[styles.timeSelector, { borderColor: theme.border, backgroundColor: theme.background }]}
+                        onPress={() => setPickerModal({
+                          visible: true,
+                          title: `Hora de ${label}`,
+                          options: timeOptions,
+                          onSelect: (val) => {
+                            const newSchedules = [...formData.structuredSchedules];
+                            newSchedules[sIdx].days[dayKey][field] = val;
+                            setFormData(prev => ({ ...prev, structuredSchedules: newSchedules }));
+                          }
+                        })}
+                      >
+                        <Text style={{ fontSize: 10, fontWeight: '800', color: value === 'Cerrado' ? '#E74C3C' : theme.text }}>
+                          {value || '--:--'}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+
+                    return (
+                      <View key={dayKey} style={styles.dayRow}>
+                        <Text style={{ width: 25, color: theme.text, fontWeight: '800' }}>{dayName}</Text>
+                        <TouchableOpacity 
+                          style={[styles.toggle, { backgroundColor: dayData.isOpen ? theme.primary : theme.border }]}
+                          onPress={() => {
+                            const newSchedules = [...formData.structuredSchedules];
+                            newSchedules[sIdx].days[dayKey].isOpen = !dayData.isOpen;
+                            setFormData(prev => ({ ...prev, structuredSchedules: newSchedules }));
+                          }}
+                        >
+                          <Text style={{ color: '#FFF', fontSize: 9, fontWeight: '900' }}>{dayData.isOpen ? 'SÍ' : 'NO'}</Text>
+                        </TouchableOpacity>
+                        
+                        {dayData.isOpen && (
+                          <View style={styles.timeInputsRow}>
+                            <TimeTrigger value={dayData.mOpen} field="mOpen" label="Apertura (M)" />
+                            <Text style={{ color: theme.textSecondary }}>-</Text>
+                            <TimeTrigger value={dayData.mClose} field="mClose" label="Cierre (M)" />
+                            <View style={{ width: 1, height: 12, backgroundColor: theme.border, marginHorizontal: 2 }} />
+                            <TimeTrigger value={dayData.aOpen} field="aOpen" label="Apertura (T)" />
+                            <Text style={{ color: theme.textSecondary }}>-</Text>
+                            <TimeTrigger value={dayData.aClose} field="aClose" label="Cierre (T)" />
+                          </View>
+                        )}
+                      </View>
+                    );
+                  })}
+                </View>
               </View>
             ))}
 
-            <TouchableOpacity 
-              style={[styles.addScheduleBtn, { borderColor: theme.primary }]}
-              onPress={() => setFormData({
-                ...formData, 
-                schedules: [...formData.schedules, { id: Date.now().toString(), days: '', hours: '' }]
-              })}
-            >
-              <Plus color={theme.primary} size={18} />
-              <Text style={[styles.addScheduleBtnText, { color: theme.primary }]}>Añadir otro bloque horario</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 20, height: 'auto', paddingVertical: 10 }]}>
-            <TriangleAlert color="#E74C3C" size={20} />
-            <TextInput
-              style={[styles.input, { color: theme.text }]}
-              placeholder="Cierres especiales (Ej: Cerrado 25 Dic...)"
-              placeholderTextColor={theme.textSecondary}
-              multiline
-              value={formData.specialClosures}
-              onChangeText={(text) => setFormData({...formData, specialClosures: text})}
-            />
-          </View>
-        </View>
-
-        {/* Important Notices Section */}
-        <View style={styles.formSection}>
-          <View style={styles.sectionHeader}>
-            <Info color="#E74C3C" size={20} />
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Avisos Críticos (¡Atención!)</Text>
-            <TouchableOpacity onPress={addNotice} style={styles.addBtn}>
-              <Plus color="#E74C3C" size={20} />
-            </TouchableOpacity>
-          </View>
-          {formData.importantNotices.map((notice, idx) => (
-            <View key={idx} style={[styles.inputContainer, { backgroundColor: 'rgba(231, 76, 60, 0.05)', borderColor: '#E74C3C', marginBottom: 10 }]}>
+            <View style={[styles.inputContainer, { marginTop: 15 }]}>
+              <AlertTriangle color="#E74C3C" size={20} style={styles.inputIcon} />
               <TextInput
-                style={[styles.input, { color: theme.text }]}
-                placeholder="Escribe el aviso..."
-                value={notice}
-                onChangeText={(v) => updateNotice(idx, v)}
+                style={[styles.input, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
+                placeholder="Cierres especiales (Ej: Cerrado 25 Dic...)"
+                placeholderTextColor={theme.textSecondary}
+                value={formData.specialClosures}
+                onChangeText={(v) => setFormData(prev => ({ ...prev, specialClosures: v }))}
               />
-              <TouchableOpacity onPress={() => removeNotice(idx)}>
-                <Trash2 color="#E74C3C" size={18} />
-              </TouchableOpacity>
             </View>
-          ))}
-        </View>
 
-        {/* Seasonal Schedule Section */}
-        <View style={styles.formSection}>
-          <View style={styles.sectionHeader}>
-            <Calendar color={theme.primary} size={20} />
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Horarios por Temporada</Text>
-            <TouchableOpacity onPress={addSeason} style={styles.addBtn}>
-              <Plus color={theme.primary} size={20} />
-            </TouchableOpacity>
-          </View>
-          {formData.seasons.map((season, idx) => (
-            <View key={idx} style={[styles.seasonFormCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <TextInput
-                  style={[styles.seasonFormInput, { fontWeight: '800', color: theme.primary, flex: 1 }]}
-                  placeholder="Nombre temporada (Ej: Verano)"
-                  value={season.name}
-                  onChangeText={(v) => updateSeason(idx, 'name', v)}
-                />
-                <TouchableOpacity onPress={() => removeSeason(idx)}>
-                  <Trash2 color="#E74C3C" size={18} />
+            <View style={styles.noticesSection}>
+              <View style={styles.sectionHeader}>
+                <Info color="#E74C3C" size={22} />
+                <Text style={[styles.sectionTitle, { color: theme.primary, marginLeft: 10 }]}>Avisos Críticos (¡Atención!)</Text>
+                <TouchableOpacity onPress={handleAddCriticalNotice} style={styles.addBtn}>
+                  <PlusCircle color="#E74C3C" size={24} />
                 </TouchableOpacity>
               </View>
-              <TextInput
-                style={[styles.seasonFormInput, { color: theme.textSecondary, fontSize: 13 }]}
-                placeholder="Periodo (Ej: 1 Abr - 30 Sep)"
-                value={season.period}
-                onChangeText={(v) => updateSeason(idx, 'period', v)}
-              />
-              <View style={{ marginTop: 10, gap: 8 }}>
-                <View style={styles.seasonFormRow}>
-                  <Text style={[styles.seasonFormLabel, { color: theme.text }]}>Lun-Sáb:</Text>
+              {formData.criticalNotices.map((notice, idx) => (
+                <View key={idx} style={[styles.inputContainer, { marginTop: 10 }]}>
                   <TextInput
-                    style={[styles.seasonFormTime, { color: theme.text, borderColor: theme.border }]}
-                    placeholder="10:00 - 14:00..."
-                    value={season.weekday}
-                    onChangeText={(v) => updateSeason(idx, 'weekday', v)}
+                    style={[styles.input, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border, flex: 1 }]}
+                    placeholder="Escribe un aviso crítico..."
+                    placeholderTextColor={theme.textSecondary}
+                    value={notice}
+                    onChangeText={(text) => updateCriticalNotice(idx, text)}
                   />
+                  <TouchableOpacity onPress={() => removeCriticalNotice(idx)} style={{ marginLeft: 10 }}>
+                    <X color="#E74C3C" size={20} />
+                  </TouchableOpacity>
                 </View>
-                <View style={styles.seasonFormRow}>
-                  <Text style={[styles.seasonFormLabel, { color: theme.text }]}>Dom/Fest:</Text>
-                  <TextInput
-                    style={[styles.seasonFormTime, { color: theme.text, borderColor: theme.border }]}
-                    placeholder="Cerrado / Mañanas..."
-                    value={season.weekend}
-                    onChangeText={(v) => updateSeason(idx, 'weekend', v)}
-                  />
-                </View>
-              </View>
+              ))}
             </View>
-          ))}
-        </View>
-
-        {/* Tariffs Section */}
-        <View style={styles.formSection}>
-          <View style={styles.sectionHeader}>
-            <CreditCard color={theme.primary} size={20} />
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Tarifas y Entradas</Text>
-            <TouchableOpacity 
-              onPress={() => setTariffs([...tariffs, { id: Date.now().toString(), label: '', price: '' }])} 
-              style={styles.addBtn}
-            >
-              <Plus color={theme.primary} size={20} />
-            </TouchableOpacity>
           </View>
 
-          {tariffs.map((tariff, idx) => (
-            <View key={tariff.id || `tariff-${idx}`} style={styles.tariffRow}>
-              <TextInput
-                style={[styles.tariffLabelInput, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
-                placeholder="Tipo (Ej: Adulto)"
-                placeholderTextColor={theme.textSecondary}
-                value={tariff.label}
-                onChangeText={(text) => setTariffs(tariffs.map(t => t.id === tariff.id ? { ...t, label: text } : t))}
-              />
-              <TextInput
-                style={[styles.tariffPriceInput, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
-                placeholder="€"
-                placeholderTextColor={theme.textSecondary}
-                value={tariff.price}
-                onChangeText={(text) => setTariffs(tariffs.map(t => t.id === tariff.id ? { ...t, price: text } : t))}
-              />
-              <TouchableOpacity onPress={() => setTariffs(tariffs.filter(t => t.id !== tariff.id))} style={styles.removeBtn}>
-                <Trash2 color="#E74C3C" size={18} />
+          {/* Tarifas y Entradas */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <CreditCard color={theme.primary} size={22} />
+              <Text style={[styles.sectionTitle, { color: theme.text, marginLeft: 10 }]}>Tarifas y Entradas</Text>
+              <TouchableOpacity 
+                onPress={() => setFormData(prev => ({
+                  ...prev,
+                  tariffs: [...prev.tariffs, { id: Date.now().toString(), label: 'Nueva Tarifa', price: '0 €', condition: { type: 'none', value: '', from: '', to: '' } }]
+                }))}
+              >
+                <PlusCircle color={theme.primary} size={24} />
               </TouchableOpacity>
             </View>
-          ))}
 
-          <View style={[styles.switchRow, { marginTop: 15 }]}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.label, { color: theme.text }]}>Entrada Vinculada</Text>
-              <Text style={{ color: theme.textSecondary, fontSize: 12 }}>¿Se incluye con la entrada de otro lugar?</Text>
-            </View>
-            <Switch 
-              value={formData.isLinkedEntrance} 
-              onValueChange={(val) => setFormData({...formData, isLinkedEntrance: val})}
-              trackColor={{ false: '#767577', true: theme.primary }}
-            />
-          </View>
-
-          {formData.isLinkedEntrance && (
-            <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 10 }]}>
-              <Building2 color={theme.primary} size={20} />
-              <TextInput
-                style={[styles.input, { color: theme.text }]}
-                placeholder="Nombre del lugar (Ej: Castillo de Morella)"
-                placeholderTextColor={theme.textSecondary}
-                value={formData.linkedEntranceName}
-                onChangeText={(text) => setFormData({...formData, linkedEntranceName: text})}
-              />
-            </View>
-          )}
-
-          <View style={[styles.inputContainer, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 15 }]}>
-            <Info color={theme.primary} size={20} />
-            <TextInput
-              style={[styles.input, { color: theme.text }]}
-              placeholder="Info adicional (Ej: Gratis los domingos)"
-              placeholderTextColor={theme.textSecondary}
-              value={formData.freeInfo}
-              onChangeText={(text) => setFormData({...formData, freeInfo: text})}
-            />
-          </View>
-        </View>
-
-        {/* Services Section: Audioguide & Guided Visits */}
-        <View style={styles.formSection}>
-          <View style={styles.sectionHeader}>
-            <Sparkles color={theme.primary} size={20} />
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Servicios Adicionales</Text>
-          </View>
-
-          {/* Audioguide */}
-          <View style={[styles.serviceToggleCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-            <View style={styles.serviceToggleHeader}>
-              <View style={styles.serviceIconTitle}>
-                <Mic color={theme.primary} size={22} />
-                <Text style={[styles.serviceLabel, { color: theme.text, marginLeft: 10, fontWeight: '800' }]}>Audioguía</Text>
-              </View>
-              <Switch 
-                value={audioguide.available} 
-                onValueChange={(val) => setAudioguide({...audioguide, available: val})}
-                trackColor={{ false: '#767577', true: theme.primary }}
-              />
-            </View>
-            
-            {audioguide.available && (
-              <View style={styles.serviceDetails}>
-                <TextInput 
-                  style={[styles.serviceInput, { color: theme.text, borderBottomColor: theme.border, borderBottomWidth: 1 }]}
-                  placeholder="Precio (Ej: 3€ o Gratis)"
-                  placeholderTextColor={theme.textSecondary}
-                  value={audioguide.price}
-                  onChangeText={(val) => setAudioguide({...audioguide, price: val})}
-                />
-                <View style={styles.serviceCheckRow}>
-                  <Text style={[styles.serviceCheckLabel, { color: theme.textSecondary, fontSize: 13 }]}>Accesible (LSE / Audio)</Text>
-                  <Switch 
-                    value={audioguide.accessible} 
-                    onValueChange={(val) => setAudioguide({...audioguide, accessible: val})}
-                    trackColor={{ false: '#767577', true: theme.primary }}
-                  />
-                </View>
-              </View>
-            )}
-          </View>
-
-          {/* Guided Visits */}
-          <View style={[styles.serviceToggleCard, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 15 }]}>
-            <View style={styles.serviceToggleHeader}>
-              <View style={styles.serviceIconTitle}>
-                <Users color={theme.primary} size={22} />
-                <Text style={[styles.serviceLabel, { color: theme.text, marginLeft: 10, fontWeight: '800' }]}>Visitas Guiadas</Text>
-              </View>
-              <Switch 
-                value={guidedVisits.available} 
-                onValueChange={(val) => setGuidedVisits({...guidedVisits, available: val})}
-                trackColor={{ false: '#767577', true: theme.primary }}
-              />
-            </View>
-            
-            {guidedVisits.available && (
-              <View style={styles.serviceDetails}>
-                <TextInput 
-                  style={[styles.serviceInput, { color: theme.text, borderBottomColor: theme.border, borderBottomWidth: 1 }]}
-                  placeholder="Precio de la visita"
-                  placeholderTextColor={theme.textSecondary}
-                  value={guidedVisits.price}
-                  onChangeText={(val) => setGuidedVisits({...guidedVisits, price: val})}
-                />
-
-                <TextInput 
-                  style={[styles.serviceInput, { color: theme.text, borderBottomColor: theme.border, borderBottomWidth: 1 }]}
-                  placeholder="Idiomas (Ej: Español, Inglés, LSE)"
-                  placeholderTextColor={theme.textSecondary}
-                  value={guidedVisits.languages?.join(', ')}
-                  onChangeText={(val) => setGuidedVisits({...guidedVisits, languages: val.split(',').map(s => s.trim())})}
-                />
-                
-                <Text style={[styles.miniLabel, { color: theme.textSecondary, marginTop: 15, fontSize: 12, fontWeight: '700' }]}>HORARIOS DE VISITAS:</Text>
-                {guidedVisits.schedules.map((vs, vidx) => (
-                  <View key={vs.id} style={styles.visitScheduleRow}>
-                    <TextInput 
-                      style={[styles.vSchedInput, { flex: 1, color: theme.text, fontWeight: '600' }]}
-                      placeholder="Días"
-                      value={vs.days}
-                      onChangeText={(val) => {
-                        const newVs = [...guidedVisits.schedules];
-                        newVs[vidx].days = val;
-                        setGuidedVisits({...guidedVisits, schedules: newVs});
-                      }}
-                    />
-                    <TextInput 
-                      style={[styles.vSchedInput, { width: 80, color: theme.primary, fontWeight: '700' }]}
-                      placeholder="Hora"
-                      value={vs.time}
-                      onChangeText={(val) => {
-                        const newVs = [...guidedVisits.schedules];
-                        newVs[vidx].time = val;
-                        setGuidedVisits({...guidedVisits, schedules: newVs});
-                      }}
-                    />
+            <View style={[styles.tariffsContainer, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+              {formData.tariffs.map((tariff, idx) => (
+                <View key={tariff.id} style={styles.tariffCard}>
+                  <View style={styles.tariffRowMain}>
                     <TouchableOpacity onPress={() => {
-                       const newVs = guidedVisits.schedules.filter((_, i) => i !== vidx);
-                       setGuidedVisits({...guidedVisits, schedules: newVs});
+                      setFormData(prev => {
+                        const newTariffs = [...prev.tariffs];
+                        newTariffs.splice(idx, 1);
+                        return { ...prev, tariffs: newTariffs };
+                      });
                     }}>
-                      <Trash2 color="#E74C3C" size={16} />
+                      <MinusCircle color="#E74C3C" size={20} />
                     </TouchableOpacity>
+                    
+                    <TouchableOpacity 
+                      style={[styles.tariffSelector, { borderBottomColor: theme.border }]}
+                      onPress={() => setPickerModal({
+                        visible: true,
+                        title: 'Tipo de Tarifa',
+                        options: TARIFF_PRESETS,
+                        onSelect: (val) => {
+                          const newTariffs = [...formData.tariffs];
+                          newTariffs[idx].label = val;
+                          setFormData(prev => ({ ...prev, tariffs: newTariffs }));
+                        }
+                      })}
+                    >
+                      <Text style={{ color: theme.text, fontSize: 13, fontWeight: '700' }}>{tariff.label}</Text>
+                      <ChevronLeft color={theme.textSecondary} size={14} style={{ transform: [{ rotate: '-90deg' }] }} />
+                    </TouchableOpacity>
+
+                    <TextInput
+                      style={[styles.priceInput, { color: theme.primary, backgroundColor: theme.primary + '15' }]}
+                      value={tariff.price}
+                      placeholder="0 €"
+                      onChangeText={(v) => {
+                        const newTariffs = [...formData.tariffs];
+                        newTariffs[idx].price = v.includes('€') ? v : `${v} €`;
+                        setFormData(prev => ({ ...prev, tariffs: newTariffs }));
+                      }}
+                    />
                   </View>
-                ))}
-                <TouchableOpacity 
-                  style={[styles.addVisitBtn, { marginTop: 10 }]}
-                  onPress={() => setGuidedVisits({
-                    ...guidedVisits, 
-                    schedules: [...guidedVisits.schedules, { id: Date.now().toString(), time: '', days: '' }]
-                  })}
-                >
-                  <Plus color={theme.primary} size={14} />
-                  <Text style={[styles.addVisitText, { color: theme.primary, marginLeft: 5, fontWeight: '700', fontSize: 12 }]}>Añadir horario de visita</Text>
-                </TouchableOpacity>
+
+                  {/* Subtipos / Condiciones */}
+                  <View style={styles.conditionSection}>
+                    <TouchableOpacity 
+                      style={[styles.conditionSelector, { backgroundColor: theme.background, borderColor: theme.border }]}
+                      onPress={() => setPickerModal({
+                        visible: true,
+                        title: 'Subtipo / Condición',
+                        options: TARIFF_SUBTYPES.map(s => s.label),
+                        onSelect: (val) => {
+                          const subtype = TARIFF_SUBTYPES.find(s => s.label === val);
+                          updateTariffCondition(idx, 'type', subtype.id);
+                        }
+                      })}
+                    >
+                      <Info color={theme.primary} size={14} />
+                      <Text style={{ color: theme.textSecondary, fontSize: 11, fontWeight: '600', flex: 1, marginLeft: 5 }}>
+                        {TARIFF_SUBTYPES.find(s => s.id === (tariff.condition?.type || 'none'))?.label}
+                      </Text>
+                      <ChevronLeft color={theme.textSecondary} size={12} style={{ transform: [{ rotate: '-90deg' }] }} />
+                    </TouchableOpacity>
+
+                    {/* Controles específicos según tipo */}
+                    {(tariff.condition?.type === 'disability') && (
+                      <View style={styles.conditionDetails}>
+                        <Text style={{ color: theme.textSecondary, fontSize: 11 }}>Mínimo:</Text>
+                        <TouchableOpacity 
+                          style={styles.smallSelector}
+                          onPress={() => setPickerModal({
+                            visible: true,
+                            title: 'Porcentaje Discapacidad',
+                            options: PERCENTAGES.map(p => `${p}%`),
+                            onSelect: (val) => updateTariffCondition(idx, 'value', val.replace('%', ''))
+                          })}
+                        >
+                          <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12 }}>{tariff.condition.value || '33'}%</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+
+                    {(tariff.condition?.type === 'senior' || tariff.condition?.type === 'child') && (
+                      <View style={styles.conditionDetails}>
+                        <Text style={{ color: theme.textSecondary, fontSize: 11 }}>Edad:</Text>
+                        <TouchableOpacity 
+                          style={styles.smallSelector}
+                          onPress={() => setPickerModal({
+                            visible: true,
+                            title: 'Seleccionar Edad',
+                            options: AGES,
+                            onSelect: (val) => updateTariffCondition(idx, 'value', val)
+                          })}
+                        >
+                          <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12 }}>{tariff.condition.value || '65'} años</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+
+                    {(tariff.condition?.type === 'age_range' || tariff.condition?.type === 'student') && (
+                      <View style={styles.conditionDetails}>
+                        <Text style={{ color: theme.textSecondary, fontSize: 11 }}>De:</Text>
+                        <TouchableOpacity 
+                          style={styles.smallSelector}
+                          onPress={() => setPickerModal({
+                            visible: true,
+                            title: 'Desde Edad',
+                            options: AGES,
+                            onSelect: (val) => updateTariffCondition(idx, 'from', val)
+                          })}
+                        >
+                          <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12 }}>{tariff.condition.from || '18'}</Text>
+                        </TouchableOpacity>
+                        <Text style={{ color: theme.textSecondary, fontSize: 11 }}>a:</Text>
+                        <TouchableOpacity 
+                          style={styles.smallSelector}
+                          onPress={() => setPickerModal({
+                            visible: true,
+                            title: 'Hasta Edad',
+                            options: AGES,
+                            onSelect: (val) => updateTariffCondition(idx, 'to', val)
+                          })}
+                        >
+                          <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12 }}>{tariff.condition.to || '25'}</Text>
+                        </TouchableOpacity>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              ))}
+              
+              <View style={styles.linkRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ color: theme.text, fontSize: 14, fontWeight: '700' }}>Entrada vinculada</Text>
+                  <Text style={{ color: theme.textSecondary, fontSize: 12 }}>¿Se incluye con la entrada de otro lugar?</Text>
+                </View>
+                <Switch 
+                  value={formData.isLinkedEntrance}
+                  onValueChange={(v) => setFormData(prev => ({ ...prev, isLinkedEntrance: v }))}
+                  trackColor={{ false: theme.border, true: theme.primary }}
+                  thumbColor={formData.isLinkedEntrance ? '#FFF' : '#f4f3f4'}
+                />
               </View>
+              
+              <View style={[styles.inputContainer, { marginTop: 15 }]}>
+                <Info color={theme.primary} size={20} style={styles.inputIcon} />
+                <TextInput
+                  style={[styles.input, { backgroundColor: theme.background, color: theme.text, borderColor: theme.border }]}
+                  placeholder="Info adicional (Ej: Gratis los domingos)"
+                  placeholderTextColor={theme.textSecondary}
+                  value={formData.additionalInfo}
+                  onChangeText={(v) => setFormData(prev => ({ ...prev, additionalInfo: v }))}
+                />
+              </View>
+            </View>
+          </View>
+
+          {/* Servicios Adicionales */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <PlusCircle color={theme.primary} size={22} />
+              <Text style={[styles.sectionTitle, { color: theme.text, marginLeft: 10 }]}>Servicios Adicionales</Text>
+            </View>
+
+            <View style={[styles.serviceCard, { backgroundColor: theme.surface, borderColor: theme.border, flexDirection: 'column', alignItems: 'flex-start', padding: 12 }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
+                <Headphones color={theme.primary} size={20} style={styles.serviceIcon} />
+                <Text style={[styles.serviceLabel, { color: theme.text, flex: 1 }]}>Audioguía</Text>
+                <Switch 
+                  value={formData.additionalServices.audioguide.enabled}
+                  onValueChange={() => toggleService('audioguide')}
+                  trackColor={{ false: theme.border, true: theme.primary }}
+                  thumbColor={formData.additionalServices.audioguide.enabled ? '#FFF' : '#f4f3f4'}
+                />
+              </View>
+              
+              {formData.additionalServices.audioguide.enabled && (
+                <View style={styles.serviceDetailRow}>
+                  <View style={styles.servicePriceInput}>
+                    <Text style={{ color: theme.textSecondary, fontSize: 11 }}>Precio (€)</Text>
+                    <TextInput
+                      style={[styles.smallInput, { color: theme.primary, backgroundColor: theme.primary + '10' }]}
+                      value={formData.additionalServices.audioguide.price}
+                      keyboardType="numeric"
+                      onChangeText={(v) => updateServiceDetail('audioguide', 'price', v)}
+                    />
+                  </View>
+                  <View style={styles.serviceFreeToggle}>
+                    <Text style={{ color: theme.textSecondary, fontSize: 11 }}>Gratis PCD</Text>
+                    <Switch 
+                      value={formData.additionalServices.audioguide.freeForDisabled}
+                      onValueChange={(v) => updateServiceDetail('audioguide', 'freeForDisabled', v)}
+                      trackColor={{ false: theme.border, true: '#2ECC71' }}
+                      scaleX={0.7} scaleY={0.7}
+                    />
+                  </View>
+                </View>
+              )}
+            </View>
+
+            <View style={[styles.serviceCard, { backgroundColor: theme.surface, borderColor: theme.border, marginTop: 10, flexDirection: 'column', alignItems: 'flex-start', padding: 12 }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', width: '100%' }}>
+                <Users color={theme.primary} size={20} style={styles.serviceIcon} />
+                <Text style={[styles.serviceLabel, { color: theme.text, flex: 1 }]}>Visitas Guiadas</Text>
+                <Switch 
+                  value={formData.additionalServices.guidedVisits.enabled}
+                  onValueChange={() => toggleService('guidedVisits')}
+                  trackColor={{ false: theme.border, true: theme.primary }}
+                  thumbColor={formData.additionalServices.guidedVisits.enabled ? '#FFF' : '#f4f3f4'}
+                />
+              </View>
+
+              {formData.additionalServices.guidedVisits.enabled && (
+                <View style={styles.serviceDetailRow}>
+                  <View style={styles.servicePriceInput}>
+                    <Text style={{ color: theme.textSecondary, fontSize: 11 }}>Precio (€)</Text>
+                    <TextInput
+                      style={[styles.smallInput, { color: theme.primary, backgroundColor: theme.primary + '10' }]}
+                      value={formData.additionalServices.guidedVisits.price}
+                      keyboardType="numeric"
+                      onChangeText={(v) => updateServiceDetail('guidedVisits', 'price', v)}
+                    />
+                  </View>
+                  <View style={styles.serviceFreeToggle}>
+                    <Text style={{ color: theme.textSecondary, fontSize: 11 }}>Gratis PCD</Text>
+                    <Switch 
+                      value={formData.additionalServices.guidedVisits.freeForDisabled}
+                      onValueChange={(v) => updateServiceDetail('guidedVisits', 'freeForDisabled', v)}
+                      trackColor={{ false: theme.border, true: '#2ECC71' }}
+                      scaleX={0.7} scaleY={0.7}
+                    />
+                  </View>
+                </View>
+              )}
+            </View>
+          </View>
+
+          {/* Especificaciones Técnicas */}
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Construction color={theme.primary} size={22} />
+              <Text style={[styles.sectionTitle, { color: theme.text, marginLeft: 10 }]}>Especificaciones Técnicas</Text>
+            </View>
+            <Text style={{ color: theme.textSecondary, fontSize: 12, marginBottom: 15 }}>
+              Datos técnicos precisos para usuarios con movilidad reducida o necesidades sensoriales.
+            </Text>
+
+            <View style={styles.rowInputs}>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.smallLabel, { color: theme.textSecondary }]}>Ancho Puerta (cm)</Text>
+                <TextInput
+                  style={[styles.input, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
+                  placeholder="Ej: 120cm"
+                  placeholderTextColor={theme.textSecondary}
+                  value={formData.technicalSpecs.doorWidth}
+                  onChangeText={(v) => updateTechnical('doorWidth', v)}
+                />
+              </View>
+              <View style={{ flex: 1, marginLeft: 10 }}>
+                <Text style={[styles.smallLabel, { color: theme.textSecondary }]}>Medidas Ascensor</Text>
+                <TextInput
+                  style={[styles.input, { backgroundColor: theme.surface, color: theme.text, borderColor: theme.border }]}
+                  placeholder="Ej: 140x110cm"
+                  placeholderTextColor={theme.textSecondary}
+                  value={formData.technicalSpecs.elevatorMeasures}
+                  onChangeText={(v) => updateTechnical('elevatorMeasures', v)}
+                />
+              </View>
+            </View>
+
+            <View style={styles.techTogglesGrid}>
+              <TouchableOpacity 
+                style={[styles.techToggleBtn, { backgroundColor: formData.technicalSpecs.adaptedToilet ? theme.primary + '30' : theme.surface, borderColor: formData.technicalSpecs.adaptedToilet ? theme.primary : theme.border }]}
+                onPress={() => toggleTechnical('adaptedToilet')}
+              >
+                <CheckCircle2 color={formData.technicalSpecs.adaptedToilet ? theme.primary : theme.textSecondary} size={18} />
+                <Text style={[styles.techToggleLabel, { color: theme.text }]}>Baño Adaptado</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.techToggleBtn, { backgroundColor: formData.technicalSpecs.magneticLoop ? theme.primary + '30' : theme.surface, borderColor: formData.technicalSpecs.magneticLoop ? theme.primary : theme.border }]}
+                onPress={() => toggleTechnical('magneticLoop')}
+              >
+                <Ear color={formData.technicalSpecs.magneticLoop ? theme.primary : theme.textSecondary} size={18} />
+                <Text style={[styles.techToggleLabel, { color: theme.text }]}>Bucle Magnético</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.techToggleBtn, { backgroundColor: formData.technicalSpecs.braille ? theme.primary + '30' : theme.surface, borderColor: formData.technicalSpecs.braille ? theme.primary : theme.border }]}
+                onPress={() => toggleTechnical('braille')}
+              >
+                <Eye color={formData.technicalSpecs.braille ? theme.primary : theme.textSecondary} size={18} />
+                <Text style={[styles.techToggleLabel, { color: theme.text }]}>Braille</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.techToggleBtn, { backgroundColor: formData.technicalSpecs.accessibleParking ? theme.primary + '30' : theme.surface, borderColor: formData.technicalSpecs.accessibleParking ? theme.primary : theme.border }]}
+                onPress={() => toggleTechnical('accessibleParking')}
+              >
+                <MapPin color={formData.technicalSpecs.accessibleParking ? theme.primary : theme.textSecondary} size={18} />
+                <Text style={[styles.techToggleLabel, { color: theme.text }]}>Parking</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={[styles.techToggleBtn, { backgroundColor: formData.technicalSpecs.wheelchairRental ? theme.primary + '30' : theme.surface, borderColor: formData.technicalSpecs.wheelchairRental ? theme.primary : theme.border }]}
+                onPress={() => toggleTechnical('wheelchairRental')}
+              >
+                <Accessibility color={formData.technicalSpecs.wheelchairRental ? theme.primary : theme.textSecondary} size={18} />
+                <Text style={[styles.techToggleLabel, { color: theme.text }]}>Sillas</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <TouchableOpacity 
+            onPress={handleSave} 
+            style={[styles.publishBtn, { backgroundColor: theme.primary }]}
+          >
+            {isLoading ? <ActivityIndicator color="#FFF" /> : (
+              <>
+                <Check color="#FFF" size={24} />
+                <Text style={styles.publishBtnText}>Publicar Lugar</Text>
+              </>
             )}
-          </View>
-        </View>
+          </TouchableOpacity>
 
-        {/* Especificaciones Técnicas */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Construction color={theme.primary} size={22} />
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>Especificaciones Técnicas</Text>
-          </View>
-          <Text style={[styles.sectionSubtitle, { color: theme.textSecondary }]}>
-            Datos técnicos precisos para usuarios con movilidad reducida o necesidades sensoriales.
-          </Text>
-
-          <View style={styles.technicalGrid}>
-            <View style={styles.technicalItem}>
-              <Text style={[styles.inputLabel, { color: theme.textSecondary, fontSize: 12 }]}>Ancho Puerta (cm)</Text>
-              <TextInput
-                style={[styles.input, { color: theme.text, borderColor: theme.border, height: 45 }]}
-                value={formData.technicalSpecs.doorWidth}
-                onChangeText={(v) => setFormData({...formData, technicalSpecs: {...formData.technicalSpecs, doorWidth: v}})}
-                placeholder="Ej: 120cm"
-                placeholderTextColor={theme.textSecondary + '80'}
-              />
-            </View>
-            <View style={styles.technicalItem}>
-              <Text style={[styles.inputLabel, { color: theme.textSecondary, fontSize: 12 }]}>Medidas Ascensor</Text>
-              <TextInput
-                style={[styles.input, { color: theme.text, borderColor: theme.border, height: 45 }]}
-                value={formData.technicalSpecs.elevatorDimensions}
-                onChangeText={(v) => setFormData({...formData, technicalSpecs: {...formData.technicalSpecs, elevatorDimensions: v}})}
-                placeholder="Ej: 140x110cm"
-                placeholderTextColor={theme.textSecondary + '80'}
-              />
-            </View>
-          </View>
-
-          <View style={styles.toggleGrid}>
-            <TouchableOpacity 
-              style={[styles.toggleBtn, { borderColor: theme.border }, formData.technicalSpecs.adaptedToilet && { backgroundColor: theme.primary + '20', borderColor: theme.primary }]}
-              onPress={() => setFormData({...formData, technicalSpecs: {...formData.technicalSpecs, adaptedToilet: !formData.technicalSpecs.adaptedToilet}})}
-            >
-              <ShieldCheck color={formData.technicalSpecs.adaptedToilet ? theme.primary : theme.textSecondary} size={18} />
-              <Text style={[styles.toggleBtnText, { color: formData.technicalSpecs.adaptedToilet ? theme.primary : theme.textSecondary }]}>Baño Adaptado</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={[styles.toggleBtn, { borderColor: theme.border }, formData.technicalSpecs.magneticLoop && { backgroundColor: theme.primary + '20', borderColor: theme.primary }]}
-              onPress={() => setFormData({...formData, technicalSpecs: {...formData.technicalSpecs, magneticLoop: !formData.technicalSpecs.magneticLoop}})}
-            >
-              <Ear color={formData.technicalSpecs.magneticLoop ? theme.primary : theme.textSecondary} size={18} />
-              <Text style={[styles.toggleBtnText, { color: formData.technicalSpecs.magneticLoop ? theme.primary : theme.textSecondary }]}>Bucle Magnético</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={[styles.toggleBtn, { borderColor: theme.border }, formData.technicalSpecs.brailleSignage && { backgroundColor: theme.primary + '20', borderColor: theme.primary }]}
-              onPress={() => setFormData({...formData, technicalSpecs: {...formData.technicalSpecs, brailleSignage: !formData.technicalSpecs.brailleSignage}})}
-            >
-              <Eye color={formData.technicalSpecs.brailleSignage ? theme.primary : theme.textSecondary} size={18} />
-              <Text style={[styles.toggleBtnText, { color: formData.technicalSpecs.brailleSignage ? theme.primary : theme.textSecondary }]}>Braille</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <TouchableOpacity 
-          style={[styles.submitBtn, { backgroundColor: theme.primary }]}
-          onPress={handleSubmit}
-          disabled={isUploading}
-        >
-          {isUploading ? (
-            <ActivityIndicator color={isDarkMode ? '#070B14' : '#FFFFFF'} />
-          ) : (
-            <>
-              <Check color={isDarkMode ? '#070B14' : '#FFFFFF'} size={24} />
-              <Text style={[styles.submitBtnText, { color: isDarkMode ? '#070B14' : '#FFFFFF' }]}>Publicar Lugar</Text>
-            </>
-          )}
-        </TouchableOpacity>
-
-        <View style={{ height: 40 }} />
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Custom Picker Modal */}
+      <Modal
+        visible={pickerModal.visible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setPickerModal({ ...pickerModal, visible: false })}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setPickerModal({ ...pickerModal, visible: false })}
+        >
+          <View style={[styles.pickerContent, { backgroundColor: theme.surface, borderColor: theme.border, borderWidth: 1 }]}>
+            <Text style={[styles.modalTitle, { color: theme.text, marginBottom: 15, fontSize: 18, fontWeight: 'bold', textAlign: 'center' }]}>
+              {pickerModal.title}
+            </Text>
+            <FlatList
+              data={pickerModal.options}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity 
+                  style={[styles.pickerItem, { borderBottomColor: theme.border }]}
+                  onPress={() => {
+                    pickerModal.onSelect(item);
+                    setPickerModal({ ...pickerModal, visible: false });
+                  }}
+                >
+                  <Text style={[styles.pickerItemText, { color: item === 'Cerrado' ? '#E74C3C' : theme.text }]}>{item}</Text>
+                </TouchableOpacity>
+              )}
+              showsVerticalScrollIndicator={false}
+            />
+            <TouchableOpacity 
+              style={{ marginTop: 15, padding: 12, backgroundColor: theme.primary, borderRadius: 12, alignItems: 'center' }}
+              onPress={() => setPickerModal({ ...pickerModal, visible: false })}
+            >
+              <Text style={{ color: '#FFF', fontWeight: 'bold' }}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+
+      <>
+        {isAiLoading && (
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 10000, justifyContent: 'center', alignItems: 'center' }}>
+            <View style={{ backgroundColor: theme.surface, padding: 35, borderRadius: 30, alignItems: 'center', width: '85%', borderWidth: 1, borderColor: theme.border, shadowColor: '#000', shadowOffset: { width: 0, height: 10 }, shadowOpacity: 0.3, shadowRadius: 20, elevation: 10 }}>
+              <ActivityIndicator size="large" color={theme.primary} />
+              <Text style={[styles.headerTitle, { color: theme.text, marginTop: 25, textAlign: 'center', fontSize: 22 }]}>Análisis de Patrimonio Distravel</Text>
+              <Text style={{ color: theme.textSecondary, marginTop: 12, textAlign: 'center', fontStyle: 'italic', fontSize: 14, lineHeight: 20 }}>
+                Investigando historia, accesibilidad y tarifas de "{formData.name}" en {formData.city}...
+              </Text>
+              <View style={{ height: 6, width: '100%', backgroundColor: theme.border, borderRadius: 3, marginTop: 25, overflow: 'hidden' }}>
+                <View style={{ height: '100%', width: `${aiProgress * 100}%`, backgroundColor: theme.primary }} />
+              </View>
+              <Text style={{ color: theme.primary, fontSize: 13, fontWeight: '900', marginTop: 15, letterSpacing: 1 }}>
+                {Math.round(aiProgress * 100)}% COMPLETADO
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {showSuccess && (
+          <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 20000, justifyContent: 'center', alignItems: 'center' }}>
+            <View style={{ alignItems: 'center' }}>
+              <View style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: theme.primary, justifyContent: 'center', alignItems: 'center', marginBottom: 20 }}>
+                <Check color="#FFF" size={60} strokeWidth={4} />
+              </View>
+              <Text style={{ color: '#FFF', fontSize: 28, fontWeight: 'bold', textAlign: 'center' }}>¡Lugar Guardado!</Text>
+              <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 16, marginTop: 10, textAlign: 'center' }}>Se ha añadido correctamente a la base de datos.</Text>
+            </View>
+          </View>
+        )}
+      </>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.05)',
-  },
-  headerTitle: { fontSize: 18, fontWeight: '800' },
-  backBtn: { padding: 5 },
-  aiHeaderBtn: { padding: 5 },
-  scrollContent: { padding: 20 },
-  photoContainer: {
-    position: 'relative',
-    marginBottom: 20
-  },
-  aiAnalyzeBtn: {
-    position: 'absolute',
-    bottom: 10,
-    right: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 15,
-    borderRadius: 20,
-    gap: 8,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  aiAnalyzeBtnText: {
-    color: '#FFF',
-    fontSize: 12,
-    fontWeight: '700'
-  },
-  photoUpload: {
-    width: '100%',
-    height: 220,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden'
-  },
-  previewImage: { width: '100%', height: '100%' },
-  photoPlaceholder: { alignItems: 'center' },
-  photoText: { marginTop: 10, fontSize: 14, fontWeight: '600' },
-  formSection: { marginBottom: 30 },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
-  sectionTitle: { fontSize: 16, fontWeight: '800', marginLeft: 10, flex: 1 },
-  inputGroup: { gap: 0 },
-  sectionSubtitle: { fontSize: 13, marginBottom: 15, opacity: 0.7 },
-  technicalGrid: { flexDirection: 'row', gap: 15, marginBottom: 15 },
-  technicalItem: { flex: 1 },
-  toggleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  toggleBtn: { 
+  header: { 
     flexDirection: 'row', 
     alignItems: 'center', 
-    paddingHorizontal: 12, 
-    paddingVertical: 8, 
-    borderRadius: 12, 
-    borderWidth: 1, 
-    borderColor: 'rgba(0,0,0,0.1)',
-    gap: 8,
-    minWidth: '45%'
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingBottom: 15,
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(0,0,0,0.1)'
   },
-  toggleBtnText: { fontSize: 13, fontWeight: '600' },
+  headerTitle: { fontSize: 18, fontWeight: '900' },
+  backBtn: { width: 40, height: 40, borderRadius: 20, justifyContent: 'center', alignItems: 'center' },
+  saveBtn: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
+  scrollContent: { padding: 20, paddingBottom: 100 },
+  imagePicker: {
+    height: 200,
+    width: '100%',
+    borderRadius: 25,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    overflow: 'hidden',
+    marginBottom: 25
+  },
+  pickedImage: { width: '100%', height: '100%' },
+  imagePlaceholder: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+  section: { marginBottom: 30 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 15 },
+  sectionTitle: { fontSize: 18, fontWeight: '800', flex: 1 },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 15,
-    height: 55,
-    borderRadius: 15,
-    borderWidth: 1,
+    position: 'relative'
   },
+  inputIcon: { position: 'absolute', left: 15, zIndex: 1, opacity: 0.8 },
+  inputEndIcon: { position: 'absolute', right: 15, zIndex: 1, opacity: 0.8 },
   input: {
     flex: 1,
-    marginLeft: 12,
+    height: 55,
+    borderRadius: 15,
+    paddingHorizontal: 45,
     fontSize: 15,
-    fontWeight: '600',
+    borderWidth: 1,
+    fontWeight: '600'
   },
-  categoryScroll: { marginTop: 15, paddingBottom: 5 },
-  categoryBtn: {
+  textArea: {
+    flex: 1,
+    height: 100,
+    borderRadius: 15,
+    paddingHorizontal: 45,
+    paddingTop: 15,
+    fontSize: 15,
+    borderWidth: 1,
+    textAlignVertical: 'top',
+    fontWeight: '600'
+  },
+  rowInputs: { flexDirection: 'row', alignItems: 'center' },
+  categoryContainer: { marginTop: 20 },
+  categoryScroll: { paddingRight: 20 },
+  categoryButton: {
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 12,
     borderWidth: 1,
-    marginRight: 10,
+    marginRight: 10
   },
-  categoryText: { fontSize: 13, fontWeight: '700' },
-  dynamicScheduleCard: {
-    padding: 15,
-    borderRadius: 15,
-    borderWidth: 1,
-    gap: 5,
-  },
-  scheduleRowTop: {
-    flexDirection: 'row',
+  categoryText: { fontWeight: '800', fontSize: 14 },
+  accessibilityGrid: { 
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
     justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  scheduleInputLabel: {
-    fontSize: 15,
-    fontWeight: '800',
-    flex: 1,
-  },
-  scheduleInputTime: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  addScheduleBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 12,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    gap: 8,
-  },
-  addScheduleBtnText: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  accessibilityGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    gap: 10
+    gap: 12
   },
   accessCard: {
     width: '48%',
-    padding: 20,
-    borderRadius: 20,
-    alignItems: 'center',
-    borderWidth: 1,
-    gap: 10
-  },
-  accessCardActive: {
-    backgroundColor: '#3498DB',
-    borderColor: '#3498DB'
-  },
-  accessText: {
-    fontSize: 14,
-    fontWeight: '800'
-  },
-  mapPreview: {
-    height: 150,
-    borderRadius: 20,
-    borderWidth: 1,
-    overflow: 'hidden',
-    marginBottom: 10,
-  },
-  expandMapBtn: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    padding: 8,
-    borderRadius: 10,
-  },
-  mapHint: { fontSize: 12, color: '#95A5A6', textAlign: 'center', fontStyle: 'italic' },
-  daysRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 20 },
-  dayCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    height: 110,
+    borderRadius: 25,
     borderWidth: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    marginBottom: 5
   },
-  dayText: { fontSize: 12, fontWeight: '800' },
-  switchRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-    paddingHorizontal: 5
-  },
-  label: { fontSize: 14, fontWeight: '700' },
-  timeInputsRow: { flexDirection: 'row', gap: 15, marginBottom: 15 },
-  timeCol: { flex: 1 },
-  timeLabel: { fontSize: 11, color: '#95A5A6', marginBottom: 5, fontWeight: '700', textTransform: 'uppercase' },
-  timeInput: {
-    height: 45,
-    borderRadius: 12,
+  accessLabel: { marginTop: 10, fontWeight: '800', fontSize: 15 },
+  mapContainer: {
+    height: 200,
+    borderRadius: 25,
     borderWidth: 1,
-    textAlign: 'center',
-    fontSize: 14,
-    fontWeight: '700'
+    overflow: 'hidden',
+    marginTop: 10
   },
-  seasonFormCard: {
+  map: { flex: 1 },
+  mapOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    padding: 10
+  },
+  mapOverlayText: { color: '#FFF', fontSize: 11, textAlign: 'center', fontWeight: '600' },
+  seasonCard: {
     padding: 15,
     borderRadius: 20,
     borderWidth: 1,
+    marginBottom: 15
+  },
+  seasonHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 15,
-    gap: 5,
-  },
-  seasonFormInput: {
-    fontSize: 15,
-    paddingVertical: 5,
+    paddingBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.05)',
+    borderBottomColor: 'rgba(0,0,0,0.05)'
   },
-  seasonFormRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  seasonFormLabel: {
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  seasonFormTime: {
-    fontSize: 13,
-    borderWidth: 1,
-    borderRadius: 8,
+  seasonNameInput: { fontSize: 16, fontWeight: 'bold', flex: 1 },
+  monthRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 15 },
+  selector: {
     paddingHorizontal: 10,
     paddingVertical: 5,
-    minWidth: 150,
-    textAlign: 'right',
+    borderRadius: 8,
+    borderWidth: 1,
+    minWidth: 80,
+    alignItems: 'center'
   },
-  addBtn: { padding: 5 },
-  tariffRow: { flexDirection: 'row', gap: 10, marginBottom: 10, alignItems: 'center' },
-  tariffLabelInput: { flex: 2, height: 50, borderRadius: 12, borderWidth: 1, paddingHorizontal: 15, fontWeight: '600' },
-  tariffPriceInput: { flex: 1, height: 50, borderRadius: 12, borderWidth: 1, textAlign: 'center', fontWeight: '700' },
-  removeBtn: { padding: 10 },
-  serviceToggleCard: {
-    padding: 20,
-    borderRadius: 20,
+  daysGrid: { gap: 8 },
+  dayRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  toggle: { width: 32, height: 20, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
+  timeInputsRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  timeSelector: { width: 48, paddingVertical: 4, borderRadius: 6, borderWidth: 1, alignItems: 'center' },
+  tariffsContainer: { padding: 15, borderRadius: 20, borderWidth: 1 },
+  tariffCard: { 
+    marginBottom: 15, 
+    paddingBottom: 15, 
+    borderBottomWidth: 1, 
+    borderBottomColor: 'rgba(0,0,0,0.05)' 
+  },
+  tariffRowMain: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
+  tariffSelector: {
+    flex: 1,
+    height: 40,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingRight: 5
+  },
+  priceInput: { width: 85, height: 40, borderRadius: 10, textAlign: 'center', fontSize: 13, fontWeight: '800' },
+  conditionSection: {
+    marginLeft: 30,
+    gap: 8
+  },
+  conditionSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
     borderWidth: 1,
   },
-  serviceToggleHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  serviceIconTitle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  serviceDetails: {
-    marginTop: 15,
-    paddingTop: 15,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.05)',
-  },
-  serviceInput: {
-    height: 45,
-    fontSize: 14,
-    paddingHorizontal: 10,
-    marginBottom: 10,
-  },
-  serviceCheckRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 5,
-  },
-  visitScheduleRow: {
+  conditionDetails: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    marginTop: 10,
-    backgroundColor: 'rgba(0,0,0,0.02)',
-    padding: 10,
-    borderRadius: 12,
+    marginLeft: 10
   },
-  vSchedInput: {
-    fontSize: 14,
-    height: 40,
+  smallSelector: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    backgroundColor: 'rgba(0,0,0,0.03)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(0,0,0,0.1)'
   },
-  addVisitBtn: {
+  serviceDetailRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 10,
+    justifyContent: 'space-between',
+    width: '100%',
+    marginTop: 12,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.05)'
   },
-  submitBtn: {
+  servicePriceInput: {
     flexDirection: 'row',
-    height: 65,
+    alignItems: 'center',
+    gap: 8
+  },
+  serviceFreeToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8
+  },
+  smallInput: {
+    width: 60,
+    height: 35,
+    borderRadius: 8,
+    textAlign: 'center',
+    fontSize: 13,
+    fontWeight: '800'
+  },
+  linkRow: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    marginTop: 15, 
+    paddingTop: 15, 
+    borderTopWidth: 1, 
+    borderTopColor: 'rgba(0,0,0,0.05)' 
+  },
+  serviceCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
     borderRadius: 20,
-    justifyContent: 'center',
+    borderWidth: 1
+  },
+  serviceIcon: { marginRight: 15 },
+  serviceLabel: { flex: 1, fontWeight: '800', fontSize: 15 },
+  smallLabel: { fontSize: 11, fontWeight: '700', marginBottom: 5, marginLeft: 5 },
+  techTogglesGrid: { 
+    flexDirection: 'row', 
+    flexWrap: 'wrap', 
+    gap: 10,
+    marginTop: 15
+  },
+  techToggleBtn: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  techToggleLabel: { marginLeft: 8, fontWeight: '700', fontSize: 13 },
+  publishBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 60,
+    borderRadius: 20,
+    marginTop: 40,
+    marginBottom: 60,
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
-    shadowRadius: 8,
+    shadowRadius: 8
   },
-  submitBtnText: { color: '#070B14', fontSize: 18, fontWeight: '900', marginLeft: 12 },
-  citySearchResults: {
-    marginTop: -5,
+  publishBtnText: { color: '#FFF', fontSize: 18, fontWeight: '900', marginLeft: 10 },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center' },
+  pickerContent: { width: '85%', maxHeight: '70%', borderRadius: 25, padding: 20 },
+  pickerItem: { paddingVertical: 15, borderBottomWidth: 0.5, alignItems: 'center' },
+  pickerItemText: { fontSize: 16, fontWeight: '600' },
+  searchResults: {
+    position: 'absolute',
+    top: 60,
+    left: 0,
+    right: 0,
     borderRadius: 15,
     borderWidth: 1,
-    overflow: 'hidden',
     zIndex: 1000,
     elevation: 5,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
-    marginBottom: 10,
+    shadowOpacity: 0.1,
+    shadowRadius: 10
   },
-  cityResultItem: {
+  searchItem: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 15,
-  },
-  cityResultName: {
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  cityResultProvince: {
-    fontSize: 11,
-  },
+  }
 });

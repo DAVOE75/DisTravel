@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
   StyleSheet, 
   View, 
@@ -8,22 +8,45 @@ import {
   SafeAreaView,
   StatusBar
 } from 'react-native';
-import MapView, { Marker, Callout, Polyline } from 'react-native-maps';
+import MapView, { Marker, Callout } from 'react-native-maps';
+
 import { colors } from '../theme/colors';
 import { MONUMENTOS } from '../data/monumentos';
-import { ChevronLeft, ChevronRight, Info, Sun, Moon, MapPin, LocateFixed } from 'lucide-react-native';
+import { ChevronLeft, Sun, Moon, MapPin, Locate } from 'lucide-react-native';
 import { mapStyles } from '../theme/mapStyles';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
+import * as Location from 'expo-location';
 
-export function MapScreen({ route, navigation }) {
+// Normalizar componentes (evitar error 'Element type is invalid')
+const MapViewComponent = MapView?.default || MapView;
+const MarkerComponent = Marker?.default || Marker;
+const CalloutComponent = Callout?.default || Callout;
+
+// Normalizar iconos
+const ChevronLeftIcon = ChevronLeft?.default || ChevronLeft;
+const SunIcon = Sun?.default || Sun;
+const MoonIcon = Moon?.default || Moon;
+const MapPinIcon = MapPin?.default || MapPin;
+const LocateIcon = Locate?.default || Locate;
+
+export default function MapScreen({ route, navigation }) {
   const { city, filter, monuments: passedMonuments } = route.params || {};
   const { theme } = useTheme();
   const { userData } = useUser();
   const mapRef = useRef(null);
   const [mapTheme, setMapTheme] = useState('dark');
-  const [selectedMonument, setSelectedMonument] = useState(null);
-  const [showRoutes, setShowRoutes] = useState(true);
+  const [userLocation, setUserLocation] = useState(null);
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') return;
+
+      let location = await Location.getCurrentPositionAsync({});
+      setUserLocation(location.coords);
+    })();
+  }, []);
 
   // Función para normalizar texto (quitar acentos)
   const normalize = (text) => {
@@ -31,21 +54,7 @@ export function MapScreen({ route, navigation }) {
     return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
   };
 
-  // Mock de "Pasillos Seguros" (Rutas verificadas accesibles)
-  const safeCorridors = [
-    {
-      id: 'alicante-port-castle',
-      coordinates: [
-        { latitude: 38.3444, longitude: -0.4789 }, // Puerto
-        { latitude: 38.3456, longitude: -0.4805 }, // Explanada
-        { latitude: 38.3472, longitude: -0.4815 }, // Plaza Ayuntamiento
-        { latitude: 38.3488, longitude: -0.4795 }, // Subida Castillo
-      ],
-      title: 'Pasillo Esmeralda: Puerto-Castillo'
-    }
-  ];
-  
-  // Obtener monumentos: FUSIONAR estáticos con contribuciones
+  // Obtener monumentos
   const officialMonuments = city ? (MONUMENTOS[city.name] || []) : Object.values(MONUMENTOS).flat();
   const userContributions = (userData?.contributions || []).filter(p => {
     if (!city) return true;
@@ -53,117 +62,139 @@ export function MapScreen({ route, navigation }) {
   });
 
   const mergedMonumentsMap = new Map();
-  // Usar una clave normalizada para evitar duplicados por mayúsculas/minúsculas
   officialMonuments.forEach(m => {
+    if (!m) return;
     const key = `${normalize(m.name)}-${normalize(m.city || city?.name || '')}`;
     mergedMonumentsMap.set(key, { ...m, city: m.city || city?.name });
   });
   
   userContributions.forEach(m => {
+    if (!m) return;
     const key = `${normalize(m.name)}-${normalize(m.city)}`;
-    mergedMonumentsMap.set(key, { ...m }); // Las contribuciones del usuario pueden sobrescribir datos oficiales si tienen el mismo nombre/ciudad
+    mergedMonumentsMap.set(key, { ...m });
   });
 
   let displayMonuments = Array.from(mergedMonumentsMap.values());
 
-  // Aplicar FILTRO COSTE CERO o FILTRO DE LUGAR ESPECÍFICO
   if ((filter === 'free' || filter === 'place') && passedMonuments) {
     displayMonuments = passedMonuments;
   }
 
   const getMarkerColor = (monument) => {
     try {
-      const benefit = (monument.disabilityBenefit || monument.freeInfo || '').toLowerCase();
-      let isFree = benefit.includes('gratis') || benefit.includes('gratuita');
-      if (!isFree && monument.tariffs && Array.isArray(monument.tariffs)) {
-        isFree = monument.tariffs.some(t => 
-          (t.label?.toLowerCase().includes('pcd') || t.label?.toLowerCase().includes('reducida')) && 
-          t.price?.toLowerCase().includes('gratis')
-        );
-      }
-      const isDiscounted = benefit.includes('reducida') || benefit.includes('descuento') || 
-                          (monument.tariffs && Array.isArray(monument.tariffs) && monument.tariffs.some(t => t.label?.toLowerCase().includes('pcd')));
+      const userDegree = parseInt(userData.disabilityDegree) || 0;
+      let bestPriceType = 'general'; // 'free', 'reduced', 'general'
 
-      if (isFree) return '#2ECC71'; 
-      if (isDiscounted) return '#3498db'; 
-      return '#E67E22'; 
+      // 1. Analizar tarifas estructuradas (formato nuevo)
+      if (monument.tariffs && Array.isArray(monument.tariffs) && monument.tariffs.length > 0) {
+        monument.tariffs.forEach(t => {
+          const label = (t.label || '').toLowerCase();
+          const priceStr = (t.price || '').toLowerCase();
+          const isZero = priceStr.includes('gratis') || priceStr.includes('0') || priceStr.includes('0.00');
+          
+          // Verificar si aplica al usuario por condición estructurada
+          let applies = false;
+          const cond = t.condition;
+          if (cond) {
+            if (cond.type === 'disability') {
+              const reqDegree = parseInt(cond.value) || 33;
+              if (userDegree >= reqDegree) applies = true;
+            } else if (cond.type === 'none') {
+              // Si no hay condición, es general o aplica a todos
+            }
+          }
+
+          // Si no hay condición estructurada, buscar palabras clave
+          if (!cond || cond.type === 'none') {
+            if (label.includes('pcd') || label.includes('discapacidad') || label.includes('reducida')) {
+              applies = true;
+            }
+          }
+
+          if (applies) {
+            if (isZero) bestPriceType = 'free';
+            else if (bestPriceType !== 'free') bestPriceType = 'reduced';
+          }
+        });
+      }
+
+      // 2. Fallback a campos de texto legados si no se determinó como gratis aún
+      if (bestPriceType !== 'free') {
+        const benefit = (monument.disabilityBenefit || monument.freeInfo || monument.price || '').toLowerCase();
+        const isFreeLegacy = benefit.includes('gratis') || benefit.includes('gratuita') || benefit.includes(' 0€') || benefit.includes(' 0 €');
+        
+        if (isFreeLegacy) {
+          // Si el texto dice gratis, asumimos que es para el usuario si menciona PCD o si es el precio general
+          if (benefit.includes('pcd') || benefit.includes('discapacidad') || !benefit.includes(':')) {
+            bestPriceType = 'free';
+          }
+        } else if (bestPriceType === 'general') {
+          const isReducedLegacy = benefit.includes('reducida') || benefit.includes('descuento') || benefit.includes('beneficio');
+          if (isReducedLegacy) bestPriceType = 'reduced';
+        }
+      }
+
+      if (bestPriceType === 'free') return '#2ECC71'; // Verde
+      if (bestPriceType === 'reduced') return '#3498db'; // Azul
+      return '#E67E22'; // Naranja (General)
     } catch (e) {
+      console.warn('Error en getMarkerColor:', e);
       return '#E67E22';
     }
   };
 
-  const toggleTheme = () => {
-    setMapTheme(mapTheme === 'dark' ? 'light' : 'dark');
+  const initialRegion = {
+    latitude: city?.location?.latitude || (displayMonuments.length > 0 ? displayMonuments[0].location?.latitude : 40.4168) || 40.4168,
+    longitude: city?.location?.longitude || (displayMonuments.length > 0 ? displayMonuments[0].location?.longitude : -3.7038) || -3.7038,
+    latitudeDelta: city ? 0.01 : 10,
+    longitudeDelta: city ? 0.01 : 10,
   };
-
-  const initialRegion = React.useMemo(() => {
-    if (city && city.location) {
-      return {
-        ...city.location,
-        latitudeDelta: 0.01,
-        longitudeDelta: 0.01,
-      };
-    }
-    if (displayMonuments.length > 0) {
-      return {
-        latitude: Number(displayMonuments[0].location?.latitude || 40.4168),
-        longitude: Number(displayMonuments[0].location?.longitude || -3.7038),
-        latitudeDelta: 0.02,
-        longitudeDelta: 0.02,
-      };
-    }
-    return {
-      latitude: 40.4168,
-      longitude: -3.7038,
-      latitudeDelta: 8,
-      longitudeDelta: 8,
-    };
-  }, [city, displayMonuments]);
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle={mapTheme === 'dark' ? "light-content" : "dark-content"} />
       
-      <MapView
-        ref={mapRef}
-        style={styles.map}
-        initialRegion={initialRegion}
-        customMapStyle={mapTheme === 'dark' ? mapStyles.dark : mapStyles.light}
-      >
-        {showRoutes && safeCorridors.map(route => (
-          <Polyline
-            key={route.id}
-            coordinates={route.coordinates}
-            strokeColor="#2ECC71"
-            strokeWidth={4}
-            lineDashPattern={[0]}
-            geodesic={true}
-          />
-        ))}
-        {displayMonuments.map((monument, idx) => (
-          <Marker
-            key={`${monument.id || 'mon'}-${normalize(monument.name)}-${idx}`}
-            coordinate={{
-              latitude: Number(monument.location?.latitude || 40.4168),
-              longitude: Number(monument.location?.longitude || -3.7038)
-            }}
-            pinColor={getMarkerColor(monument)}
-          >
-            <Callout 
-              tooltip={false}
-              onPress={() => navigation.navigate('PlaceDetail', { place: monument })}
-            >
-              <View style={styles.callout}>
-                <Text style={styles.calloutCategory}>{(monument.category || 'Lugar').toUpperCase()}</Text>
-                <Text style={styles.calloutTitle}>{monument.name}</Text>
-                <Text style={styles.calloutPrice}>{monument.price || 'Consultar precio'}</Text>
-                <View style={styles.divider} />
-                <Text style={[styles.calloutAction, { color: colors.primary }]}>VER FICHA COMPLETA</Text>
-              </View>
-            </Callout>
-          </Marker>
-        ))}
-      </MapView>
+      {MapViewComponent ? (
+        <MapViewComponent
+          ref={mapRef}
+          style={styles.map}
+          initialRegion={initialRegion}
+          customMapStyle={mapTheme === 'dark' ? mapStyles.dark : mapStyles.light}
+          showsUserLocation={true}
+          showsMyLocationButton={false}
+        >
+          {displayMonuments.map((monument, idx) => {
+            if (!monument.location || !monument.location.latitude) return null;
+            return (
+              <MarkerComponent
+                key={`${monument.id || 'mon'}-${idx}`}
+                coordinate={{
+                  latitude: Number(monument.location.latitude),
+                  longitude: Number(monument.location.longitude)
+                }}
+                pinColor={getMarkerColor(monument)}
+              >
+                <CalloutComponent 
+                  tooltip={false}
+                  onPress={() => navigation.navigate('PlaceDetail', { place: monument })}
+                >
+                  <View style={styles.callout}>
+                    <Text style={styles.calloutCategory}>{(monument.category || 'Lugar').toUpperCase()}</Text>
+                    <Text style={styles.calloutTitle}>{monument.name}</Text>
+                    <Text style={styles.calloutPrice}>{monument.price || 'Consultar precio'}</Text>
+                    <View style={styles.divider} />
+                    <Text style={[styles.calloutAction, { color: colors.primary }]}>VER FICHA COMPLETA</Text>
+                  </View>
+                </CalloutComponent>
+              </MarkerComponent>
+            );
+          })}
+        </MapViewComponent>
+      ) : (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text style={{ color: '#FFF' }}>Cargando mapa...</Text>
+        </View>
+      )}
 
       <SafeAreaView style={styles.overlay}>
         <View style={styles.header}>
@@ -171,43 +202,56 @@ export function MapScreen({ route, navigation }) {
             style={[styles.iconButton, { backgroundColor: mapTheme === 'dark' ? 'rgba(15, 23, 42, 0.8)' : '#FFFFFF' }]}
             onPress={() => navigation.goBack()}
           >
-            <ChevronLeft color={mapTheme === 'dark' ? colors.text : '#000000'} size={24} />
+            <ChevronLeftIcon color={mapTheme === 'dark' ? colors.text : '#000000'} size={24} />
           </TouchableOpacity>
-
-          {filter === 'free' && (
-            <View style={styles.freeBanner}>
-              <LocateFixed color="#FFF" size={16} />
-              <Text style={styles.freeBannerText}>RUTA COSTE CERO</Text>
-            </View>
-          )}
 
           <TouchableOpacity 
             style={[styles.iconButton, { backgroundColor: mapTheme === 'dark' ? 'rgba(15, 23, 42, 0.8)' : '#FFFFFF' }]}
-            onPress={toggleTheme}
+            onPress={() => setMapTheme(mapTheme === 'dark' ? 'light' : 'dark')}
           >
             {mapTheme === 'dark' ? (
-              <Sun color="#f1c40f" size={22} />
+              <SunIcon color="#f1c40f" size={22} />
             ) : (
-              <Moon color="#2c3e50" size={22} />
+              <MoonIcon color="#2c3e50" size={22} />
             )}
           </TouchableOpacity>
         </View>
 
-        {/* Recenter Button */}
         <TouchableOpacity 
           style={[styles.recenterButton, { backgroundColor: mapTheme === 'dark' ? 'rgba(15, 23, 42, 0.9)' : '#FFFFFF' }]}
-          onPress={() => {
-            mapRef.current?.animateToRegion(initialRegion, 1000);
+          onPress={async () => {
+            if (userLocation) {
+              mapRef.current?.animateToRegion({
+                latitude: userLocation.latitude,
+                longitude: userLocation.longitude,
+                latitudeDelta: 0.01,
+                longitudeDelta: 0.01,
+              }, 1000);
+            } else {
+              let { status } = await Location.requestForegroundPermissionsAsync();
+              if (status === 'granted') {
+                let location = await Location.getCurrentPositionAsync({});
+                setUserLocation(location.coords);
+                mapRef.current?.animateToRegion({
+                  latitude: location.coords.latitude,
+                  longitude: location.coords.longitude,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                }, 1000);
+              } else {
+                mapRef.current?.animateToRegion(initialRegion, 1000);
+              }
+            }
           }}
         >
-          <LocateFixed color={colors.primary} size={24} />
+          <LocateIcon color={colors.primary} size={24} />
         </TouchableOpacity>
 
         <View style={[styles.legend, { backgroundColor: mapTheme === 'dark' ? 'rgba(15, 23, 42, 0.95)' : '#FFFFFF' }]}>
           <Text style={[styles.legendTitle, { color: mapTheme === 'dark' ? colors.text : '#0f172a' }]}>Tus Beneficios en el Mapa</Text>
           
           <View style={styles.legendRow}>
-            <MapPin size={20} color={colors.success} fill={colors.success + '40'} />
+            <MapPinIcon size={20} color={colors.success} fill={colors.success + '40'} />
             <View style={styles.legendTextContainer}>
               <Text style={[styles.legendLabel, { color: colors.success }]}>ACCESO GRATIS</Text>
               <Text style={[styles.legendSub, { color: mapTheme === 'dark' ? colors.textSecondary : '#64748b' }]}>No pagas entrada por tu perfil</Text>
@@ -215,7 +259,7 @@ export function MapScreen({ route, navigation }) {
           </View>
 
           <View style={styles.legendRow}>
-            <MapPin size={20} color="#3498db" fill="#3498db40" />
+            <MapPinIcon size={20} color="#3498db" fill="#3498db40" />
             <View style={styles.legendTextContainer}>
               <Text style={[styles.legendLabel, { color: '#3498db' }]}>TARIFA REDUCIDA</Text>
               <Text style={[styles.legendSub, { color: mapTheme === 'dark' ? colors.textSecondary : '#64748b' }]}>Tienes un descuento aplicado</Text>
@@ -223,18 +267,10 @@ export function MapScreen({ route, navigation }) {
           </View>
 
           <View style={styles.legendRow}>
-            <MapPin size={20} color={colors.primary} fill={colors.primary + '40'} />
+            <MapPinIcon size={20} color={colors.primary} fill={colors.primary + '40'} />
             <View style={styles.legendTextContainer}>
               <Text style={[styles.legendLabel, { color: colors.primary }]}>TARIFA GENERAL</Text>
               <Text style={[styles.legendSub, { color: mapTheme === 'dark' ? colors.textSecondary : '#64748b' }]}>Precio estándar sin beneficios</Text>
-            </View>
-          </View>
-
-          <View style={[styles.legendRow, { marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.1)' }]}>
-            <View style={{ width: 20, height: 4, backgroundColor: '#2ECC71', borderRadius: 2, marginTop: 8 }} />
-            <View style={styles.legendTextContainer}>
-              <Text style={[styles.legendLabel, { color: '#2ECC71' }]}>PASILLO SEGURO (v3.0)</Text>
-              <Text style={[styles.legendSub, { color: mapTheme === 'dark' ? colors.textSecondary : '#64748b' }]}>Ruta 100% accesible verificada</Text>
             </View>
           </View>
         </View>
@@ -246,6 +282,7 @@ export function MapScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#000',
   },
   map: {
     width: Dimensions.get('window').width,
@@ -279,7 +316,7 @@ const styles = StyleSheet.create({
   },
   recenterButton: {
     position: 'absolute',
-    bottom: 240, // Encima de la leyenda
+    bottom: 240,
     right: 20,
     width: 50,
     height: 50,
@@ -293,42 +330,37 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   callout: {
-    width: 240,
-    minHeight: 100,
-    padding: 12,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
+    width: 200,
+    padding: 10,
+    backgroundColor: '#FFF',
+    borderRadius: 10,
   },
   calloutCategory: {
     fontSize: 10,
-    fontWeight: '900',
-    color: '#6366f1',
-    marginBottom: 4,
-    letterSpacing: 1,
+    fontWeight: 'bold',
+    color: colors.primary,
+    marginBottom: 2,
   },
   calloutTitle: {
-    fontWeight: '800',
-    fontSize: 16,
-    color: '#0F172A',
-    marginBottom: 4,
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 2,
   },
   calloutPrice: {
-    fontSize: 13,
-    fontWeight: '500',
-    color: '#64748B',
-    marginBottom: 10,
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 5,
   },
   divider: {
     height: 1,
-    width: '100%',
-    backgroundColor: '#F1F5F9',
-    marginBottom: 10,
+    backgroundColor: '#EEE',
+    marginVertical: 5,
   },
   calloutAction: {
-    fontSize: 12,
-    fontWeight: '800',
+    fontSize: 11,
+    fontWeight: 'bold',
     textAlign: 'center',
-    letterSpacing: 0.5,
   },
   legend: {
     position: 'absolute',
@@ -342,8 +374,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 20,
     elevation: 10,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
   },
   legendTitle: {
     fontWeight: '900',
@@ -370,25 +400,5 @@ const styles = StyleSheet.create({
   legendSub: {
     fontSize: 12,
     fontWeight: '500',
-  },
-  freeBanner: {
-    backgroundColor: '#2ECC71',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 20,
-    gap: 8,
-    shadowColor: '#2ECC71',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  freeBannerText: {
-    color: '#FFF',
-    fontSize: 12,
-    fontWeight: '900',
-    letterSpacing: 1,
   }
 });

@@ -46,3 +46,10 @@ server/data/
 server/uploads/*
 !server/uploads/.gitkeep
 
+
+# Additional ignores
+*.log
+.env
+scratch/
+*.sqlite
+*.check.js

@@ -1,10 +1,7 @@
-nohup: ignoring input
 [DB] Base de datos inicializada correctamente.
 [DISTRAVEL SERVER] Corriendo en puerto 3000
 [DISTRAVEL SERVER] Modo: development
-[DB] Base de datos inicializada correctamente.
-[DISTRAVEL SERVER] Corriendo en puerto 3000
-[DISTRAVEL SERVER] Modo: development
-[DB] Base de datos inicializada correctamente.
-[DISTRAVEL SERVER] Corriendo en puerto 3000
-[DISTRAVEL SERVER] Modo: development
+[API] GET /api/places - City: all
+[IA PROXY] Investigando: Hola...
+Imagen subida: image-1778167059569-242858593.jpg
+[IA PROXY] Investigando: Dime hola...

@@ -142,6 +142,7 @@ app.get('/api/municipalities/:id', (req, res) => {
 
 // Obtener lugares compartidos (con filtro opcional por ciudad)
 app.get('/api/places', (req, res) => {
+  console.log(`[API] GET /api/places - City: ${req.query.city || 'all'}`);
   try {
     const { city } = req.query;
     let query = 'SELECT * FROM places';
@@ -181,9 +182,22 @@ app.post('/api/places', (req, res) => {
 
     const accessibility = JSON.stringify(newPlace.accessibility || { physical: false, visual: false, auditory: false, cognitive: false });
     
+    // Almacenar el resto de la información en extra_data para no perder nada
+    const extraDataObj = { ...newPlace };
+    // Eliminar campos que ya tienen columna propia para no duplicar datos
+    delete extraDataObj.id;
+    delete extraDataObj.name;
+    delete extraDataObj.city;
+    delete extraDataObj.category;
+    delete extraDataObj.description;
+    delete extraDataObj.image;
+    delete extraDataObj.accessibility;
+    
+    const extra_data = JSON.stringify(extraDataObj);
+    
     const stmt = db.prepare(`
-      INSERT INTO places (id, name, city, category, description, image, accessibility, verified)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO places (id, name, city, category, description, image, accessibility, extra_data, verified)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     stmt.run(
@@ -194,6 +208,7 @@ app.post('/api/places', (req, res) => {
       newPlace.description || '',
       newPlace.image,
       accessibility,
+      extra_data,
       0
     );
     
@@ -213,33 +228,51 @@ app.patch('/api/places/:id', (req, res) => {
     const { id } = req.params;
     const updates = req.body;
     
-    // Solo permitimos ciertos campos para actualizar vía PATCH simple
+    // Obtener el lugar actual para mezclar extra_data si es necesario
+    const currentPlace = db.prepare('SELECT * FROM places WHERE id = ?').get(id);
+    if (!currentPlace) return res.status(404).json({ error: 'Lugar no encontrado' });
+
     const fields = [];
     const params = [];
 
+    // Campos básicos
+    const basicFields = ['name', 'city', 'category', 'description', 'image'];
+    basicFields.forEach(field => {
+      if (updates[field] !== undefined) {
+        fields.push(`${field} = ?`);
+        params.push(updates[field]);
+      }
+    });
+
+    // Verificado
     if (updates.verified !== undefined) {
       fields.push('verified = ?');
       params.push(updates.verified ? 1 : 0);
     }
-    if (updates.category) {
-      fields.push('category = ?');
-      params.push(updates.category);
+
+    // Accesibilidad
+    if (updates.accessibility) {
+      fields.push('accessibility = ?');
+      params.push(JSON.stringify(updates.accessibility));
     }
-    if (updates.description) {
-      fields.push('description = ?');
-      params.push(updates.description);
+
+    // Extra Data (Mezclar con el existente para no borrar campos no enviados)
+    if (updates.extra_data) {
+      const currentExtraData = JSON.parse(currentPlace.extra_data || '{}');
+      const newExtraData = { ...currentExtraData, ...updates.extra_data };
+      fields.push('extra_data = ?');
+      params.push(JSON.stringify(newExtraData));
     }
 
     if (fields.length === 0) return res.status(400).json({ error: 'No hay campos para actualizar' });
 
     params.push(id);
     const stmt = db.prepare(`UPDATE places SET ${fields.join(', ')} WHERE id = ?`);
-    const result = stmt.run(...params);
-
-    if (result.changes === 0) return res.status(404).json({ error: 'Lugar no encontrado' });
+    stmt.run(...params);
     
     res.json({ success: true });
   } catch (error) {
+    console.error('Error al actualizar:', error);
     res.status(500).json({ error: 'Error al actualizar el lugar' });
   }
 });
@@ -259,7 +292,7 @@ app.delete('/api/places/:id', (req, res) => {
 // PROXY GEMINI - El teléfono no puede llamar a Google directamente
 // El servidor actúa de intermediario (aquí sí funciona la clave)
 // ═══════════════════════════════════════════
-const GEMINI_MASTER_KEY = 'AIzaSyARIcAoz-_wFDhCncJYGrjc2z4UAugywcM';
+const GEMINI_MASTER_KEY = 'AIzaSyAdSjqkVFg1KGShwJEA1TLisd2xiAuXo5Q';
 
 app.post('/api/gemini', async (req, res) => {
   const controller = new AbortController();

@@ -12,55 +12,66 @@ import {
   Alert,
   Dimensions,
   TextInput,
-  ActivityIndicator
+  ActivityIndicator,
+  Modal,
+  FlatList,
+  Keyboard,
+  Animated
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
 import { API_BASE_URL } from '../config/api';
-import { 
-  ChevronLeft, 
-  MapPin, 
-  Clock, 
-  CreditCard, 
-  Info, 
-  Globe, 
-  Phone, 
-  Accessibility, 
-  Navigation,
-  CheckCircle,
-  TriangleAlert,
-  AlertCircle,
-  Link,
-  Edit,
-  Sparkles,
-  Eye,
-  Ear,
-  Brain,
-  Share2,
-  Trash2,
-  Save,
-  X,
-  Camera,
-  PlusCircle,
-  MinusCircle,
-  Mic,
-  Users,
-  TrendingDown,
-  ShieldCheck,
-  Construction,
-  Languages,
-  Zap,
-  ChevronRight
-} from 'lucide-react-native';
+import * as LucideIcons from 'lucide-react-native';
 import { typography } from '../theme/typography';
+import { GeminiService } from '../utils/gemini';
 import { calculatePlaceSavings } from '../utils/savings';
 import * as ImagePicker from 'expo-image-picker';
-import MapView, { Marker } from 'react-native-maps';
+import MapViewRaw, { Marker as MarkerRaw } from 'react-native-maps';
 import { AutonomousCommunityMap } from '../components/AutonomousCommunityMap';
 import { PROVINCE_TO_REGION, INE_PROVINCES } from '../data/provinces';
 import MUNICIPIOS_DATA from '../data/municipios.json';
-import { GeminiService } from '../utils/gemini';
+
+// Normalización de iconos para evitar "Render Error"
+const getIcon = (name) => LucideIcons[name]?.default || LucideIcons[name] || LucideIcons.Info;
+const MapView = MapViewRaw?.default || MapViewRaw;
+const Marker = MarkerRaw?.default || MarkerRaw;
+
+const ChevronLeft = getIcon('ChevronLeft');
+const MapPin = getIcon('MapPin');
+const Clock = getIcon('Clock');
+const CreditCard = getIcon('CreditCard');
+const Info = getIcon('Info');
+const Globe = getIcon('Globe');
+const Phone = getIcon('Phone');
+const Accessibility = getIcon('Accessibility');
+const Navigation = getIcon('Navigation');
+const CheckCircle2 = getIcon('CheckCircle2');
+const AlertTriangle = getIcon('AlertTriangle');
+const LinkIcon = getIcon('Link');
+const Edit = getIcon('Edit');
+const Sparkles = getIcon('Sparkles');
+const Eye = getIcon('Eye');
+const Ear = getIcon('Ear');
+const Brain = getIcon('Brain');
+const Share2 = getIcon('Share2');
+const Trash2 = getIcon('Trash2');
+const Save = getIcon('Save');
+const X = getIcon('X');
+const Camera = getIcon('Camera');
+const PlusCircle = getIcon('PlusCircle');
+const MinusCircle = getIcon('MinusCircle');
+const Mic = getIcon('Mic');
+const Users = getIcon('Users');
+const TriangleAlert = getIcon('TriangleAlert');
+const Bath = getIcon('Bath');
+const ShieldCheck = getIcon('ShieldCheck');
+const Plus = getIcon('Plus');
+const TrendingDown = getIcon('TrendingDown');
+const Construction = getIcon('Construction');
+const Zap = getIcon('Zap');
+const ChevronRight = getIcon('ChevronRight');
+const Check = getIcon('Check');
 
 const DARK_MAP_STYLE = [
   { "elementType": "geometry", "stylers": [{ "color": "#242f3e" }] },
@@ -83,7 +94,40 @@ const DARK_MAP_STYLE = [
   { "featureType": "water", "elementType": "labels.text.stroke", "stylers": [{ "color": "#17263c" }] }
 ];
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
+
+const MONTHS = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+];
+
+const HOURS = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
+const MINUTES = ['00', '15', '30', '45', 'Cerrado'];
+
+const TARIFF_PRESETS = [
+  'Entrada General',
+  'Entrada Reducida',
+  'Entrada Gratuita',
+  'Abono',
+  'Visita en Grupo',
+  'Otros / Personalizado'
+];
+
+const TARIFF_SUBTYPES = [
+  { id: 'none', label: 'Sin condiciones especiales' },
+  { id: 'age_range', label: 'Rango de Edad (X a Y años)' },
+  { id: 'senior', label: 'Mayores de (X años)' },
+  { id: 'youth_card', label: 'Carné Joven' },
+  { id: 'large_family', label: 'Familia Numerosa' },
+  { id: 'child', label: 'Menores de (X años)' },
+  { id: 'student', label: 'Estudiantes (X a Y años)' },
+  { id: 'disability', label: 'Personas con Discapacidad (X %)' },
+  { id: 'unemployed', label: 'Personas Desempleadas' },
+  { id: 'teacher', label: 'Personas Docentes' }
+];
+
+const PERCENTAGES = ['33', '65', '75', '100'];
+const AGES = Array.from({ length: 100 }, (_, i) => (i + 1).toString());
 const DAYS_MAP = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
 export function PlaceDetailScreen({ route, navigation }) {
@@ -108,18 +152,68 @@ export function PlaceDetailScreen({ route, navigation }) {
   const initialPlace = placeFromContext || navigationPlace;
 
   const [isEditing, setIsEditing] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [place, setPlace] = useState(initialPlace);
+
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
+  const menuAnim = useRef(new Animated.Value(0)).current;
+
+  const toggleMenu = () => {
+    const toValue = isMenuOpen ? 0 : 1;
+    Animated.spring(menuAnim, {
+      toValue,
+      friction: 5,
+      useNativeDriver: true,
+    }).start();
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const menuScale = menuAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.5, 1],
+  });
+
+  const menuOpacity = menuAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
+
+  const performLocalSearch = (query) => {
+    if (!query || query.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    const filtered = MUNICIPIOS_DATA.filter(m => 
+      m.municipio.toLowerCase().includes(query.toLowerCase())
+    ).slice(0, 5).map(m => ({
+      id: m.id,
+      label: m.municipio,
+      province: m.provincia
+    }));
+    setSearchResults(filtered);
+  };
   const [image, setImage] = useState(place.image || 'https://images.unsplash.com/photo-1543731068-7e0f5beff43a');
 
 
 
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [aiProgress, setAiProgress] = useState(0);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [isAiEnhanced, setIsAiEnhanced] = useState(false);
   const [aiResults, setAiResults] = useState(null);
 
-  // Unificamos el objeto que se muestra en pantalla
   const displayPlace = aiResults ? { ...place, ...aiResults } : place;
+
+  // State for Custom Pickers (Months and Times)
+  const [pickerModal, setPickerModal] = useState({
+    visible: false,
+    type: '', // 'month' or 'time'
+    title: '',
+    options: [],
+    onSelect: () => {}
+  });
 
   const handleAiEnhance = async () => {
     Keyboard.dismiss();
@@ -321,6 +415,25 @@ export function PlaceDetailScreen({ route, navigation }) {
       }
 
       await updateUserData({ contributions: updatedContributions });
+      
+      // Sincronización con el servidor
+      if (!place.isLocalOnly && place.id && !String(place.id).startsWith('custom-')) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        
+        try {
+          await fetch(`${API_BASE_URL}/api/places/${place.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ verified: true, verifiedStatus: 'Verificado' }),
+            signal: controller.signal
+          });
+          clearTimeout(timeoutId);
+        } catch (e) {
+          console.warn('Sync servidor fallida');
+        }
+      }
+
       Alert.alert("Éxito", "Ubicación validada oficialmente como Administrador.");
     } catch (error) {
       console.error(error);
@@ -330,7 +443,23 @@ export function PlaceDetailScreen({ route, navigation }) {
 
   const category = place.category || 'Monumento';
   
-  const handleSave = () => {
+  const handleSave = async () => {
+    // Si la imagen es local, avisar de que no se subirá a la nube
+    if (image && (image.startsWith('file://') || image.startsWith('content://'))) {
+      Alert.alert(
+        "Imagen no sincronizada",
+        "La imagen seleccionada no se pudo subir al servidor. Si guardas ahora, la foto solo se verá en este dispositivo. ¿Deseas continuar?",
+        [
+          { text: "Intentar subir de nuevo", onPress: pickImage },
+          { text: "Guardar así", onPress: () => performSave() }
+        ]
+      );
+    } else {
+      performSave();
+    }
+  };
+
+  const performSave = async () => {
     const existing = userData.contributions || [];
     // Asegurar que tenemos 'city' para consistencia con el sistema de contribuciones
     const normalizedPlace = { ...place, city: place.city || place.cityName, image };
@@ -345,8 +474,98 @@ export function PlaceDetailScreen({ route, navigation }) {
     }
 
     updateUserData({ contributions: updatedContributions });
+    
+    // Sincronización con el servidor para Administradores
+    if (isAdmin && !normalizedPlace.isLocalOnly && normalizedPlace.id && !String(normalizedPlace.id).startsWith('custom-')) {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      try {
+        const extraData = {
+          structuredSchedules: normalizedPlace.structuredSchedules,
+          technicalSpecs: normalizedPlace.technicalSpecs,
+          criticalNotices: normalizedPlace.criticalNotices || normalizedPlace.importantNotices,
+          tariffs: normalizedPlace.tariffs,
+          isLinkedEntrance: normalizedPlace.isLinkedEntrance,
+          linkedEntranceName: normalizedPlace.linkedEntranceName,
+          touristTip: normalizedPlace.touristTip,
+          accessibility: normalizedPlace.accessibility,
+          audioguide: normalizedPlace.audioguide,
+          specialClosures: normalizedPlace.specialClosures,
+          tags: normalizedPlace.tags
+        };
+
+        const response = await fetch(`${API_BASE_URL}/api/places/${normalizedPlace.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: normalizedPlace.name,
+            city: normalizedPlace.city,
+            category: normalizedPlace.category,
+            address: normalizedPlace.address,
+            phone: normalizedPlace.phone,
+            website: normalizedPlace.website,
+            image: normalizedPlace.image,
+            latitude: normalizedPlace.location?.latitude,
+            longitude: normalizedPlace.location?.longitude,
+            extra_data: extraData
+          }),
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          console.warn('Error en la sincronización con el servidor');
+        }
+      } catch (error) {
+        clearTimeout(timeoutId);
+        console.error('Error de red o timeout en la sincronización:', error);
+      }
+    }
+
     setIsEditing(false);
-    Alert.alert("Éxito", "Cambios guardados correctamente.");
+    setShowSuccess(true);
+    setTimeout(() => {
+      setShowSuccess(false);
+    }, 2500);
+  };
+
+  const updateTariffCondition = (idx, field, value) => {
+    const newTariffs = [...(place.tariffs || [])];
+    newTariffs[idx] = {
+      ...newTariffs[idx],
+      condition: {
+        ...newTariffs[idx].condition,
+        [field]: value
+      }
+    };
+    setPlace({ ...place, tariffs: newTariffs });
+  };
+
+  const getConditionText = (condition) => {
+    if (!condition || condition.type === 'none') return null;
+    
+    switch (condition.type) {
+      case 'disability':
+        return `Mínimo ${condition.value || '33'}% de discapacidad`;
+      case 'senior':
+        return `Mayores de ${condition.value || '65'} años`;
+      case 'child':
+        return `Menores de ${condition.value || '12'} años`;
+      case 'age_range':
+        return `Personas de ${condition.from || 'X'} a ${condition.to || 'Y'} años`;
+      case 'student':
+        return `Estudiantes ${condition.from && condition.to ? `(${condition.from}-${condition.to} años)` : ''}`;
+      case 'youth_card':
+        return 'Titulares de Carné Joven';
+      case 'large_family':
+        return 'Familias Numerosas';
+      case 'unemployed':
+        return 'Personas en situación de desempleo';
+      case 'teacher':
+        return 'Personal docente en activo';
+      default:
+        return null;
+    }
   };
 
   const pickImage = async () => {
@@ -354,28 +573,80 @@ export function PlaceDetailScreen({ route, navigation }) {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [16, 9],
-      quality: 0.8,
+      quality: 0.4, // Calidad reducida significativamente para subida rápida
     });
 
     if (!result.canceled) {
       const newUri = result.assets[0].uri;
+      
+      // Mostrar inmediatamente en la UI (vista previa local)
       setImage(newUri);
       
-      if (!isEditing) {
-        const existing = userData.contributions || [];
-        const normalizedPlace = { ...place, city: place.city || place.cityName, image: newUri };
-        const index = existing.findIndex(p => p.id === place.id || (p.name === initialPlace.name && (p.city === initialPlace.city || p.city === initialPlace.cityName)));
+      // Upload to server
+      setIsUploading(true);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 segs timeout
+
+      try {
+        const formDataUpload = new FormData();
+        formDataUpload.append('image', {
+          uri: newUri,
+          type: 'image/jpeg',
+          name: 'upload.jpg',
+        });
+
+        console.log(`[Upload] Intentando subir a: ${API_BASE_URL}/api/upload (Tamaño optimizado)`);
+        const response = await fetch(`${API_BASE_URL}/api/upload`, {
+          method: 'POST',
+          body: formDataUpload,
+          signal: controller.signal
+        });
         
-        let updatedContributions;
-        if (index !== -1) {
-          updatedContributions = [...existing];
-          updatedContributions[index] = { ...updatedContributions[index], image: newUri };
-        } else {
-          updatedContributions = [...existing, normalizedPlace];
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Server responded with ${response.status}: ${errorText}`);
         }
 
-        updateUserData({ contributions: updatedContributions });
-        Alert.alert("Éxito", "Imagen actualizada.");
+        const data = await response.json();
+        if (data.success) {
+          const finalImageUrl = `${API_BASE_URL}${data.url}`;
+          console.log(`[Upload] Éxito: ${finalImageUrl}`);
+          setImage(finalImageUrl);
+          
+          // Actualizar el objeto place para que al guardar se use la URL remota
+          setPlace(prev => ({ ...prev, image: finalImageUrl }));
+          
+          if (!isEditing) {
+            const existing = userData.contributions || [];
+            const normalizedPlace = { ...place, city: place.city || place.cityName, image: finalImageUrl };
+            const index = existing.findIndex(p => p.id === place.id || (p.name === initialPlace.name && (p.city === initialPlace.city || p.city === initialPlace.cityName)));
+            
+            let updatedContributions;
+            if (index !== -1) {
+              updatedContributions = [...existing];
+              updatedContributions[index] = { ...updatedContributions[index], image: finalImageUrl };
+            } else {
+              updatedContributions = [...existing, normalizedPlace];
+            }
+
+            updateUserData({ contributions: updatedContributions });
+            Alert.alert("Éxito", "Imagen subida y guardada en la nube.");
+          }
+        } else {
+          Alert.alert('Error de Procesamiento', 'El servidor recibió la imagen pero no pudo procesarla.');
+        }
+      } catch (error) {
+        console.error('Error detallado de subida:', error);
+        if (error.name === 'AbortError') {
+          Alert.alert('Tiempo de espera agotado', 'La subida de la imagen está tardando demasiado. Comprueba tu conexión e inténtalo de nuevo.');
+        } else {
+          Alert.alert('Error de Conexión', 'No se pudo conectar con el servidor de imágenes. Se usará una vista previa local.');
+        }
+        setImage(newUri); // Fallback local
+      } finally {
+        setIsUploading(false);
       }
     }
   };
@@ -465,6 +736,7 @@ export function PlaceDetailScreen({ route, navigation }) {
   };
 
   const handleAiGenerateTariffs = () => {
+    Keyboard.dismiss();
     Alert.alert(
       "IA Distravel",
       `¿Deseas que la IA genere las tarifas y beneficios de accesibilidad para ${place.name}?`,
@@ -472,68 +744,51 @@ export function PlaceDetailScreen({ route, navigation }) {
         { text: "Cancelar", style: "cancel" },
         { 
           text: "Generar Tarifas", 
-          onPress: () => {
-            const name = (place.name || '').toLowerCase();
-            let newTariffs = [
-              { id: 1, label: 'Entrada General', price: '12,00 €', value: 12 },
-              { id: 2, label: 'Tarifa Reducida (>65 / Est.)', price: '8,00 €', value: 8 },
-              { id: 3, label: 'PCD + Acompañante', price: 'Gratis', value: 0 }
-            ];
+          onPress: async () => {
+            setIsAiProcessing(true);
+            setAiProgress(0.1);
+            const progressInterval = setInterval(() => {
+              setAiProgress(prev => (prev < 0.9 ? prev + 0.05 : prev));
+            }, 150);
 
-            if (name.includes('sagrada familia')) {
-              newTariffs = [
-                { id: 1, label: 'Individual (General)', price: '26,00 €', value: 26 },
-                { id: 2, label: 'Con Torres', price: '36,00 €', value: 36 },
-                { id: 3, label: 'PCD (>33%) + Acompañante', price: 'Gratis', value: 0 },
-                { id: 4, label: 'Menores de 11 años', price: 'Gratis', value: 0 }
-              ];
-            } else if (name.includes('playa') || name.includes('parque')) {
-              newTariffs = [{ id: 1, label: 'Acceso Libre', price: 'Gratis', value: 0 }];
-            } else if (name.includes('museo')) {
-              newTariffs = [
-                { id: 1, label: 'Entrada General', price: '15,00 €', value: 15 },
-                { id: 2, label: 'PCD + Acompañante', price: 'Gratis', value: 0 },
-                { id: 3, label: 'Estudiantes', price: '7,50 €', value: 7.5 }
-              ];
+            try {
+              const aiData = await GeminiService.getPlaceData(place.name, place.city, userData.aiApiKey);
+              clearInterval(progressInterval);
+              setAiProgress(1);
+
+              if (aiData) {
+                setPlace(prev => ({
+                  ...prev,
+                  ...aiData,
+                  isAI: true
+                }));
+
+                if (GeminiService.isRevoked || (GeminiService.lastError && GeminiService.lastError.includes('API key not valid'))) {
+                  Alert.alert(
+                    '🔑 Error de Autenticación', 
+                    'La clave de API de Gemini no es válida o ha sido revocada. Para usar la IA real, por favor introduce tu propia clave en Configuración > Servicios de IA.',
+                    [{ text: 'Ir a Configuración', onPress: () => navigation.navigate('Settings') }, { text: 'Cerrar', style: 'cancel' }]
+                  );
+                } else if (aiData.isMock) {
+                  Alert.alert(
+                    '⚠️ Usando Datos Estimados', 
+                    'No se pudo conectar con la IA real (error de clave). Los datos mostrados son estimaciones locales. Configura tu propia API Key en Ajustes para precisión total.',
+                    [{ text: 'Entendido' }]
+                  );
+                } else {
+                  Alert.alert("✨ Análisis Completado", "La IA ha configurado precios oficiales, beneficios PCD y ha evaluado los servicios de audioguía adaptada basándose en datos reales.");
+                }
+              } else {
+                Alert.alert("Error", "No se recibió respuesta de la IA.");
+              }
+            } catch (error) {
+              clearInterval(progressInterval);
+              const errorMsg = GeminiService.lastError ? `\nDetalle: ${GeminiService.lastError}` : '';
+              Alert.alert("Error", `No se pudo conectar con la IA.${errorMsg}`);
+            } finally {
+              setIsAiProcessing(false);
+              setAiProgress(0);
             }
-
-            setPlace({ ...place, tariffs: newTariffs });
-            
-            // Evaluar audioguía por IA con mayor profundidad
-            let audioguideInfo = {
-              available: false,
-              price: 'No disponible',
-              accessible: false,
-              languages: ['Español']
-            };
-
-            const isMajorSite = name.includes('sagrada') || name.includes('museo') || name.includes('castillo') || name.includes('catedral') || name.includes('palacio');
-            
-            if (isMajorSite) {
-              audioguideInfo = {
-                available: true,
-                price: name.includes('sagrada') || name.includes('prado') ? 'Incluida en entrada' : '5,00 €',
-                accessible: true,
-                languages: ['Español', 'Inglés', 'Francés', 'Alemán', 'Italiano', 'Chino', 'LSE (Signos)', 'Audiodescripción'],
-                note: "Audioguía adaptada con bucle magnético y audiodescripción para personas con discapacidad visual."
-              };
-            } else if (name.includes('iglesia') || name.includes('parque')) {
-              audioguideInfo = {
-                available: true,
-                price: 'Gratis (App)',
-                accessible: true,
-                languages: ['Español', 'Inglés'],
-                note: "Disponible mediante descarga de aplicación oficial con contenidos accesibles."
-              };
-            }
-
-            setPlace(prev => ({ 
-              ...prev, 
-              tariffs: newTariffs,
-              audioguide: audioguideInfo 
-            }));
-            
-            Alert.alert("✨ Análisis Completado", "La IA ha configurado precios oficiales, beneficios PCD y ha evaluado los servicios de audioguía adaptada.");
           } 
         }
       ]
@@ -613,8 +868,15 @@ export function PlaceDetailScreen({ route, navigation }) {
     // NUEVO: Sistema de Horarios Estructurados (V3)
     if (displayPlace.structuredSchedules && displayPlace.structuredSchedules.length > 0) {
       const activeSeason = displayPlace.structuredSchedules.find(s => {
-        const sM = parseInt(s.startMonth);
-        const eM = parseInt(s.endMonth);
+        const monthMap = {
+          'Enero': 1, 'Febrero': 2, 'Marzo': 3, 'Abril': 4, 'Mayo': 5, 'Junio': 6,
+          'Julio': 7, 'Agosto': 8, 'Septiembre': 9, 'Octubre': 10, 'Noviembre': 11, 'Diciembre': 12
+        };
+        const sM = monthMap[s.startMonth] || parseInt(s.startMonth);
+        const eM = monthMap[s.endMonth] || parseInt(s.endMonth);
+        
+        if (isNaN(sM) || isNaN(eM)) return false;
+
         if (sM <= eM) return currentMonth >= sM && currentMonth <= eM;
         return currentMonth >= sM || currentMonth <= eM;
       });
@@ -695,6 +957,12 @@ export function PlaceDetailScreen({ route, navigation }) {
       >
         <View style={styles.heroContainer}>
           <Image source={{ uri: image }} style={styles.heroImage} />
+          {isUploading && (
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', zIndex: 10 }]}>
+              <ActivityIndicator size="large" color="#FFF" />
+              <Text style={{ color: '#FFF', marginTop: 10, fontWeight: '700' }}>Subiendo...</Text>
+            </View>
+          )}
           <View style={styles.overlay} />
           
           <View style={styles.heroMapOverlay}>
@@ -756,12 +1024,14 @@ export function PlaceDetailScreen({ route, navigation }) {
                     <TouchableOpacity 
                       style={[styles.circleButton, { backgroundColor: 'rgba(0,0,0,0.3)' }]}
                       onPress={pickImage}
+                      disabled={isUploading}
                     >
-                      <Camera color="#FFFFFF" size={20} />
+                      {isUploading ? <ActivityIndicator size="small" color="#FFF" /> : <Camera color="#FFFFFF" size={20} />}
                     </TouchableOpacity>
                     <TouchableOpacity 
                       style={[styles.circleButton, { backgroundColor: theme.primary }]}
                       onPress={() => setIsEditing(true)}
+                      disabled={isUploading}
                     >
                       <Edit color="#FFFFFF" size={20} />
                     </TouchableOpacity>
@@ -802,21 +1072,58 @@ export function PlaceDetailScreen({ route, navigation }) {
                   onChangeText={(v) => setPlace({...place, name: v})}
                   multiline
                 />
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, gap: 10 }}>
-                  <TextInput
-                    style={[styles.cityEditInput, { color: '#FFF', borderColor: 'rgba(255,255,255,0.4)' }]}
-                    value={place.city || place.cityName}
-                    onChangeText={(v) => setPlace({...place, city: v, cityName: v})}
-                    placeholder="Municipio"
-                    placeholderTextColor="rgba(255,255,255,0.5)"
-                  />
-                  <TextInput
-                    style={[styles.cityEditInput, { color: '#FFF', borderColor: 'rgba(255,255,255,0.4)' }]}
-                    value={place.province}
-                    onChangeText={(v) => setPlace({...place, province: v})}
-                    placeholder="Provincia"
-                    placeholderTextColor="rgba(255,255,255,0.5)"
-                  />
+                <View style={{ position: 'relative', zIndex: 1000 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, gap: 10 }}>
+                    <View style={{ flex: 1 }}>
+                      <TextInput
+                        style={[styles.cityEditInput, { color: '#FFF', borderColor: 'rgba(255,255,255,0.4)' }]}
+                        value={place.city || place.cityName}
+                        onFocus={() => {
+                          setTimeout(() => {
+                            scrollRef.current?.scrollTo({ y: 120, animated: true });
+                          }, 100);
+                        }}
+                        onChangeText={(v) => {
+                          setPlace({...place, city: v, cityName: v});
+                          performLocalSearch(v);
+                          setShowSearchResults(v.length > 1);
+                          if (v.length > 1) {
+                            scrollRef.current?.scrollTo({ y: 120, animated: true });
+                          }
+                        }}
+                        placeholder="Municipio"
+                        placeholderTextColor="rgba(255,255,255,0.5)"
+                      />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <TextInput
+                        style={[styles.cityEditInput, { color: '#FFF', borderColor: 'rgba(255,255,255,0.4)' }]}
+                        value={place.province}
+                        onChangeText={(v) => setPlace({...place, province: v})}
+                        placeholder="Provincia"
+                        placeholderTextColor="rgba(255,255,255,0.5)"
+                      />
+                    </View>
+                  </View>
+
+                  {showSearchResults && searchResults.length > 0 && (
+                    <View style={[styles.detailSearchResults, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                      {searchResults.map((item, idx) => (
+                        <TouchableOpacity 
+                          key={idx} 
+                          style={[styles.searchItem, { borderBottomWidth: idx === searchResults.length - 1 ? 0 : 0.5, borderBottomColor: theme.border }]}
+                          onPress={() => {
+                            setPlace({ ...place, city: item.label, cityName: item.label, province: item.province });
+                            setShowSearchResults(false);
+                            Keyboard.dismiss();
+                          }}
+                        >
+                          <MapPin color={theme.primary} size={16} />
+                          <Text style={{ color: theme.text, marginLeft: 10, fontWeight: '600' }}>{item.label}</Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  )}
                 </View>
               </View>
             ) : (
@@ -895,7 +1202,7 @@ export function PlaceDetailScreen({ route, navigation }) {
                       placeholder="Dirección..."
                     />
                   ) : (
-                    <Text style={[styles.contactText, { color: isDarkMode ? '#FFFFFF' : theme.textSecondary }]}>{displayPlace.address}</Text>
+                    <Text style={[styles.contactText, { color: isDarkMode ? '#FFFFFF' : theme.textSecondary }]}>{String(displayPlace.address || '')}</Text>
                   )}
                 </View>
               )}
@@ -943,37 +1250,43 @@ export function PlaceDetailScreen({ route, navigation }) {
               )}
             </View>
 
-            {/* BOTÓN IA ELITE PARA LUGARES - SOLO ADMIN */}
-            {isAdmin && (
-              <TouchableOpacity 
-                style={[
-                  styles.aiButton, 
-                  userData.aiApiKey && { backgroundColor: '#8E44AD' },
-                  { marginTop: 15 }
-                ]} 
-                onPress={handleAiEnhance}
-                disabled={isAiProcessing}
-              >
-                {isAiProcessing ? (
-                  <Zap color="#FFF" size={20} />
+            {/* Tags display */}
+            {(displayPlace.tags || isEditing) && (
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 10 }}>
+                {isEditing ? (
+                  <TextInput
+                    style={[styles.tagsEdit, { color: theme.textSecondary, borderColor: theme.border, borderBottomWidth: 1, flex: 1 }]}
+                    value={displayPlace.tags}
+                    onChangeText={(v) => setPlace({...place, tags: v})}
+                    placeholder="Etiquetas (separadas por comas)..."
+                  />
                 ) : (
-                  userData.aiApiKey ? <Sparkles color="#FFF" size={20} fill={isAiEnhanced ? "#FFF" : "transparent"} /> : <Zap color="#FFF" size={20} fill={isAiEnhanced ? "#FFF" : "transparent"} />
+                  (displayPlace.tags || "").split(',').map((tag, tIdx) => (
+                    tag.trim() ? (
+                      <View key={tIdx} style={[styles.tagChip, { backgroundColor: isDarkMode ? '#1A1A1A' : '#F0F0F0' }]}>
+                        <Text style={[styles.tagChipText, { color: theme.textSecondary }]}>#{tag.trim()}</Text>
+                      </View>
+                    ) : null
+                  ))
                 )}
-                <Text style={styles.aiButtonText}>
-                  {isAiProcessing 
-                    ? (userData.aiApiKey ? "Analizando Patrimonio..." : "Buscando datos...") 
-                    : isAiEnhanced 
-                      ? (userData.aiApiKey ? "Análisis Finalizado" : "Datos mejorados con IA") 
-                      : (userData.aiApiKey ? "Investigar con IA" : "Mejorar info con IA")}
-                </Text>
-                {!isAiProcessing && !isAiEnhanced && (
-                  <View style={[styles.aiBadge, userData.aiApiKey && { backgroundColor: '#FFF' }]}>
-                    <Text style={[styles.aiBadgeText, userData.aiApiKey && { color: '#8E44AD' }]}>
-                      {userData.aiApiKey ? "GEMINI" : "IA"}
-                    </Text>
-                  </View>
+              </View>
+            )}
+
+            {/* Special Closures */}
+            {(displayPlace.specialClosures || isEditing) && (
+              <View style={[styles.specialClosureBox, { marginTop: 15, padding: 12, backgroundColor: isDarkMode ? 'rgba(231, 76, 60, 0.1)' : '#FDEDEC', borderRadius: 10, flexDirection: 'row', alignItems: 'center', gap: 10 }]}>
+                <AlertTriangle color="#E74C3C" size={16} />
+                {isEditing ? (
+                  <TextInput 
+                    style={{ color: '#E74C3C', flex: 1, fontSize: 13 }}
+                    value={displayPlace.specialClosures}
+                    onChangeText={(v) => setPlace({...place, specialClosures: v})}
+                    placeholder="Cierres especiales (festivos, obras...)"
+                  />
+                ) : (
+                  <Text style={{ color: '#E74C3C', fontSize: 13, fontWeight: '600' }}>{displayPlace.specialClosures}</Text>
                 )}
-              </TouchableOpacity>
+              </View>
             )}
           </View>
 
@@ -1047,7 +1360,7 @@ export function PlaceDetailScreen({ route, navigation }) {
                   style={[styles.verifyActionBtn, { backgroundColor: theme.primary }]}
                   onPress={handleVerifyAccessibility}
                 >
-                  <CheckCircle color={isDarkMode ? '#070B14' : '#FFFFFF'} size={16} />
+                  <CheckCircle2 color={isDarkMode ? '#070B14' : '#FFFFFF'} size={16} />
                   <Text style={[styles.verifyActionText, { color: isDarkMode ? '#070B14' : '#FFFFFF' }]}>Confirmar Accesibilidad</Text>
                 </TouchableOpacity>
               </View>
@@ -1099,7 +1412,7 @@ export function PlaceDetailScreen({ route, navigation }) {
                     </View>
                   </View>
                 )}
-                {(displayPlace.technicalSpecs?.elevatorDimensions || isEditing) && (
+                {(displayPlace.technicalSpecs?.elevatorMeasures || isEditing) && (
                   <View style={[styles.techItem, { backgroundColor: theme.surface }]}>
                     <Construction color={theme.primary} size={18} />
                     <View style={{ flex: 1 }}>
@@ -1107,12 +1420,100 @@ export function PlaceDetailScreen({ route, navigation }) {
                       {isEditing ? (
                         <TextInput
                           style={[styles.techInput, { color: theme.text, borderBottomWidth: 1, borderBottomColor: theme.border }]}
-                          value={place.technicalSpecs?.elevatorDimensions}
-                          onChangeText={(v) => setPlace({...place, technicalSpecs: { ...place.technicalSpecs, elevatorDimensions: v }})}
+                          value={place.technicalSpecs?.elevatorMeasures || place.technicalSpecs?.elevatorDimensions}
+                          onChangeText={(v) => setPlace({...place, technicalSpecs: { ...place.technicalSpecs, elevatorMeasures: v }})}
                           placeholder="Dimensiones"
                         />
                       ) : (
-                        <Text style={[styles.techValue, { color: theme.text }]}>{displayPlace.technicalSpecs?.elevatorDimensions}</Text>
+                        <Text style={[styles.techValue, { color: theme.text }]}>{displayPlace.technicalSpecs?.elevatorMeasures || displayPlace.technicalSpecs?.elevatorDimensions}</Text>
+                      )}
+                    </View>
+                  </View>
+                )}
+                {(displayPlace.technicalSpecs?.magneticLoop !== undefined || isEditing) && (
+                  <View style={[styles.techItem, { backgroundColor: theme.surface }]}>
+                    <Ear color={theme.primary} size={18} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.techLabel}>Bucle Magnético</Text>
+                      {isEditing ? (
+                        <TouchableOpacity 
+                          onPress={() => setPlace({...place, technicalSpecs: { ...place.technicalSpecs, magneticLoop: !place.technicalSpecs?.magneticLoop }})}
+                          style={styles.toggleRow}
+                        >
+                          <Text style={[styles.techValue, { color: theme.text }]}>
+                            {place.technicalSpecs?.magneticLoop ? 'SÍ' : 'NO'}
+                          </Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <Text style={[styles.techValue, { color: theme.text }]}>
+                          {displayPlace.technicalSpecs?.magneticLoop ? 'Disponible' : 'No disponible'}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                )}
+                {(displayPlace.technicalSpecs?.braille !== undefined || isEditing) && (
+                  <View style={[styles.techItem, { backgroundColor: theme.surface }]}>
+                    <Eye color={theme.primary} size={18} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.techLabel}>Braille / Relieve</Text>
+                      {isEditing ? (
+                        <TouchableOpacity 
+                          onPress={() => setPlace({...place, technicalSpecs: { ...place.technicalSpecs, braille: !place.technicalSpecs?.braille }})}
+                          style={styles.toggleRow}
+                        >
+                          <Text style={[styles.techValue, { color: theme.text }]}>
+                            {place.technicalSpecs?.braille ? 'SÍ' : 'NO'}
+                          </Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <Text style={[styles.techValue, { color: theme.text }]}>
+                          {displayPlace.technicalSpecs?.braille ? 'Disponible' : 'No disponible'}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                )}
+                {(displayPlace.technicalSpecs?.accessibleParking !== undefined || isEditing) && (
+                  <View style={[styles.techItem, { backgroundColor: theme.surface }]}>
+                    <MapPin color={theme.primary} size={18} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.techLabel}>Parking Adaptado</Text>
+                      {isEditing ? (
+                        <TouchableOpacity 
+                          onPress={() => setPlace({...place, technicalSpecs: { ...place.technicalSpecs, accessibleParking: !place.technicalSpecs?.accessibleParking }})}
+                          style={styles.toggleRow}
+                        >
+                          <Text style={[styles.techValue, { color: theme.text }]}>
+                            {place.technicalSpecs?.accessibleParking ? 'SÍ' : 'NO'}
+                          </Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <Text style={[styles.techValue, { color: theme.text }]}>
+                          {displayPlace.technicalSpecs?.accessibleParking ? 'Sí, en entrada' : 'No verificado'}
+                        </Text>
+                      )}
+                    </View>
+                  </View>
+                )}
+                {(displayPlace.technicalSpecs?.wheelchairRental !== undefined || isEditing) && (
+                  <View style={[styles.techItem, { backgroundColor: theme.surface }]}>
+                    <Accessibility color={theme.primary} size={18} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.techLabel}>Alquiler Sillas</Text>
+                      {isEditing ? (
+                        <TouchableOpacity 
+                          onPress={() => setPlace({...place, technicalSpecs: { ...place.technicalSpecs, wheelchairRental: !place.technicalSpecs?.wheelchairRental }})}
+                          style={styles.toggleRow}
+                        >
+                          <Text style={[styles.techValue, { color: theme.text }]}>
+                            {place.technicalSpecs?.wheelchairRental ? 'SÍ' : 'NO'}
+                          </Text>
+                        </TouchableOpacity>
+                      ) : (
+                        <Text style={[styles.techValue, { color: theme.text }]}>
+                          {displayPlace.technicalSpecs?.wheelchairRental ? 'Disponible' : 'No disponible'}
+                        </Text>
                       )}
                     </View>
                   </View>
@@ -1138,48 +1539,51 @@ export function PlaceDetailScreen({ route, navigation }) {
           )}
 
           {/* Avisos Importantes (Critical Notices) */}
-          {(displayPlace.importantNotices?.length > 0 || isEditing) && (
+          {(displayPlace.criticalNotices?.length > 0 || displayPlace.importantNotices?.length > 0 || isEditing) && (
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <TriangleAlert color="#E74C3C" size={22} />
-                <Text style={[styles.sectionTitle, { color: '#E74C3C', marginLeft: 10, marginBottom: 0 }]}>Avisos Importantes</Text>
+                <AlertTriangle color="#E74C3C" size={22} />
+                <Text style={[styles.sectionTitle, { color: '#E74C3C', marginLeft: 10, marginBottom: 0 }]}>Avisos Críticos</Text>
                 {isEditing && (
                   <TouchableOpacity 
                     style={{ marginLeft: 'auto' }}
                     onPress={() => setPlace({
                       ...place,
-                      importantNotices: [...(displayPlace.importantNotices || []), "Nuevo aviso importante..."]
+                      criticalNotices: [...(displayPlace.criticalNotices || displayPlace.importantNotices || []), "Nuevo aviso importante..."]
                     })}
                   >
                     <PlusCircle color="#E74C3C" size={24} />
                   </TouchableOpacity>
                 )}
               </View>
-              <View style={[styles.noticesContainer, { backgroundColor: '#FDEDEC', borderColor: '#E74C3C' }]}>
-                {(displayPlace.importantNotices || []).map((notice, idx) => (
+              <View style={[styles.noticesContainer, { backgroundColor: isDarkMode ? 'rgba(231, 76, 60, 0.1)' : '#FDEDEC', borderColor: '#E74C3C', borderWidth: 1, borderRadius: 12, padding: 15, marginTop: 10 }]}>
+                {(displayPlace.criticalNotices || displayPlace.importantNotices || []).map((notice, idx) => (
                   <View key={idx} style={styles.noticeRow}>
                     {isEditing ? (
-                      <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                      <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                         <TouchableOpacity onPress={() => {
-                          const newNotices = [...(displayPlace.importantNotices || [])];
+                          const newNotices = [...(displayPlace.criticalNotices || displayPlace.importantNotices || [])];
                           newNotices.splice(idx, 1);
-                          setPlace({...place, importantNotices: newNotices});
+                          setPlace({...place, criticalNotices: newNotices, importantNotices: newNotices});
                         }}>
                           <MinusCircle color="#E74C3C" size={18} />
                         </TouchableOpacity>
                         <TextInput
-                          style={[styles.noticeTextEdit, { color: '#C0392B' }]}
+                          style={[styles.noticeTextEdit, { color: isDarkMode ? '#FF7E7E' : '#C0392B', flex: 1 }]}
                           value={notice}
                           onChangeText={(v) => {
-                            const newNotices = [...(displayPlace.importantNotices || [])];
+                            const newNotices = [...(displayPlace.criticalNotices || displayPlace.importantNotices || [])];
                             newNotices[idx] = v;
-                            setPlace({...place, importantNotices: newNotices});
+                            setPlace({...place, criticalNotices: newNotices, importantNotices: newNotices});
                           }}
                           multiline
                         />
                       </View>
                     ) : (
-                      <Text style={[styles.noticeText, { color: '#C0392B' }]}>• {notice}</Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginBottom: 6 }}>
+                        <Text style={{ color: '#E74C3C', marginRight: 5 }}>•</Text>
+                        <Text style={[styles.noticeText, { color: isDarkMode ? '#FF7E7E' : '#C0392B', flex: 1 }]}>{notice}</Text>
+                      </View>
                     )}
                   </View>
                 ))}
@@ -1198,8 +1602,8 @@ export function PlaceDetailScreen({ route, navigation }) {
                   onPress={() => {
                     const newSeason = {
                       name: 'Nueva Temporada',
-                      startMonth: '1',
-                      endMonth: '12',
+                      startMonth: 'Enero',
+                      endMonth: 'Diciembre',
                       days: {
                         1: { isOpen: true, mOpen: '10:00', mClose: '14:00', aOpen: '16:00', aClose: '20:00' },
                         2: { isOpen: true, mOpen: '10:00', mClose: '14:00', aOpen: '16:00', aClose: '20:00' },
@@ -1233,28 +1637,39 @@ export function PlaceDetailScreen({ route, navigation }) {
                           setPlace({ ...place, structuredSchedules: newSchedules });
                         }}
                       />
-                      <Text style={{ color: theme.textSecondary }}>De mes:</Text>
-                      <TextInput 
-                        style={[styles.monthInput, { color: theme.text }]}
-                        value={String(season.startMonth)}
-                        keyboardType="numeric"
-                        onChangeText={(v) => {
-                          const newSchedules = [...displayPlace.structuredSchedules];
-                          newSchedules[sIdx].startMonth = v;
-                          setPlace({ ...place, structuredSchedules: newSchedules });
-                        }}
-                      />
-                      <Text style={{ color: theme.textSecondary }}>A:</Text>
-                      <TextInput 
-                        style={[styles.monthInput, { color: theme.text }]}
-                        value={String(season.endMonth)}
-                        keyboardType="numeric"
-                        onChangeText={(v) => {
-                          const newSchedules = [...displayPlace.structuredSchedules];
-                          newSchedules[sIdx].endMonth = v;
-                          setPlace({ ...place, structuredSchedules: newSchedules });
-                        }}
-                      />
+                      <Text style={{ color: theme.textSecondary, fontSize: 12 }}>De mes:</Text>
+                      <TouchableOpacity 
+                        style={[styles.monthSelector, { borderColor: theme.border, backgroundColor: theme.background }]}
+                        onPress={() => setPickerModal({
+                          visible: true,
+                          title: 'Seleccionar Mes de Inicio',
+                          options: MONTHS,
+                          onSelect: (val) => {
+                            const newSchedules = [...displayPlace.structuredSchedules];
+                            newSchedules[sIdx].startMonth = val;
+                            setPlace({ ...place, structuredSchedules: newSchedules });
+                          }
+                        })}
+                      >
+                        <Text style={[styles.monthSelectorText, { color: theme.text }]}>{season.startMonth}</Text>
+                      </TouchableOpacity>
+                      
+                      <Text style={{ color: theme.textSecondary, fontSize: 12 }}>A:</Text>
+                      <TouchableOpacity 
+                        style={[styles.monthSelector, { borderColor: theme.border, backgroundColor: theme.background }]}
+                        onPress={() => setPickerModal({
+                          visible: true,
+                          title: 'Seleccionar Mes de Fin',
+                          options: MONTHS,
+                          onSelect: (val) => {
+                            const newSchedules = [...displayPlace.structuredSchedules];
+                            newSchedules[sIdx].endMonth = val;
+                            setPlace({ ...place, structuredSchedules: newSchedules });
+                          }
+                        })}
+                      >
+                        <Text style={[styles.monthSelectorText, { color: theme.text }]}>{season.endMonth}</Text>
+                      </TouchableOpacity>
                     </View>
                   ) : (
                     <Text style={[styles.seasonTitle, { color: theme.primary }]}>{season.name} ({season.startMonth}-{season.endMonth})</Text>
@@ -1276,6 +1691,29 @@ export function PlaceDetailScreen({ route, navigation }) {
                     const dayKey = index === 6 ? 0 : index + 1; // 0=Domingo
                     const dayData = season.days[dayKey] || { isOpen: false };
                     
+                    const timeOptions = HOURS.flatMap(h => MINUTES.filter(m => m !== 'Cerrado').map(m => `${h}:${m}`));
+                    timeOptions.unshift('Cerrado');
+
+                    const TimeTrigger = ({ value, field, label }) => (
+                      <TouchableOpacity 
+                        style={[styles.timeSelector, { borderColor: theme.border, backgroundColor: theme.background }]}
+                        onPress={() => setPickerModal({
+                          visible: true,
+                          title: `Hora de ${label}`,
+                          options: timeOptions,
+                          onSelect: (val) => {
+                            const newSchedules = [...displayPlace.structuredSchedules];
+                            newSchedules[sIdx].days[dayKey][field] = val;
+                            setPlace({ ...place, structuredSchedules: newSchedules });
+                          }
+                        })}
+                      >
+                        <Text style={[styles.timeSelectorText, { color: value === 'Cerrado' ? '#E74C3C' : theme.text }]}>
+                          {value || '--:--'}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+
                     return (
                       <View key={dayKey} style={styles.dayRow}>
                         <View style={{ width: 30 }}>
@@ -1283,7 +1721,7 @@ export function PlaceDetailScreen({ route, navigation }) {
                         </View>
                         
                         {isEditing ? (
-                          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 5 }}>
                             <TouchableOpacity 
                               style={[styles.dayToggle, { backgroundColor: dayData.isOpen ? theme.primary : theme.border }]}
                               onPress={() => {
@@ -1292,62 +1730,31 @@ export function PlaceDetailScreen({ route, navigation }) {
                                 setPlace({ ...place, structuredSchedules: newSchedules });
                               }}
                             >
-                              <Text style={{ color: '#FFF', fontSize: 10, fontWeight: '900' }}>{dayData.isOpen ? 'SÍ' : 'NO'}</Text>
+                              <Text style={{ color: '#FFF', fontSize: 9, fontWeight: '900' }}>{dayData.isOpen ? 'SÍ' : 'NO'}</Text>
                             </TouchableOpacity>
                             
                             {dayData.isOpen && (
-                              <>
-                                <TextInput 
-                                  style={[styles.timeInput, { color: theme.text }]}
-                                  value={dayData.mOpen}
-                                  onChangeText={(v) => {
-                                    const newSchedules = [...displayPlace.structuredSchedules];
-                                    newSchedules[sIdx].days[dayKey].mOpen = v;
-                                    setPlace({ ...place, structuredSchedules: newSchedules });
-                                  }}
-                                />
+                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                                <TimeTrigger value={dayData.mOpen} field="mOpen" label="Apertura (M)" />
                                 <Text style={{ color: theme.textSecondary }}>-</Text>
-                                <TextInput 
-                                  style={[styles.timeInput, { color: theme.text }]}
-                                  value={dayData.mClose}
-                                  onChangeText={(v) => {
-                                    const newSchedules = [...displayPlace.structuredSchedules];
-                                    newSchedules[sIdx].days[dayKey].mClose = v;
-                                    setPlace({ ...place, structuredSchedules: newSchedules });
-                                  }}
-                                />
-                                <View style={{ width: 1, height: 15, backgroundColor: theme.border, marginHorizontal: 5 }} />
-                                <TextInput 
-                                  style={[styles.timeInput, { color: theme.text }]}
-                                  value={dayData.aOpen}
-                                  placeholder="Tarde"
-                                  onChangeText={(v) => {
-                                    const newSchedules = [...displayPlace.structuredSchedules];
-                                    newSchedules[sIdx].days[dayKey].aOpen = v;
-                                    setPlace({ ...place, structuredSchedules: newSchedules });
-                                  }}
-                                />
+                                <TimeTrigger value={dayData.mClose} field="mClose" label="Cierre (M)" />
+                                
+                                <View style={{ width: 1, height: 15, backgroundColor: theme.border, marginHorizontal: 2 }} />
+                                
+                                <TimeTrigger value={dayData.aOpen} field="aOpen" label="Apertura (T)" />
                                 <Text style={{ color: theme.textSecondary }}>-</Text>
-                                <TextInput 
-                                  style={[styles.timeInput, { color: theme.text }]}
-                                  value={dayData.aClose}
-                                  onChangeText={(v) => {
-                                    const newSchedules = [...displayPlace.structuredSchedules];
-                                    newSchedules[sIdx].days[dayKey].aClose = v;
-                                    setPlace({ ...place, structuredSchedules: newSchedules });
-                                  }}
-                                />
-                              </>
+                                <TimeTrigger value={dayData.aClose} field="aClose" label="Cierre (T)" />
+                              </View>
                             )}
                           </View>
                         ) : (
                           <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}>
                             {dayData.isOpen ? (
-                              <Text style={{ color: theme.textSecondary }}>
+                              <Text style={{ color: theme.textSecondary, fontSize: 13 }}>
                                 {dayData.mOpen}-{dayData.mClose} {dayData.aOpen ? ` / ${dayData.aOpen}-${dayData.aClose}` : ''}
                               </Text>
                             ) : (
-                              <Text style={{ color: '#E74C3C', fontWeight: 'bold' }}>Cerrado</Text>
+                              <Text style={{ color: '#E74C3C', fontWeight: 'bold', fontSize: 13 }}>Cerrado</Text>
                             )}
                           </View>
                         )}
@@ -1388,7 +1795,7 @@ export function PlaceDetailScreen({ route, navigation }) {
                     style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: displayPlace.isLinkedEntrance ? theme.primary : theme.surface, borderWidth: 1, borderColor: theme.primary, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 }}
                     onPress={() => setPlace({...place, isLinkedEntrance: !displayPlace.isLinkedEntrance})}
                   >
-                    <Link color={displayPlace.isLinkedEntrance ? '#FFF' : theme.primary} size={14} />
+                    <LinkIcon color={displayPlace.isLinkedEntrance ? '#FFF' : theme.primary} size={14} />
                     <Text style={{ fontSize: 10, color: displayPlace.isLinkedEntrance ? '#FFF' : theme.primary, fontWeight: '800' }}>VINCULAR ENTRADA</Text>
                   </TouchableOpacity>
                 </View>
@@ -1397,14 +1804,14 @@ export function PlaceDetailScreen({ route, navigation }) {
 
             {/* AVISO DE ENTRADA VINCULADA */}
             {(displayPlace.isLinkedEntrance || (isEditing && displayPlace.isLinkedEntrance)) && (
-              <View style={[styles.linkedEntranceCard, { backgroundColor: '#F4F6F7', borderColor: theme.primary, marginBottom: 15 }]}>
-                <Building2 color={theme.primary} size={20} />
+              <View style={[styles.linkedEntranceCard, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : '#F4F6F7', borderColor: theme.primary, borderWidth: 1, borderRadius: 12, padding: 15, marginBottom: 15, flexDirection: 'row', alignItems: 'center', gap: 12 }]}>
+                <LinkIcon color={theme.primary} size={20} />
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.linkedTitle, { color: theme.text }]}>Compra la entrada</Text>
+                  <Text style={[styles.linkedTitle, { color: theme.text, fontWeight: 'bold' }]}>Entrada Vinculada</Text>
                   {isEditing ? (
                     <TextInput 
-                      style={[styles.linkedInput, { color: theme.textSecondary }]}
-                      placeholder="Ej: La visita se incluye en la entrada del castillo"
+                      style={[styles.linkedInput, { color: theme.textSecondary, borderBottomWidth: 1, borderBottomColor: theme.border }]}
+                      placeholder="Ej: Incluida en la entrada del Castillo de Santa Bárbara"
                       value={displayPlace.linkedEntranceName}
                       onChangeText={(v) => setPlace({...place, linkedEntranceName: v})}
                     />
@@ -1416,49 +1823,154 @@ export function PlaceDetailScreen({ route, navigation }) {
                 </View>
               </View>
             )}
-            <View style={[styles.tariffsContainer, { backgroundColor: theme.surface }]}>
-              {(displayPlace.tariffs || []).length > 0 ? (
+            <View style={[styles.tariffsContainer, { backgroundColor: theme.surface, borderRadius: 16, padding: 15 }]}>
+              {displayPlace.tariffs && displayPlace.tariffs.length > 0 ? (
                 <>
-                  {(displayPlace.tariffs || []).map((tariff, idx) => (
-                    <View key={tariff.id || idx} style={styles.tariffRow}>
+                  {displayPlace.tariffs.map((tariff, idx) => (
+                    <View key={tariff.id || idx} style={styles.tariffCard}>
                       {isEditing ? (
-                        <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-                          <TouchableOpacity onPress={() => {
-                            const newTariffs = [...(displayPlace.tariffs || [])];
-                            newTariffs.splice(idx, 1);
-                            setPlace({...place, tariffs: newTariffs});
-                          }}>
-                            <MinusCircle color="#E74C3C" size={20} />
-                          </TouchableOpacity>
-                          <TextInput
-                            style={[styles.tariffLabel, { color: theme.text, borderBottomWidth: 1, borderBottomColor: theme.border }]}
-                            value={tariff.label}
-                            onChangeText={(v) => {
+                        <View style={{ gap: 10 }}>
+                          <View style={styles.tariffRowMain}>
+                            <TouchableOpacity onPress={() => {
                               const newTariffs = [...(displayPlace.tariffs || [])];
-                              newTariffs[idx] = { ...tariff, label: v };
+                              newTariffs.splice(idx, 1);
                               setPlace({...place, tariffs: newTariffs});
-                            }}
-                          />
+                            }}>
+                              <MinusCircle color="#E74C3C" size={20} />
+                            </TouchableOpacity>
+                            
+                            <TouchableOpacity 
+                              style={[styles.tariffSelector, { borderBottomColor: theme.border, borderBottomWidth: 1 }]}
+                              onPress={() => setPickerModal({
+                                visible: true,
+                                title: 'Tipo de Tarifa',
+                                options: TARIFF_PRESETS,
+                                onSelect: (val) => {
+                                  const newTariffs = [...(displayPlace.tariffs || [])];
+                                  newTariffs[idx].label = val;
+                                  setPlace({...place, tariffs: newTariffs});
+                                }
+                              })}
+                            >
+                              <Text style={{ color: theme.text, fontSize: 13, fontWeight: '700' }}>{tariff.label}</Text>
+                              <ChevronLeft color={theme.textSecondary} size={14} style={{ transform: [{ rotate: '-90deg' }] }} />
+                            </TouchableOpacity>
+
+                            <TextInput
+                              style={[styles.priceInput, { color: theme.primary, backgroundColor: theme.primary + '15' }]}
+                              value={String(tariff.price)}
+                              placeholder="0 €"
+                              onChangeText={(v) => {
+                                const newTariffs = [...(displayPlace.tariffs || [])];
+                                newTariffs[idx] = { ...tariff, price: v.includes('€') ? v : `${v} €` };
+                                setPlace({...place, tariffs: newTariffs});
+                              }}
+                            />
+                          </View>
+
+                          {/* Subtipos / Condiciones */}
+                          <View style={styles.conditionSection}>
+                            <TouchableOpacity 
+                              style={[styles.conditionSelector, { backgroundColor: theme.background, borderColor: theme.border }]}
+                              onPress={() => setPickerModal({
+                                visible: true,
+                                title: 'Subtipo / Condición',
+                                options: TARIFF_SUBTYPES.map(s => s.label),
+                                onSelect: (val) => {
+                                  const subtype = TARIFF_SUBTYPES.find(s => s.label === val);
+                                  updateTariffCondition(idx, 'type', subtype.id);
+                                }
+                              })}
+                            >
+                              <Info color={theme.primary} size={14} />
+                              <Text style={{ color: theme.textSecondary, fontSize: 11, fontWeight: '600', flex: 1, marginLeft: 5 }}>
+                                {TARIFF_SUBTYPES.find(s => s.id === (tariff.condition?.type || 'none'))?.label}
+                              </Text>
+                              <ChevronLeft color={theme.textSecondary} size={12} style={{ transform: [{ rotate: '-90deg' }] }} />
+                            </TouchableOpacity>
+
+                            {/* Controles específicos según tipo */}
+                            {(tariff.condition?.type === 'disability') && (
+                              <View style={styles.conditionDetails}>
+                                <Text style={{ color: theme.textSecondary, fontSize: 11 }}>Mínimo:</Text>
+                                <TouchableOpacity 
+                                  style={styles.smallSelector}
+                                  onPress={() => setPickerModal({
+                                    visible: true,
+                                    title: 'Porcentaje Discapacidad',
+                                    options: PERCENTAGES.map(p => `${p}%`),
+                                    onSelect: (val) => updateTariffCondition(idx, 'value', val.replace('%', ''))
+                                  })}
+                                >
+                                  <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12 }}>{tariff.condition.value || '33'}%</Text>
+                                </TouchableOpacity>
+                              </View>
+                            )}
+
+                            {(tariff.condition?.type === 'senior' || tariff.condition?.type === 'child') && (
+                              <View style={styles.conditionDetails}>
+                                <Text style={{ color: theme.textSecondary, fontSize: 11 }}>Edad:</Text>
+                                <TouchableOpacity 
+                                  style={styles.smallSelector}
+                                  onPress={() => setPickerModal({
+                                    visible: true,
+                                    title: 'Seleccionar Edad',
+                                    options: AGES,
+                                    onSelect: (val) => updateTariffCondition(idx, 'value', val)
+                                  })}
+                                >
+                                  <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12 }}>{tariff.condition.value || '65'} años</Text>
+                                </TouchableOpacity>
+                              </View>
+                            )}
+
+                            {(tariff.condition?.type === 'age_range' || tariff.condition?.type === 'student') && (
+                              <View style={styles.conditionDetails}>
+                                <Text style={{ color: theme.textSecondary, fontSize: 11 }}>De:</Text>
+                                <TouchableOpacity 
+                                  style={styles.smallSelector}
+                                  onPress={() => setPickerModal({
+                                    visible: true,
+                                    title: 'Desde Edad',
+                                    options: AGES,
+                                    onSelect: (val) => updateTariffCondition(idx, 'from', val)
+                                  })}
+                                >
+                                  <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12 }}>{tariff.condition.from || '18'}</Text>
+                                </TouchableOpacity>
+                                <Text style={{ color: theme.textSecondary, fontSize: 11 }}>a:</Text>
+                                <TouchableOpacity 
+                                  style={styles.smallSelector}
+                                  onPress={() => setPickerModal({
+                                    visible: true,
+                                    title: 'Hasta Edad',
+                                    options: AGES,
+                                    onSelect: (val) => updateTariffCondition(idx, 'to', val)
+                                  })}
+                                >
+                                  <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12 }}>{tariff.condition.to || '25'}</Text>
+                                </TouchableOpacity>
+                              </View>
+                            )}
+                          </View>
                         </View>
                       ) : (
-                        <Text style={[styles.tariffLabel, { color: theme.text }]}>{tariff.label}</Text>
+                        <View style={{ flex: 1 }}>
+                          <View style={[styles.tariffRow, { borderBottomWidth: 0, paddingVertical: 0 }]}>
+                            <View style={{ flex: 1 }}>
+                              <Text style={[styles.tariffLabel, { color: theme.text }]}>{tariff.label}</Text>
+                              {getConditionText(tariff.condition) && (
+                                <Text style={{ color: theme.textSecondary, fontSize: 11, marginTop: 2 }}>
+                                  {getConditionText(tariff.condition)}
+                                </Text>
+                              )}
+                            </View>
+                            <View style={[styles.priceTag, { backgroundColor: theme.primary + '20', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8 }]}>
+                              <Text style={[styles.priceText, { color: theme.primary, fontWeight: 'bold' }]}>{tariff.price}</Text>
+                            </View>
+                          </View>
+                        </View>
                       )}
-                      
-                      <View style={[styles.priceTag, { backgroundColor: theme.primary + '20' }]}>
-                        {isEditing ? (
-                          <TextInput
-                            style={[styles.priceEditInput, { color: theme.primary }]}
-                            value={String(tariff.price)}
-                            onChangeText={(v) => {
-                              const newTariffs = [...(displayPlace.tariffs || [])];
-                              newTariffs[idx] = { ...tariff, price: v };
-                              setPlace({...place, tariffs: newTariffs});
-                            }}
-                          />
-                        ) : (
-                          <Text style={[styles.priceText, { color: theme.primary }]}>{tariff.price}</Text>
-                        )}
-                      </View>
                     </View>
                   ))}
 
@@ -1653,7 +2165,7 @@ export function PlaceDetailScreen({ route, navigation }) {
                 />
               ) : (
                 <Text style={[styles.addressText, { color: theme.textSecondary }]}>
-                  {displayPlace.address || `${displayPlace.city}, ${displayPlace.province || ''}`}
+                  {String(displayPlace.address || `${displayPlace.city || ''}, ${displayPlace.province || ''}`)}
                 </Text>
               )}
               {!isEditing && (
@@ -1697,15 +2209,15 @@ export function PlaceDetailScreen({ route, navigation }) {
             )}
             <View style={styles.checkList}>
               <View style={styles.checkItem}>
-                <CheckCircle color="#2ECC71" size={18} />
+                <CheckCircle2 color="#2ECC71" size={18} />
                 <Text style={[styles.checkText, { color: theme.text }]}>Acceso sin escalones</Text>
               </View>
               <View style={styles.checkItem}>
-                <CheckCircle color="#2ECC71" size={18} />
+                <CheckCircle2 color="#2ECC71" size={18} />
                 <Text style={[styles.checkText, { color: theme.text }]}>Ascensor panorámico</Text>
               </View>
               <View style={styles.checkItem}>
-                <TriangleAlert color="#F1C40F" size={18} />
+                <AlertTriangle color="#F1C40F" size={18} />
                 <Text style={[styles.checkText, { color: theme.text }]}>Aviso previo recomendado</Text>
               </View>
             </View>
@@ -1713,6 +2225,48 @@ export function PlaceDetailScreen({ route, navigation }) {
         </View>
         <View style={{ height: 40 }} />
       </ScrollView>
+
+      {/* Custom Picker Modal */}
+      <Modal
+        visible={pickerModal.visible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setPickerModal({ ...pickerModal, visible: false })}
+      >
+        <TouchableOpacity 
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setPickerModal({ ...pickerModal, visible: false })}
+        >
+          <View style={[styles.pickerContent, { backgroundColor: theme.surface, borderColor: theme.border, borderWidth: 1 }]}>
+            <Text style={[styles.modalTitle, { color: theme.text, marginBottom: 15, fontSize: 18, fontWeight: 'bold', textAlign: 'center' }]}>
+              {pickerModal.title}
+            </Text>
+            <FlatList
+              data={pickerModal.options}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity 
+                  style={[styles.pickerItem, { borderBottomColor: theme.border }]}
+                  onPress={() => {
+                    pickerModal.onSelect(item);
+                    setPickerModal({ ...pickerModal, visible: false });
+                  }}
+                >
+                  <Text style={[styles.pickerItemText, { color: item === 'Cerrado' ? '#E74C3C' : theme.text }]}>{item}</Text>
+                </TouchableOpacity>
+              )}
+              showsVerticalScrollIndicator={false}
+            />
+            <TouchableOpacity 
+              style={{ marginTop: 15, padding: 12, backgroundColor: theme.primary, borderRadius: 12, alignItems: 'center' }}
+              onPress={() => setPickerModal({ ...pickerModal, visible: false })}
+            >
+              <Text style={{ color: '#FFF', fontWeight: 'bold' }}>Cancelar</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       {isAiProcessing && (
         <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 10000, justifyContent: 'center', alignItems: 'center' }}>
@@ -1728,6 +2282,51 @@ export function PlaceDetailScreen({ route, navigation }) {
             <Text style={{ color: theme.primary, fontSize: 13, fontWeight: '900', marginTop: 15, letterSpacing: 1 }}>
               {Math.round(aiProgress * 100)}% COMPLETADO
             </Text>
+          </View>
+        </View>
+      )}
+
+      {/* Expandable FAB Menu */}
+      <View style={styles.fabContainer}>
+        {isMenuOpen && (
+          <Animated.View style={[styles.expandedMenu, { opacity: menuOpacity, transform: [{ scale: menuScale }] }]}>
+            <TouchableOpacity 
+              style={[styles.miniFab, { backgroundColor: '#FF3B30' }]} 
+              onPress={() => { toggleMenu(); navigation.navigate('Emergency'); }}
+            >
+              <TriangleAlert color="#FFF" size={20} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.miniFab, { backgroundColor: '#3498DB' }]} 
+              onPress={() => { toggleMenu(); navigation.navigate('Toilets'); }}
+            >
+              <Bath color="#FFF" size={20} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.miniFab, { backgroundColor: '#F1C40F' }]} 
+              onPress={() => { toggleMenu(); navigation.navigate('Report'); }}
+            >
+              <ShieldCheck color="#070B14" size={20} />
+            </TouchableOpacity>
+          </Animated.View>
+        )}
+        <TouchableOpacity
+          style={[styles.fab, { backgroundColor: theme.primary }]}
+          onPress={toggleMenu}
+        >
+          <Animated.View style={{ transform: [{ rotate: menuAnim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '45deg'] }) }] }}>
+            {isMenuOpen ? <X color="#FFF" size={32} /> : <PlusCircle color="#FFF" size={32} />}
+          </Animated.View>
+        </TouchableOpacity>
+      </View>
+      {showSuccess && (
+        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 20000, justifyContent: 'center', alignItems: 'center' }}>
+          <View style={{ alignItems: 'center' }}>
+            <View style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: theme.primary, justifyContent: 'center', alignItems: 'center', marginBottom: 20 }}>
+              <Check color="#FFF" size={60} strokeWidth={4} />
+            </View>
+            <Text style={{ color: '#FFF', fontSize: 28, fontWeight: 'bold', textAlign: 'center' }}>¡Cambios Guardados!</Text>
+            <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 16, marginTop: 10, textAlign: 'center' }}>La información ha sido actualizada correctamente.</Text>
           </View>
         </View>
       )}
@@ -1769,6 +2368,26 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0,0,0,0.5)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
+  },
+  detailSearchResults: {
+    position: 'absolute',
+    top: 55,
+    left: 0,
+    right: 0,
+    borderRadius: 15,
+    borderWidth: 1,
+    zIndex: 10000,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    maxHeight: 200
+  },
+  searchItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
   },
   headerActions: { position: 'absolute', top: 0, left: 0, right: 0, flexDirection: 'row', padding: 20, zIndex: 10 },
   circleButton: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
@@ -1936,7 +2555,7 @@ const styles = StyleSheet.create({
   holidayNote: { flexDirection: 'row', alignItems: 'center', marginTop: 12, gap: 8 },
   holidayText: { fontSize: 12, fontStyle: 'italic' },
   tariffsContainer: { padding: 15, borderRadius: 15, marginTop: 10 },
-  tariffRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.05)' },
+  tariffRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: 'rgba(0,0,0,0.05)' },
   tariffLabel: { fontSize: 14, fontWeight: '600', flex: 1 },
   priceTag: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 10 },
   priceText: { fontSize: 14, fontWeight: '800' },
@@ -2368,6 +2987,18 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: 4,
   },
+  monthSelector: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    minWidth: 70,
+    alignItems: 'center',
+  },
+  monthSelectorText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
   daysGrid: {
     gap: 8,
   },
@@ -2393,6 +3024,17 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: 4,
   },
+  timeSelector: {
+    width: 48,
+    paddingVertical: 3,
+    borderRadius: 6,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  timeSelectorText: {
+    fontSize: 10,
+    fontWeight: '800',
+  },
   addSeasonBtn: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -2401,5 +3043,127 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 8,
-  }
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  pickerContent: {
+    width: '85%',
+    maxHeight: '70%',
+    borderRadius: 25,
+    padding: 20,
+    elevation: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
+  },
+  pickerItem: {
+    paddingVertical: 15,
+    borderBottomWidth: 0.5,
+    alignItems: 'center',
+  },
+  pickerItemText: {
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  tagChip: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    marginRight: 5,
+  },
+  tagChipText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  tagsEdit: {
+    fontSize: 14,
+    paddingVertical: 5,
+  },
+  specialClosureBox: {
+    borderWidth: 1,
+    borderColor: '#E74C3C',
+  },
+  fabContainer: {
+    position: 'absolute',
+    bottom: 30,
+    right: 20,
+    alignItems: 'center',
+    zIndex: 999,
+  },
+  fab: {
+    width: 65,
+    height: 65,
+    borderRadius: 32.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+  },
+  expandedMenu: {
+    marginBottom: 15,
+    gap: 12,
+    alignItems: 'center',
+  },
+  miniFab: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+  },
+  tariffCard: { 
+    marginBottom: 15, 
+    paddingBottom: 15, 
+    borderBottomWidth: 1, 
+    borderBottomColor: 'rgba(0,0,0,0.05)' 
+  },
+  tariffRowMain: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
+  tariffSelector: {
+    flex: 1,
+    height: 40,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingRight: 5
+  },
+  priceInput: { width: 85, height: 40, borderRadius: 10, textAlign: 'center', fontSize: 13, fontWeight: '800' },
+  conditionSection: {
+    marginLeft: 30,
+    gap: 8
+  },
+  conditionSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  conditionDetails: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginLeft: 10
+  },
+  smallSelector: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    backgroundColor: 'rgba(0,0,0,0.03)',
+    borderWidth: 0.5,
+    borderColor: 'rgba(0,0,0,0.1)'
+  },
 });

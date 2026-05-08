@@ -1,10 +1,1261 @@
+env: load .env
+env: export EXPO_PUBLIC_GEMINI_API_KEY
 Starting project at /opt/distravel
 Starting Metro Bundler
+warning: Bundler cache is empty, rebuilding (this may take a minute)
 Tunnel connected.
 Tunnel ready.
 Waiting on http://localhost:8081
 Logs for your project will appear below.
 Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
-Android ./index.js ▓▓▓▓▓░░░░░░░░░░░ 36.6% (338/581)
-Android ./index.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 91.7% (1441/2624)
-Android Bundled 9677ms index.js (2834 modules)
+Android ./index.js ▓▓▓▓▓░░░░░░░░░░░ 35.2% (375/632)
+Android ./index.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 77.1% (1965/2673)
+Android Bundling failed 9475ms index.js (2951 modules)
+ ERROR  SyntaxError: /opt/distravel/src/screens/PlaceDetailScreen.js: Identifier 'CheckCircle2' has already been declared. (53:2)
+
+  51 |   TrendingDown,
+  52 |   ShieldCheck,
+> 53 |   CheckCircle2,
+     |   ^
+  54 |   Construction,
+  55 |   Zap,
+  56 |   ChevronRight
+    at constructor (/opt/distravel/node_modules/@babel/parser/lib/index.js:365:19)
+    at FlowParserMixin.raise (/opt/distravel/node_modules/@babel/parser/lib/index.js:6616:19)
+    at FlowScopeHandler.checkRedeclarationInScope (/opt/distravel/node_modules/@babel/parser/lib/index.js:1619:19)
+    at FlowScopeHandler.declareName (/opt/distravel/node_modules/@babel/parser/lib/index.js:1585:12)
+    at FlowScopeHandler.declareName (/opt/distravel/node_modules/@babel/parser/lib/index.js:1686:11)
+    at FlowParserMixin.declareNameFromIdentifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:7584:16)
+    at FlowParserMixin.checkIdentifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:7580:12)
+    at FlowParserMixin.checkLVal (/opt/distravel/node_modules/@babel/parser/lib/index.js:7517:12)
+    at FlowParserMixin.finishImportSpecifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:14283:10)
+    at FlowParserMixin.parseImportSpecifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:3468:17)
+    at FlowParserMixin.parseNamedImportSpecifiers (/opt/distravel/node_modules/@babel/parser/lib/index.js:14415:36)
+    at FlowParserMixin.parseImportSpecifiersAndAfter (/opt/distravel/node_modules/@babel/parser/lib/index.js:14259:37)
+    at FlowParserMixin.parseImport (/opt/distravel/node_modules/@babel/parser/lib/index.js:14252:17)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12893:27)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseModuleItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12761:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:36)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseProgram (/opt/distravel/node_modules/@babel/parser/lib/index.js:12639:10)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:12629:25)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:3697:28)
+    at FlowParserMixin.parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14505:25)
+    at parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14518:26)
+    at parser (/opt/distravel/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/opt/distravel/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/opt/distravel/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/opt/distravel/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at evaluateSync (/opt/distravel/node_modules/gensync/index.js:251:28)
+    at sync (/opt/distravel/node_modules/gensync/index.js:89:14)
+    at stopHiding - secret - don't use this - v1 (/opt/distravel/node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:47:12)
+    at Object.transformSync (/opt/distravel/node_modules/@babel/core/lib/transform.js:40:76)
+    at parseWithBabel (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transformSync.js:75:18)
+    at transformSync (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transformSync.js:64:12)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/babel-transformer.js:127:58)
+    at transformJSWithBabel (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/metro-transform-worker.js:468:47)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/metro-transform-worker.js:583:12)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/transform-worker.js:178:19)
+    at transformFile (/opt/distravel/node_modules/metro/src/DeltaBundler/Worker.flow.js:67:36)
+    at Object.transform (/opt/distravel/node_modules/metro/src/DeltaBundler/Worker.flow.js:42:10)
+    at execFunction (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:149:17)
+    at execHelper (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:137:5)
+    at execMethod (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:140:5)
+    at process.messageListener (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:44:7)
+    at process.emit (node:events:517:28)
+    at emit (node:internal/child_process:944:14)
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 1533ms index.js (2951 modules)
+ ERROR  CRITICAL: Distravel App v3.0.2 - RENDERING
+ ERROR  CRITICAL: Distravel App v3.0.2 - STARTING
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ ERROR  [Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+
+Check the render method of `MapScreen`.]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 98ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ ERROR  [Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+
+Check the render method of `MapScreen`.]
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ ERROR  [Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+
+Check the render method of `MapScreen`.]
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ ERROR  [Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+
+Check the render method of `MapScreen`.]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 95ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  DEBUG: MapView is: object {"AnimatedRegion": [Function AnimatedRegion], "Callout": [Function Dummy], "CalloutSubview": [Function Dummy], "Circle": [Function Dummy], "Geojson": [Function Dummy], "Heatmap": [Function Dummy], "LocalTile": [Function Dummy], "MAP_TYPES": {"HYBRID": "hybrid", "MUTED_STANDARD": "mutedStandard", "NONE": "none", "SATELLITE": "satellite", "STANDARD": "standard", "TERRAIN": "terrain"}, "MapView": [Function Dummy], "Marker": [Function Dummy], "MarkerAnimated": [Function Dummy], "Overlay": [Function Dummy], "OverlayAnimated": [Function Dummy], "Polygon": [Function Dummy], "Polyline": [Function Dummy], "ProviderConstants": {}, "UrlTile": [Function Dummy], "WMSTile": [Function Dummy], "default": [Function Dummy]}
+ ERROR  [ReferenceError: Property 'MapView' doesn't exist]
+ ERROR  [TypeError: Cannot assign to property 'default' which has only a getter]
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ ERROR  [Error: Couldn't find a 'component', 'getComponent' or 'children' prop for the screen 'Map'. This can happen if you passed 'undefined'. You likely forgot to export your component from the file it's defined in, or mixed up default import and named import when importing.]
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ ERROR  [ReferenceError: Property 'MapView' doesn't exist]
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ ERROR  [Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+
+Check the render method of `MapScreen`.]
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ ERROR  [Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+
+Check the render method of `MapScreen`.]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 78ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ ERROR  [Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+
+Check the render method of `MapScreen`.]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 167ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  DEBUG: MapView component: object Exists
+ LOG  DEBUG: PROVIDER_GOOGLE: undefined
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ LOG  DEBUG: MapView component: object Exists
+ LOG  DEBUG: PROVIDER_GOOGLE: undefined
+ ERROR  [Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+
+Check the render method of `MapScreen`.]
+ ERROR  SyntaxError: /opt/distravel/src/screens/MapScreen.js: Unexpected token (32:0)
+
+  30 |   );
+  31 | }
+> 32 | }
+     | ^
+  33 |
+  34 | const styles = StyleSheet.create({
+  35 |   container: {
+    at constructor (/opt/distravel/node_modules/@babel/parser/lib/index.js:365:19)
+    at FlowParserMixin.raise (/opt/distravel/node_modules/@babel/parser/lib/index.js:6616:19)
+    at FlowParserMixin.unexpected (/opt/distravel/node_modules/@babel/parser/lib/index.js:6636:16)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:11459:22)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:4776:20)
+    at FlowParserMixin.parseExprSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11098:23)
+    at FlowParserMixin.parseUpdate (/opt/distravel/node_modules/@babel/parser/lib/index.js:11083:21)
+    at FlowParserMixin.parseMaybeUnary (/opt/distravel/node_modules/@babel/parser/lib/index.js:11063:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/opt/distravel/node_modules/@babel/parser/lib/index.js:10916:61)
+    at FlowParserMixin.parseExprOps (/opt/distravel/node_modules/@babel/parser/lib/index.js:10921:23)
+    at FlowParserMixin.parseMaybeConditional (/opt/distravel/node_modules/@babel/parser/lib/index.js:10898:23)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:10848:21)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:3561:18)
+    at FlowParserMixin.parseExpressionBase (/opt/distravel/node_modules/@babel/parser/lib/index.js:10801:23)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:10797:39
+    at FlowParserMixin.allowInAnd (/opt/distravel/node_modules/@babel/parser/lib/index.js:12438:16)
+    at FlowParserMixin.parseExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:10797:17)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12912:23)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseModuleItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12761:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:36)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseProgram (/opt/distravel/node_modules/@babel/parser/lib/index.js:12639:10)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:12629:25)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:3697:28)
+    at FlowParserMixin.parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14505:25)
+    at parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14518:26)
+    at parser (/opt/distravel/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/opt/distravel/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/opt/distravel/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/opt/distravel/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at evaluateSync (/opt/distravel/node_modules/gensync/index.js:251:28)
+    at sync (/opt/distravel/node_modules/gensync/index.js:89:14)
+    at stopHiding - secret - don't use this - v1 (/opt/distravel/node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:47:12)
+    at Object.transformSync (/opt/distravel/node_modules/@babel/core/lib/transform.js:40:76)
+    at parseWithBabel (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transformSync.js:75:18)
+    at transformSync (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transformSync.js:64:12)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/babel-transformer.js:127:58)
+    at transformJSWithBabel (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/metro-transform-worker.js:468:47)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/metro-transform-worker.js:583:12)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/transform-worker.js:178:19)
+    at transformFile (/opt/distravel/node_modules/metro/src/DeltaBundler/Worker.flow.js:67:36)
+    at Object.transform (/opt/distravel/node_modules/metro/src/DeltaBundler/Worker.flow.js:42:10)
+    at execFunction (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:149:17)
+    at execHelper (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:137:5)
+ ERROR  [Error: TransformError SyntaxError: /opt/distravel/src/screens/MapScreen.js: Unexpected token (32:0)
+
+[0m [90m 30 |[39m   )[33m;[39m
+ [90m 31 |[39m }
+[31m[1m>[22m[39m[90m 32 |[39m }
+ [90m    |[39m [31m[1m^[22m[39m
+ [90m 33 |[39m
+ [90m 34 |[39m [36mconst[39m styles [33m=[39m [33mStyleSheet[39m[33m.[39mcreate({
+ [90m 35 |[39m   container[33m:[39m {[0m]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 71ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ ERROR  [TypeError: 0, _dataFiestasPatronales.getFiestaPatronal is not a function (it is undefined)]
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ ERROR  [Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+
+Check the render method of `MapScreen`.]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 76ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ ERROR  [Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+
+Check the render method of `MapScreen`.]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 123ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel: Detectados datos antiguos de Alicante. Limpiando...
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ ERROR  [Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+
+Check the render method of `MapScreen`.]
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ ERROR  [Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+
+Check the render method of `MapScreen`.]
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ ERROR  [Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+
+Check the render method of `MapScreen`.]
+ ERROR  SyntaxError: /opt/distravel/src/screens/MapScreen.js: Identifier 'styles' has already been declared. (318:6)
+
+  316 | });
+  317 |
+> 318 | const styles = StyleSheet.create({
+      |       ^
+  319 |   container: {
+  320 |     flex: 1,
+  321 |   },
+    at constructor (/opt/distravel/node_modules/@babel/parser/lib/index.js:365:19)
+    at FlowParserMixin.raise (/opt/distravel/node_modules/@babel/parser/lib/index.js:6616:19)
+    at FlowScopeHandler.checkRedeclarationInScope (/opt/distravel/node_modules/@babel/parser/lib/index.js:1619:19)
+    at FlowScopeHandler.declareName (/opt/distravel/node_modules/@babel/parser/lib/index.js:1585:12)
+    at FlowScopeHandler.declareName (/opt/distravel/node_modules/@babel/parser/lib/index.js:1686:11)
+    at FlowParserMixin.declareNameFromIdentifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:7584:16)
+    at FlowParserMixin.checkIdentifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:7580:12)
+    at FlowParserMixin.checkLVal (/opt/distravel/node_modules/@babel/parser/lib/index.js:7517:12)
+    at FlowParserMixin.parseVarId (/opt/distravel/node_modules/@babel/parser/lib/index.js:13429:10)
+    at FlowParserMixin.parseVarId (/opt/distravel/node_modules/@babel/parser/lib/index.js:3486:11)
+    at FlowParserMixin.parseVar (/opt/distravel/node_modules/@babel/parser/lib/index.js:13400:12)
+    at FlowParserMixin.parseVarStatement (/opt/distravel/node_modules/@babel/parser/lib/index.js:13247:10)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12868:23)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseModuleItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12761:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:36)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseProgram (/opt/distravel/node_modules/@babel/parser/lib/index.js:12639:10)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:12629:25)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:3697:28)
+    at FlowParserMixin.parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14505:25)
+    at parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14518:26)
+    at parser (/opt/distravel/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/opt/distravel/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/opt/distravel/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/opt/distravel/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at evaluateSync (/opt/distravel/node_modules/gensync/index.js:251:28)
+    at sync (/opt/distravel/node_modules/gensync/index.js:89:14)
+    at stopHiding - secret - don't use this - v1 (/opt/distravel/node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:47:12)
+    at Object.transformSync (/opt/distravel/node_modules/@babel/core/lib/transform.js:40:76)
+    at parseWithBabel (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transformSync.js:75:18)
+    at transformSync (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transformSync.js:64:12)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/babel-transformer.js:127:58)
+    at transformJSWithBabel (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/metro-transform-worker.js:468:47)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/metro-transform-worker.js:583:12)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/transform-worker.js:178:19)
+    at transformFile (/opt/distravel/node_modules/metro/src/DeltaBundler/Worker.flow.js:67:36)
+    at Object.transform (/opt/distravel/node_modules/metro/src/DeltaBundler/Worker.flow.js:42:10)
+    at execFunction (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:149:17)
+    at execHelper (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:137:5)
+    at execMethod (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:140:5)
+    at process.messageListener (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:44:7)
+    at process.emit (node:events:517:28)
+    at emit (node:internal/child_process:944:14)
+    at process.processTicksAndRejections (node:internal/process/task_queues:83:21)
+ ERROR  [Error: TransformError SyntaxError: /opt/distravel/src/screens/MapScreen.js: Identifier 'styles' has already been declared. (318:6)
+
+[0m [90m 316 |[39m })[33m;[39m
+ [90m 317 |[39m
+[31m[1m>[22m[39m[90m 318 |[39m [36mconst[39m styles [33m=[39m [33mStyleSheet[39m[33m.[39mcreate({
+ [90m     |[39m       [31m[1m^[22m[39m
+ [90m 319 |[39m   container[33m:[39m {
+ [90m 320 |[39m     flex[33m:[39m [35m1[39m[33m,[39m
+ [90m 321 |[39m   }[33m,[39m[0m]
+ ERROR  [TypeError: Cannot assign to property 'default' which has only a getter]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 70ms index.js (1 module)
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 67ms index.js (1 module)
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 128ms index.js (1 module)
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 144ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ ERROR  [Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+
+Check the render method of `MapScreen`.]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 73ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ ERROR  [Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+
+Check the render method of `MapScreen`.]
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ ERROR  [ReferenceError: Property 'LocateFixed' doesn't exist]
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ ERROR  [Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+
+Check the render method of `MapScreen`.]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 76ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ ERROR  [Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+
+Check the render method of `MapScreen`.]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 68ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  MapScreen Debug - MapView type: object
+ LOG  MapScreen Debug - Marker type: function
+ LOG  MapScreen Debug - Callout type: function
+ LOG  MapScreen Debug - Icons: {"ChevronLeft": "object", "Locate": "object", "Moon": "object", "Sun": "object"}
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ LOG  MapScreen Debug - MapView type: object
+ LOG  MapScreen Debug - Marker type: function
+ LOG  MapScreen Debug - Callout type: function
+ LOG  MapScreen Debug - Icons: {"ChevronLeft": "object", "Locate": "object", "Moon": "object", "Sun": "object"}
+ ERROR  [Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+
+Check the render method of `MapScreen`.]
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ ERROR  [Error: Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) but got: object.
+
+Check the render method of `MapScreen`.]
+ LOG  Distravel v3.0: Iniciando carga de datos...
+Unable to resolve "./specs/NativeComponentPolyline" from "node_modules/react-native-maps/src/decorateMapComponent.ts"
+[0m [90m 26 |[39m [36mimport[39m [33mFabricWMSTile[39m [36mfrom[39m [32m'./specs/NativeComponentWMSTile'[39m[33m;[39m
+ [90m 27 |[39m [36mimport[39m [33mFabricCallout[39m [36mfrom[39m [32m'./specs/NativeComponentCallout'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 28 |[39m [36mimport[39m [33mFabricPolyline[39m [36mfrom[39m [32m'./specs/NativeComponentPolyline'[39m[33m;[39m
+ [90m    |[39m                             [31m[1m^[22m[39m
+ [90m 29 |[39m [36mimport[39m [33mFabricCircle[39m [36mfrom[39m [32m'./specs/NativeComponentCircle'[39m[33m;[39m
+ [90m 30 |[39m [36mimport[39m [33mFabricOverlay[39m [36mfrom[39m [32m'./specs/NativeComponentOverlay'[39m[33m;[39m
+ [90m 31 |[39m[0m
+
+Import stack:
+
+ node_modules/react-native-maps/src/decorateMapComponent.ts
+ | import "./specs/NativeComponentPolyline"
+
+ node_modules/react-native-maps/src/MapHeatmap.tsx
+ | import "./decorateMapComponent"
+
+ node_modules/react-native-maps/src/index.ts
+ | import "./MapHeatmap"
+
+ src/screens/MapScreen.js
+ | import "react-native-maps"
+
+ 
+ | import "./src/screens/MapScreen"
+
+ ERROR  [Error: UnableToResolveError Unable to resolve module ./specs/NativeComponentPolyline from /opt/distravel/node_modules/react-native-maps/src/decorateMapComponent.ts: 
+
+None of these files exist:
+  * node_modules/react-native-maps/src/specs/NativeComponentPolyline(.android.ts|.native.ts|.ts|.android.tsx|.native.tsx|.tsx|.android.mjs|.native.mjs|.mjs|.android.js|.native.js|.js|.android.jsx|.native.jsx|.jsx|.android.json|.native.json|.json|.android.cjs|.native.cjs|.cjs|.android.scss|.native.scss|.scss|.android.sass|.native.sass|.sass|.android.css|.native.css|.css)
+  * node_modules/react-native-maps/src/specs/NativeComponentPolyline
+[0m [90m 26 |[39m [36mimport[39m [33mFabricWMSTile[39m [36mfrom[39m [32m'./specs/NativeComponentWMSTile'[39m[33m;[39m
+ [90m 27 |[39m [36mimport[39m [33mFabricCallout[39m [36mfrom[39m [32m'./specs/NativeComponentCallout'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 28 |[39m [36mimport[39m [33mFabricPolyline[39m [36mfrom[39m [32m'./specs/NativeComponentPolyline'[39m[33m;[39m
+ [90m    |[39m                             [31m[1m^[22m[39m
+ [90m 29 |[39m [36mimport[39m [33mFabricCircle[39m [36mfrom[39m [32m'./specs/NativeComponentCircle'[39m[33m;[39m
+ [90m 30 |[39m [36mimport[39m [33mFabricOverlay[39m [36mfrom[39m [32m'./specs/NativeComponentOverlay'[39m[33m;[39m
+ [90m 31 |[39m[0m]
+Unable to resolve "./specs/NativeComponentPolyline" from "node_modules/react-native-maps/src/decorateMapComponent.ts"
+[0m [90m 26 |[39m [36mimport[39m [33mFabricWMSTile[39m [36mfrom[39m [32m'./specs/NativeComponentWMSTile'[39m[33m;[39m
+ [90m 27 |[39m [36mimport[39m [33mFabricCallout[39m [36mfrom[39m [32m'./specs/NativeComponentCallout'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 28 |[39m [36mimport[39m [33mFabricPolyline[39m [36mfrom[39m [32m'./specs/NativeComponentPolyline'[39m[33m;[39m
+ [90m    |[39m                             [31m[1m^[22m[39m
+ [90m 29 |[39m [36mimport[39m [33mFabricCircle[39m [36mfrom[39m [32m'./specs/NativeComponentCircle'[39m[33m;[39m
+ [90m 30 |[39m [36mimport[39m [33mFabricOverlay[39m [36mfrom[39m [32m'./specs/NativeComponentOverlay'[39m[33m;[39m
+ [90m 31 |[39m[0m
+
+Import stack:
+
+ node_modules/react-native-maps/src/decorateMapComponent.ts
+ | import "./specs/NativeComponentPolyline"
+
+ node_modules/react-native-maps/src/MapHeatmap.tsx
+ | import "./decorateMapComponent"
+
+ node_modules/react-native-maps/src/index.ts
+ | import "./MapHeatmap"
+
+ src/screens/MapScreen.js
+ | import "react-native-maps"
+
+ 
+ | import "./src/screens/MapScreen"
+
+ ERROR  [Error: UnableToResolveError Unable to resolve module ./specs/NativeComponentPolyline from /opt/distravel/node_modules/react-native-maps/src/decorateMapComponent.ts: 
+
+None of these files exist:
+  * node_modules/react-native-maps/src/specs/NativeComponentPolyline(.android.ts|.native.ts|.ts|.android.tsx|.native.tsx|.tsx|.android.mjs|.native.mjs|.mjs|.android.js|.native.js|.js|.android.jsx|.native.jsx|.jsx|.android.json|.native.json|.json|.android.cjs|.native.cjs|.cjs|.android.scss|.native.scss|.scss|.android.sass|.native.sass|.sass|.android.css|.native.css|.css)
+  * node_modules/react-native-maps/src/specs/NativeComponentPolyline
+[0m [90m 26 |[39m [36mimport[39m [33mFabricWMSTile[39m [36mfrom[39m [32m'./specs/NativeComponentWMSTile'[39m[33m;[39m
+ [90m 27 |[39m [36mimport[39m [33mFabricCallout[39m [36mfrom[39m [32m'./specs/NativeComponentCallout'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 28 |[39m [36mimport[39m [33mFabricPolyline[39m [36mfrom[39m [32m'./specs/NativeComponentPolyline'[39m[33m;[39m
+ [90m    |[39m                             [31m[1m^[22m[39m
+ [90m 29 |[39m [36mimport[39m [33mFabricCircle[39m [36mfrom[39m [32m'./specs/NativeComponentCircle'[39m[33m;[39m
+ [90m 30 |[39m [36mimport[39m [33mFabricOverlay[39m [36mfrom[39m [32m'./specs/NativeComponentOverlay'[39m[33m;[39m
+ [90m 31 |[39m[0m]
+Unable to resolve "./specs/NativeComponentPolyline" from "node_modules/react-native-maps/src/decorateMapComponent.ts"
+[0m [90m 26 |[39m [36mimport[39m [33mFabricWMSTile[39m [36mfrom[39m [32m'./specs/NativeComponentWMSTile'[39m[33m;[39m
+ [90m 27 |[39m [36mimport[39m [33mFabricCallout[39m [36mfrom[39m [32m'./specs/NativeComponentCallout'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 28 |[39m [36mimport[39m [33mFabricPolyline[39m [36mfrom[39m [32m'./specs/NativeComponentPolyline'[39m[33m;[39m
+ [90m    |[39m                             [31m[1m^[22m[39m
+ [90m 29 |[39m [36mimport[39m [33mFabricCircle[39m [36mfrom[39m [32m'./specs/NativeComponentCircle'[39m[33m;[39m
+ [90m 30 |[39m [36mimport[39m [33mFabricOverlay[39m [36mfrom[39m [32m'./specs/NativeComponentOverlay'[39m[33m;[39m
+ [90m 31 |[39m[0m
+
+Import stack:
+
+ node_modules/react-native-maps/src/decorateMapComponent.ts
+ | import "./specs/NativeComponentPolyline"
+
+ node_modules/react-native-maps/src/MapHeatmap.tsx
+ | import "./decorateMapComponent"
+
+ node_modules/react-native-maps/src/index.ts
+ | import "./MapHeatmap"
+
+ src/screens/MapScreen.js
+ | import "react-native-maps"
+
+ 
+ | import "./src/screens/MapScreen"
+
+ ERROR  [Error: UnableToResolveError Unable to resolve module ./specs/NativeComponentPolyline from /opt/distravel/node_modules/react-native-maps/src/decorateMapComponent.ts: 
+
+None of these files exist:
+  * node_modules/react-native-maps/src/specs/NativeComponentPolyline(.android.ts|.native.ts|.ts|.android.tsx|.native.tsx|.tsx|.android.mjs|.native.mjs|.mjs|.android.js|.native.js|.js|.android.jsx|.native.jsx|.jsx|.android.json|.native.json|.json|.android.cjs|.native.cjs|.cjs|.android.scss|.native.scss|.scss|.android.sass|.native.sass|.sass|.android.css|.native.css|.css)
+  * node_modules/react-native-maps/src/specs/NativeComponentPolyline
+[0m [90m 26 |[39m [36mimport[39m [33mFabricWMSTile[39m [36mfrom[39m [32m'./specs/NativeComponentWMSTile'[39m[33m;[39m
+ [90m 27 |[39m [36mimport[39m [33mFabricCallout[39m [36mfrom[39m [32m'./specs/NativeComponentCallout'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 28 |[39m [36mimport[39m [33mFabricPolyline[39m [36mfrom[39m [32m'./specs/NativeComponentPolyline'[39m[33m;[39m
+ [90m    |[39m                             [31m[1m^[22m[39m
+ [90m 29 |[39m [36mimport[39m [33mFabricCircle[39m [36mfrom[39m [32m'./specs/NativeComponentCircle'[39m[33m;[39m
+ [90m 30 |[39m [36mimport[39m [33mFabricOverlay[39m [36mfrom[39m [32m'./specs/NativeComponentOverlay'[39m[33m;[39m
+ [90m 31 |[39m[0m]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundling failed 893ms index.js (1 module)
+Unable to resolve "./specs/NativeComponentPolyline" from "node_modules/react-native-maps/src/decorateMapComponent.ts"
+[0m [90m 26 |[39m [36mimport[39m [33mFabricWMSTile[39m [36mfrom[39m [32m'./specs/NativeComponentWMSTile'[39m[33m;[39m
+ [90m 27 |[39m [36mimport[39m [33mFabricCallout[39m [36mfrom[39m [32m'./specs/NativeComponentCallout'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 28 |[39m [36mimport[39m [33mFabricPolyline[39m [36mfrom[39m [32m'./specs/NativeComponentPolyline'[39m[33m;[39m
+ [90m    |[39m                             [31m[1m^[22m[39m
+ [90m 29 |[39m [36mimport[39m [33mFabricCircle[39m [36mfrom[39m [32m'./specs/NativeComponentCircle'[39m[33m;[39m
+ [90m 30 |[39m [36mimport[39m [33mFabricOverlay[39m [36mfrom[39m [32m'./specs/NativeComponentOverlay'[39m[33m;[39m
+ [90m 31 |[39m[0m
+
+Import stack:
+
+ node_modules/react-native-maps/src/decorateMapComponent.ts
+ | import "./specs/NativeComponentPolyline"
+
+ node_modules/react-native-maps/src/MapHeatmap.tsx
+ | import "./decorateMapComponent"
+
+ node_modules/react-native-maps/src/index.ts
+ | import "./MapHeatmap"
+
+ src/screens/MapScreen.js
+ | import "react-native-maps"
+
+ 
+ | import "./src/screens/MapScreen"
+
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 1160ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ ERROR  SyntaxError: /opt/distravel/src/screens/MapScreen.js: Expected corresponding JSX closing tag for <TouchableOpacity>. (166:8)
+
+  164 |             )}
+  165 |           </TouchableOpacity>
+> 166 |         </View>
+      |         ^
+  167 |
+  168 |         <TouchableOpacity 
+  169 |           style={[styles.recenterButton, { backgroundColor: mapTheme === 'dark' ? 'rgba(15, 23, 42, 0.9)' : '#FFFFFF' }]}
+    at constructor (/opt/distravel/node_modules/@babel/parser/lib/index.js:365:19)
+    at FlowParserMixin.raise (/opt/distravel/node_modules/@babel/parser/lib/index.js:6616:19)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4739:16)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4710:32)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4710:32)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4710:32)
+    at FlowParserMixin.jsxParseElement (/opt/distravel/node_modules/@babel/parser/lib/index.js:4761:17)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:4771:19)
+    at FlowParserMixin.parseExprSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11098:23)
+    at FlowParserMixin.parseUpdate (/opt/distravel/node_modules/@babel/parser/lib/index.js:11083:21)
+    at FlowParserMixin.parseMaybeUnary (/opt/distravel/node_modules/@babel/parser/lib/index.js:11063:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/opt/distravel/node_modules/@babel/parser/lib/index.js:10916:61)
+    at FlowParserMixin.parseExprOps (/opt/distravel/node_modules/@babel/parser/lib/index.js:10921:23)
+    at FlowParserMixin.parseMaybeConditional (/opt/distravel/node_modules/@babel/parser/lib/index.js:10898:23)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:10848:21)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:3510:39
+    at FlowParserMixin.tryParse (/opt/distravel/node_modules/@babel/parser/lib/index.js:6924:20)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:3510:18)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:10817:39
+    at FlowParserMixin.allowInAnd (/opt/distravel/node_modules/@babel/parser/lib/index.js:12443:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/opt/distravel/node_modules/@babel/parser/lib/index.js:10817:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/opt/distravel/node_modules/@babel/parser/lib/index.js:12510:17)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:11692:28)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:3603:18)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:11348:23)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:4776:20)
+    at FlowParserMixin.parseExprSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11098:23)
+    at FlowParserMixin.parseUpdate (/opt/distravel/node_modules/@babel/parser/lib/index.js:11083:21)
+    at FlowParserMixin.parseMaybeUnary (/opt/distravel/node_modules/@babel/parser/lib/index.js:11063:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/opt/distravel/node_modules/@babel/parser/lib/index.js:10916:61)
+    at FlowParserMixin.parseExprOps (/opt/distravel/node_modules/@babel/parser/lib/index.js:10921:23)
+    at FlowParserMixin.parseMaybeConditional (/opt/distravel/node_modules/@babel/parser/lib/index.js:10898:23)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:10848:21)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:3561:18)
+    at FlowParserMixin.parseExpressionBase (/opt/distravel/node_modules/@babel/parser/lib/index.js:10801:23)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:10797:39
+    at FlowParserMixin.allowInAnd (/opt/distravel/node_modules/@babel/parser/lib/index.js:12438:16)
+    at FlowParserMixin.parseExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:10797:17)
+    at FlowParserMixin.parseReturnStatement (/opt/distravel/node_modules/@babel/parser/lib/index.js:13159:28)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12815:21)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseStatementListItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12764:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:61)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseBlock (/opt/distravel/node_modules/@babel/parser/lib/index.js:13314:10)
+    at FlowParserMixin.parseFunctionBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:12117:24)
+    at FlowParserMixin.parseFunctionBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:2907:11)
+    at FlowParserMixin.parseFunctionBodyAndFinish (/opt/distravel/node_modules/@babel/parser/lib/index.js:12103:10)
+    at FlowParserMixin.parseFunctionBodyAndFinish (/opt/distravel/node_modules/@babel/parser/lib/index.js:2915:18)
+ ERROR  [Error: TransformError SyntaxError: /opt/distravel/src/screens/MapScreen.js: Expected corresponding JSX closing tag for <TouchableOpacity>. (166:8)
+
+[0m [90m 164 |[39m             )}
+ [90m 165 |[39m           [33m<[39m[33m/[39m[33mTouchableOpacity[39m[33m>[39m
+[31m[1m>[22m[39m[90m 166 |[39m         [33m<[39m[33m/[39m[33mView[39m[33m>[39m
+ [90m     |[39m         [31m[1m^[22m[39m
+ [90m 167 |[39m
+ [90m 168 |[39m         [33m<[39m[33mTouchableOpacity[39m 
+ [90m 169 |[39m           style[33m=[39m{[styles[33m.[39mrecenterButton[33m,[39m { backgroundColor[33m:[39m mapTheme [33m===[39m [32m'dark'[39m [33m?[39m [32m'rgba(15, 23, 42, 0.9)'[39m [33m:[39m [32m'#FFFFFF'[39m }]}[0m]
+ ERROR  [ReferenceError: Property 'colors' doesn't exist]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 496ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 615ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ ERROR  SyntaxError: /opt/distravel/src/screens/PlaceDetailScreen.js: Identifier 'ShieldCheck' has already been declared. (57:2)
+
+  55 |   Plus,
+  56 |   TrendingDown,
+> 57 |   ShieldCheck,
+     |   ^
+  58 |   Construction,
+  59 |   Zap,
+  60 |   ChevronRight
+    at constructor (/opt/distravel/node_modules/@babel/parser/lib/index.js:365:19)
+    at FlowParserMixin.raise (/opt/distravel/node_modules/@babel/parser/lib/index.js:6616:19)
+    at FlowScopeHandler.checkRedeclarationInScope (/opt/distravel/node_modules/@babel/parser/lib/index.js:1619:19)
+    at FlowScopeHandler.declareName (/opt/distravel/node_modules/@babel/parser/lib/index.js:1585:12)
+    at FlowScopeHandler.declareName (/opt/distravel/node_modules/@babel/parser/lib/index.js:1686:11)
+    at FlowParserMixin.declareNameFromIdentifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:7584:16)
+    at FlowParserMixin.checkIdentifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:7580:12)
+    at FlowParserMixin.checkLVal (/opt/distravel/node_modules/@babel/parser/lib/index.js:7517:12)
+    at FlowParserMixin.finishImportSpecifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:14283:10)
+    at FlowParserMixin.parseImportSpecifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:3468:17)
+    at FlowParserMixin.parseNamedImportSpecifiers (/opt/distravel/node_modules/@babel/parser/lib/index.js:14415:36)
+    at FlowParserMixin.parseImportSpecifiersAndAfter (/opt/distravel/node_modules/@babel/parser/lib/index.js:14259:37)
+    at FlowParserMixin.parseImport (/opt/distravel/node_modules/@babel/parser/lib/index.js:14252:17)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12893:27)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseModuleItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12761:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:36)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseProgram (/opt/distravel/node_modules/@babel/parser/lib/index.js:12639:10)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:12629:25)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:3697:28)
+    at FlowParserMixin.parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14505:25)
+    at parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14518:26)
+    at parser (/opt/distravel/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/opt/distravel/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/opt/distravel/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/opt/distravel/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at evaluateSync (/opt/distravel/node_modules/gensync/index.js:251:28)
+    at sync (/opt/distravel/node_modules/gensync/index.js:89:14)
+    at stopHiding - secret - don't use this - v1 (/opt/distravel/node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:47:12)
+    at Object.transformSync (/opt/distravel/node_modules/@babel/core/lib/transform.js:40:76)
+    at parseWithBabel (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transformSync.js:75:18)
+    at transformSync (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transformSync.js:64:12)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/babel-transformer.js:127:58)
+    at transformJSWithBabel (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/metro-transform-worker.js:468:47)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/metro-transform-worker.js:583:12)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/transform-worker.js:178:19)
+    at transformFile (/opt/distravel/node_modules/metro/src/DeltaBundler/Worker.flow.js:67:36)
+    at Object.transform (/opt/distravel/node_modules/metro/src/DeltaBundler/Worker.flow.js:42:10)
+    at execFunction (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:149:17)
+    at execHelper (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:137:5)
+    at execMethod (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:140:5)
+    at process.messageListener (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:44:7)
+    at process.emit (node:events:517:28)
+    at emit (node:internal/child_process:944:14)
+ ERROR  [Error: TransformError SyntaxError: /opt/distravel/src/screens/PlaceDetailScreen.js: Identifier 'ShieldCheck' has already been declared. (57:2)
+
+[0m [90m 55 |[39m   [33mPlus[39m[33m,[39m
+ [90m 56 |[39m   [33mTrendingDown[39m[33m,[39m
+[31m[1m>[22m[39m[90m 57 |[39m   [33mShieldCheck[39m[33m,[39m
+ [90m    |[39m   [31m[1m^[22m[39m
+ [90m 58 |[39m   [33mConstruction[39m[33m,[39m
+ [90m 59 |[39m   [33mZap[39m[33m,[39m
+ [90m 60 |[39m   [33mChevronRight[39m[0m]
+ ERROR  SyntaxError: /opt/distravel/src/screens/PlaceDetailScreen.js: Adjacent JSX elements must be wrapped in an enclosing tag. Did you want a JSX fragment <>...</>? (924:10)
+
+  922 |           </View>
+  923 |
+> 924 |           <View style={styles.heroContent}>
+      |           ^
+  925 |             <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+  926 |               {isEditing ? (
+  927 |                 <TextInput
+    at constructor (/opt/distravel/node_modules/@babel/parser/lib/index.js:365:19)
+    at FlowParserMixin.raise (/opt/distravel/node_modules/@babel/parser/lib/index.js:6616:19)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4754:18)
+    at FlowParserMixin.jsxParseElement (/opt/distravel/node_modules/@babel/parser/lib/index.js:4761:17)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:4771:19)
+    at FlowParserMixin.parseExprSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11098:23)
+    at FlowParserMixin.parseUpdate (/opt/distravel/node_modules/@babel/parser/lib/index.js:11083:21)
+    at FlowParserMixin.parseMaybeUnary (/opt/distravel/node_modules/@babel/parser/lib/index.js:11063:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/opt/distravel/node_modules/@babel/parser/lib/index.js:10916:61)
+    at FlowParserMixin.parseExprOps (/opt/distravel/node_modules/@babel/parser/lib/index.js:10921:23)
+    at FlowParserMixin.parseMaybeConditional (/opt/distravel/node_modules/@babel/parser/lib/index.js:10898:23)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:10848:21)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:3510:39
+    at FlowParserMixin.tryParse (/opt/distravel/node_modules/@babel/parser/lib/index.js:6924:20)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:3510:18)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:10817:39
+    at FlowParserMixin.allowInAnd (/opt/distravel/node_modules/@babel/parser/lib/index.js:12443:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/opt/distravel/node_modules/@babel/parser/lib/index.js:10817:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/opt/distravel/node_modules/@babel/parser/lib/index.js:12510:17)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:11692:28)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:3603:18)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:11348:23)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:4776:20)
+    at FlowParserMixin.parseExprSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11098:23)
+    at FlowParserMixin.parseUpdate (/opt/distravel/node_modules/@babel/parser/lib/index.js:11083:21)
+    at FlowParserMixin.parseMaybeUnary (/opt/distravel/node_modules/@babel/parser/lib/index.js:11063:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/opt/distravel/node_modules/@babel/parser/lib/index.js:10916:61)
+    at FlowParserMixin.parseExprOpBaseRightExpr (/opt/distravel/node_modules/@babel/parser/lib/index.js:11003:34)
+    at FlowParserMixin.parseExprOpRightExpr (/opt/distravel/node_modules/@babel/parser/lib/index.js:10998:21)
+    at FlowParserMixin.parseExprOp (/opt/distravel/node_modules/@babel/parser/lib/index.js:10964:27)
+    at FlowParserMixin.parseExprOps (/opt/distravel/node_modules/@babel/parser/lib/index.js:10925:17)
+    at FlowParserMixin.parseMaybeConditional (/opt/distravel/node_modules/@babel/parser/lib/index.js:10898:23)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:10848:21)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:3561:18)
+    at FlowParserMixin.parseExpressionBase (/opt/distravel/node_modules/@babel/parser/lib/index.js:10801:23)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:10797:39
+    at FlowParserMixin.allowInAnd (/opt/distravel/node_modules/@babel/parser/lib/index.js:12443:12)
+    at FlowParserMixin.parseExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:10797:17)
+    at FlowParserMixin.jsxParseExpressionContainer (/opt/distravel/node_modules/@babel/parser/lib/index.js:4644:31)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4723:36)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4710:32)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4710:32)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4710:32)
+    at FlowParserMixin.jsxParseElement (/opt/distravel/node_modules/@babel/parser/lib/index.js:4761:17)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:4771:19)
+    at FlowParserMixin.parseExprSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11098:23)
+    at FlowParserMixin.parseUpdate (/opt/distravel/node_modules/@babel/parser/lib/index.js:11083:21)
+    at FlowParserMixin.parseMaybeUnary (/opt/distravel/node_modules/@babel/parser/lib/index.js:11063:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/opt/distravel/node_modules/@babel/parser/lib/index.js:10916:61)
+    at FlowParserMixin.parseExprOps (/opt/distravel/node_modules/@babel/parser/lib/index.js:10921:23)
+ ERROR  [Error: TransformError SyntaxError: /opt/distravel/src/screens/PlaceDetailScreen.js: Adjacent JSX elements must be wrapped in an enclosing tag. Did you want a JSX fragment <>...</>? (924:10)
+
+[0m [90m 922 |[39m           [33m<[39m[33m/[39m[33mView[39m[33m>[39m
+ [90m 923 |[39m
+[31m[1m>[22m[39m[90m 924 |[39m           [33m<[39m[33mView[39m style[33m=[39m{styles[33m.[39mheroContent}[33m>[39m
+ [90m     |[39m           [31m[1m^[22m[39m
+ [90m 925 |[39m             [33m<[39m[33mView[39m style[33m=[39m{{ flexDirection[33m:[39m [32m'row'[39m[33m,[39m alignItems[33m:[39m [32m'center'[39m[33m,[39m flexWrap[33m:[39m [32m'wrap'[39m[33m,[39m gap[33m:[39m [35m8[39m }}[33m>[39m
+ [90m 926 |[39m               {isEditing [33m?[39m (
+ [90m 927 |[39m                 [33m<[39m[33mTextInput[39m[0m]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 1045ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ ERROR  [ReferenceError: Property 'MUNICIPIOS_DATA' doesn't exist]
+ ERROR  [ReferenceError: Property 'MUNICIPIOS_DATA' doesn't exist]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 661ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ ERROR  [ReferenceError: Property 'scrollRef' doesn't exist]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 649ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 74ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  [Gemini] Error 404: {"error": {"code": 404, "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.", "status": "NOT_FOUND"}}
+ WARN  [Gemini] Error 404: {"error": {"code": 404, "message": "models/gemini-1.5-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.", "status": "NOT_FOUND"}}
+ ERROR  [TypeError: Cannot convert undefined value to object]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 606ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  [Gemini] Error 404: {"error": {"code": 404, "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.", "status": "NOT_FOUND"}}
+ WARN  [Gemini] Error 404: {"error": {"code": 404, "message": "models/gemini-1.5-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.", "status": "NOT_FOUND"}}
+ ERROR  SyntaxError: /opt/distravel/src/utils/gemini.js: Unexpected token (80:3)
+
+  78 |     }
+  79 |     return null;
+> 80 |   },
+     |    ^
+  81 |
+  82 |   async tryProxy(prompt) {
+  83 |     const controller = new AbortController();
+    at constructor (/opt/distravel/node_modules/@babel/parser/lib/index.js:365:19)
+    at FlowParserMixin.raise (/opt/distravel/node_modules/@babel/parser/lib/index.js:6616:19)
+    at FlowParserMixin.unexpected (/opt/distravel/node_modules/@babel/parser/lib/index.js:6636:16)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:11459:22)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:4776:20)
+    at FlowParserMixin.parseExprSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11098:23)
+    at FlowParserMixin.parseUpdate (/opt/distravel/node_modules/@babel/parser/lib/index.js:11083:21)
+    at FlowParserMixin.parseMaybeUnary (/opt/distravel/node_modules/@babel/parser/lib/index.js:11063:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/opt/distravel/node_modules/@babel/parser/lib/index.js:10916:61)
+    at FlowParserMixin.parseExprOps (/opt/distravel/node_modules/@babel/parser/lib/index.js:10921:23)
+    at FlowParserMixin.parseMaybeConditional (/opt/distravel/node_modules/@babel/parser/lib/index.js:10898:23)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:10848:21)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:3561:18)
+    at FlowParserMixin.parseExpressionBase (/opt/distravel/node_modules/@babel/parser/lib/index.js:10801:23)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:10797:39
+    at FlowParserMixin.allowInAnd (/opt/distravel/node_modules/@babel/parser/lib/index.js:12438:16)
+    at FlowParserMixin.parseExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:10797:17)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12912:23)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseStatementListItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12764:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:61)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseBlock (/opt/distravel/node_modules/@babel/parser/lib/index.js:13314:10)
+    at FlowParserMixin.parseFunctionBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:12117:24)
+    at FlowParserMixin.parseFunctionBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:2907:11)
+    at FlowParserMixin.parseFunctionBodyAndFinish (/opt/distravel/node_modules/@babel/parser/lib/index.js:12103:10)
+    at FlowParserMixin.parseFunctionBodyAndFinish (/opt/distravel/node_modules/@babel/parser/lib/index.js:2915:18)
+    at FlowParserMixin.parseMethod (/opt/distravel/node_modules/@babel/parser/lib/index.js:12061:31)
+    at FlowParserMixin.parseObjectMethod (/opt/distravel/node_modules/@babel/parser/lib/index.js:11961:19)
+    at FlowParserMixin.parseObjPropValue (/opt/distravel/node_modules/@babel/parser/lib/index.js:11995:23)
+    at FlowParserMixin.parseObjPropValue (/opt/distravel/node_modules/@babel/parser/lib/index.js:3351:26)
+    at FlowParserMixin.parsePropertyDefinition (/opt/distravel/node_modules/@babel/parser/lib/index.js:11932:17)
+    at FlowParserMixin.parseObjectLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:11849:21)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:11356:23)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:4776:20)
+    at FlowParserMixin.parseExprSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11098:23)
+    at FlowParserMixin.parseUpdate (/opt/distravel/node_modules/@babel/parser/lib/index.js:11083:21)
+    at FlowParserMixin.parseMaybeUnary (/opt/distravel/node_modules/@babel/parser/lib/index.js:11063:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/opt/distravel/node_modules/@babel/parser/lib/index.js:10916:61)
+    at FlowParserMixin.parseExprOps (/opt/distravel/node_modules/@babel/parser/lib/index.js:10921:23)
+    at FlowParserMixin.parseMaybeConditional (/opt/distravel/node_modules/@babel/parser/lib/index.js:10898:23)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:10848:21)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:3561:18)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:10817:39
+    at FlowParserMixin.allowInAnd (/opt/distravel/node_modules/@babel/parser/lib/index.js:12438:16)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/opt/distravel/node_modules/@babel/parser/lib/index.js:10817:17)
+    at FlowParserMixin.parseVar (/opt/distravel/node_modules/@babel/parser/lib/index.js:13401:91)
+    at FlowParserMixin.parseVarStatement (/opt/distravel/node_modules/@babel/parser/lib/index.js:13247:10)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12868:23)
+ ERROR  [Error: TransformError SyntaxError: /opt/distravel/src/utils/gemini.js: Unexpected token (80:3)
+
+[0m [90m 78 |[39m     }
+ [90m 79 |[39m     [36mreturn[39m [36mnull[39m[33m;[39m
+[31m[1m>[22m[39m[90m 80 |[39m   }[33m,[39m
+ [90m    |[39m    [31m[1m^[22m[39m
+ [90m 81 |[39m
+ [90m 82 |[39m   [36masync[39m tryProxy(prompt) {
+ [90m 83 |[39m     [36mconst[39m controller [33m=[39m [36mnew[39m [33mAbortController[39m()[33m;[39m[0m]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 72ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  [expo-image-picker] `ImagePicker.MediaTypeOptions` have been deprecated. Use `ImagePicker.MediaType` or an array of `ImagePicker.MediaType` instead.
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 74ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 102ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 686ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ ERROR  SyntaxError: /opt/distravel/src/screens/AddLocationScreen.js: Unexpected token, expected "," (1356:6)
+
+  1354 |           </View>
+  1355 |         </View>
+> 1356 |       {showSuccess && (
+       |       ^
+  1357 |         <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.9)', zIndex: 20000, justifyContent: 'center', alignItems: 'center' }}>
+  1358 |           <View style={{ alignItems: 'center' }}>
+  1359 |             <View style={{ width: 100, height: 100, borderRadius: 50, backgroundColor: theme.primary, justifyContent: 'center', alignItems: 'center', marginBottom: 20 }}>
+    at constructor (/opt/distravel/node_modules/@babel/parser/lib/index.js:365:19)
+    at FlowParserMixin.raise (/opt/distravel/node_modules/@babel/parser/lib/index.js:6616:19)
+    at FlowParserMixin.unexpected (/opt/distravel/node_modules/@babel/parser/lib/index.js:6636:16)
+    at FlowParserMixin.expect (/opt/distravel/node_modules/@babel/parser/lib/index.js:6916:12)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:11678:14)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:3603:18)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:11348:23)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:4776:20)
+    at FlowParserMixin.parseExprSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11098:23)
+    at FlowParserMixin.parseUpdate (/opt/distravel/node_modules/@babel/parser/lib/index.js:11083:21)
+    at FlowParserMixin.parseMaybeUnary (/opt/distravel/node_modules/@babel/parser/lib/index.js:11063:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/opt/distravel/node_modules/@babel/parser/lib/index.js:10916:61)
+    at FlowParserMixin.parseExprOpBaseRightExpr (/opt/distravel/node_modules/@babel/parser/lib/index.js:11003:34)
+    at FlowParserMixin.parseExprOpRightExpr (/opt/distravel/node_modules/@babel/parser/lib/index.js:10998:21)
+    at FlowParserMixin.parseExprOp (/opt/distravel/node_modules/@babel/parser/lib/index.js:10964:27)
+    at FlowParserMixin.parseExprOps (/opt/distravel/node_modules/@babel/parser/lib/index.js:10925:17)
+    at FlowParserMixin.parseMaybeConditional (/opt/distravel/node_modules/@babel/parser/lib/index.js:10898:23)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:10848:21)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:3561:18)
+    at FlowParserMixin.parseExpressionBase (/opt/distravel/node_modules/@babel/parser/lib/index.js:10801:23)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:10797:39
+    at FlowParserMixin.allowInAnd (/opt/distravel/node_modules/@babel/parser/lib/index.js:12443:12)
+    at FlowParserMixin.parseExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:10797:17)
+    at FlowParserMixin.jsxParseExpressionContainer (/opt/distravel/node_modules/@babel/parser/lib/index.js:4644:31)
+    at FlowParserMixin.jsxParseElementAt (/opt/distravel/node_modules/@babel/parser/lib/index.js:4723:36)
+    at FlowParserMixin.jsxParseElement (/opt/distravel/node_modules/@babel/parser/lib/index.js:4761:17)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:4771:19)
+    at FlowParserMixin.parseExprSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11098:23)
+    at FlowParserMixin.parseUpdate (/opt/distravel/node_modules/@babel/parser/lib/index.js:11083:21)
+    at FlowParserMixin.parseMaybeUnary (/opt/distravel/node_modules/@babel/parser/lib/index.js:11063:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/opt/distravel/node_modules/@babel/parser/lib/index.js:10916:61)
+    at FlowParserMixin.parseExprOps (/opt/distravel/node_modules/@babel/parser/lib/index.js:10921:23)
+    at FlowParserMixin.parseMaybeConditional (/opt/distravel/node_modules/@babel/parser/lib/index.js:10898:23)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:10848:21)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:3510:39
+    at FlowParserMixin.tryParse (/opt/distravel/node_modules/@babel/parser/lib/index.js:6924:20)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:3510:18)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:10817:39
+    at FlowParserMixin.allowInAnd (/opt/distravel/node_modules/@babel/parser/lib/index.js:12443:12)
+    at FlowParserMixin.parseMaybeAssignAllowIn (/opt/distravel/node_modules/@babel/parser/lib/index.js:10817:17)
+    at FlowParserMixin.parseMaybeAssignAllowInOrVoidPattern (/opt/distravel/node_modules/@babel/parser/lib/index.js:12510:17)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:11692:28)
+    at FlowParserMixin.parseParenAndDistinguishExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:3603:18)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:11348:23)
+    at FlowParserMixin.parseExprAtom (/opt/distravel/node_modules/@babel/parser/lib/index.js:4776:20)
+    at FlowParserMixin.parseExprSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11098:23)
+    at FlowParserMixin.parseUpdate (/opt/distravel/node_modules/@babel/parser/lib/index.js:11083:21)
+    at FlowParserMixin.parseMaybeUnary (/opt/distravel/node_modules/@babel/parser/lib/index.js:11063:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/opt/distravel/node_modules/@babel/parser/lib/index.js:10916:61)
+    at FlowParserMixin.parseExprOps (/opt/distravel/node_modules/@babel/parser/lib/index.js:10921:23)
+ ERROR  [Error: TransformError SyntaxError: /opt/distravel/src/screens/AddLocationScreen.js: Unexpected token, expected "," (1356:6)
+
+[0m [90m 1354 |[39m           [33m<[39m[33m/[39m[33mView[39m[33m>[39m
+ [90m 1355 |[39m         [33m<[39m[33m/[39m[33mView[39m[33m>[39m
+[31m[1m>[22m[39m[90m 1356 |[39m       {showSuccess [33m&&[39m (
+ [90m      |[39m       [31m[1m^[22m[39m
+ [90m 1357 |[39m         [33m<[39m[33mView[39m style[33m=[39m{{ position[33m:[39m [32m'absolute'[39m[33m,[39m top[33m:[39m [35m0[39m[33m,[39m left[33m:[39m [35m0[39m[33m,[39m right[33m:[39m [35m0[39m[33m,[39m bottom[33m:[39m [35m0[39m[33m,[39m backgroundColor[33m:[39m [32m'rgba(0,0,0,0.9)'[39m[33m,[39m zIndex[33m:[39m [35m20000[39m[33m,[39m justifyContent[33m:[39m [32m'center'[39m[33m,[39m alignItems[33m:[39m [32m'center'[39m }}[33m>[39m
+ [90m 1358 |[39m           [33m<[39m[33mView[39m style[33m=[39m{{ alignItems[33m:[39m [32m'center'[39m }}[33m>[39m
+ [90m 1359 |[39m             [33m<[39m[33mView[39m style[33m=[39m{{ width[33m:[39m [35m100[39m[33m,[39m height[33m:[39m [35m100[39m[33m,[39m borderRadius[33m:[39m [35m50[39m[33m,[39m backgroundColor[33m:[39m theme[33m.[39mprimary[33m,[39m justifyContent[33m:[39m [32m'center'[39m[33m,[39m alignItems[33m:[39m [32m'center'[39m[33m,[39m marginBottom[33m:[39m [35m20[39m }}[33m>[39m[0m]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 1008ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  [Gemini] Primary prompt failed, trying simplified fallback...
+ WARN  Servidor no respondió en tiempo, se guardó localmente
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ WARN  [Gemini] Primary prompt failed, trying simplified fallback...
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 641ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  Distravel v3.0: Iniciando carga de datos...
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 70ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  [Gemini v1] Error 404: {"error": {"code": 404, "message": "This model models/gemini-2.0-flash is no longer available to new users. Please update your code to use a newer model for the latest features and improvements.", "status": "NOT_FOUND"}}
+ WARN  [Gemini v1beta] Error 404: {"error": {"code": 404, "message": "This model models/gemini-2.0-flash is no longer available to new users. Please update your code to use a newer model for the latest features and improvements.", "status": "NOT_FOUND"}}
+ WARN  [Gemini v1] Error 404: {"error": {"code": 404, "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.", "status": "NOT_FOUND"}}
+ WARN  [Gemini v1beta] Error 404: {"error": {"code": 404, "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.", "status": "NOT_FOUND"}}
+ WARN  [Gemini v1] Error 404: {"error": {"code": 404, "message": "models/gemini-1.5-pro is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.", "status": "NOT_FOUND"}}
+ WARN  [Gemini v1beta] Error 404: {"error": {"code": 404, "message": "models/gemini-1.5-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.", "status": "NOT_FOUND"}}
+ WARN  [Gemini v1] Error 404: {"error": {"code": 404, "message": "models/gemini-pro is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.", "status": "NOT_FOUND"}}
+ WARN  [Gemini v1beta] Error 404: {"error": {"code": 404, "message": "models/gemini-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.", "status": "NOT_FOUND"}}
+ WARN  [Gemini] Primary prompt failed, trying simplified fallback...
+ WARN  [Gemini v1] Error 404: {"error": {"code": 404, "message": "This model models/gemini-2.0-flash is no longer available to new users. Please update your code to use a newer model for the latest features and improvements.", "status": "NOT_FOUND"}}
+ WARN  [Gemini v1beta] Error 404: {"error": {"code": 404, "message": "This model models/gemini-2.0-flash is no longer available to new users. Please update your code to use a newer model for the latest features and improvements.", "status": "NOT_FOUND"}}
+ WARN  [Gemini v1] Error 404: {"error": {"code": 404, "message": "models/gemini-1.5-flash is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.", "status": "NOT_FOUND"}}
+ WARN  [Gemini v1beta] Error 404: {"error": {"code": 404, "message": "models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.", "status": "NOT_FOUND"}}
+ WARN  [Gemini v1] Error 404: {"error": {"code": 404, "message": "models/gemini-1.5-pro is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.", "status": "NOT_FOUND"}}
+ WARN  [Gemini v1beta] Error 404: {"error": {"code": 404, "message": "models/gemini-1.5-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.", "status": "NOT_FOUND"}}
+ WARN  [Gemini v1] Error 404: {"error": {"code": 404, "message": "models/gemini-pro is not found for API version v1, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.", "status": "NOT_FOUND"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key expired. Please renew the API key.", "status": "INVALID_ARGUMENT"}}
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 73ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  Sincronización en segundo plano falló, datos guardados localmente
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ LOG  [Gemini v1] [gemini-2.5-flash] Success: ```json
+{
+  "name": "Museo del Prado",
+  "city": "Madrid",
+  "category": "Museo",
+  "description": "...
+ LOG  [IA Local] Buscando coincidencia para: "museo del prado"
+ WARN  Sincronización en segundo plano falló, datos guardados localmente
+ WARN  [expo-image-picker] `ImagePicker.MediaTypeOptions` have been deprecated. Use `ImagePicker.MediaType` or an array of `ImagePicker.MediaType` instead.
+ WARN  Borrado servidor fallido
+ ERROR  Error uploading image: [TypeError: Network request failed]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 68ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ WARN  [expo-image-picker] `ImagePicker.MediaTypeOptions` have been deprecated. Use `ImagePicker.MediaType` or an array of `ImagePicker.MediaType` instead.
+ ERROR  Error uploading image: [TypeError: Network request failed]
+ ERROR  [TypeError: Cannot read property 'address' of undefined]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundling failed 41ms index.js (1 module)
+ ERROR  SyntaxError: /opt/distravel/src/screens/AddLocationScreen.js: Unexpected token, expected "," (366:65)
+
+  364 |         if (data.success) {
+  365 |           const finalImageUrl = `${API_BASE_URL}${data.url}`;
+> 366 |           setFormData(prev => ({ ...prev, image: finalImageUrl });
+      |                                                                  ^
+  367 |         } else {
+  368 |           throw new Error('Servidor rechazó imagen');
+  369 |         }
+    at constructor (/opt/distravel/node_modules/@babel/parser/lib/index.js:365:19)
+    at FlowParserMixin.raise (/opt/distravel/node_modules/@babel/parser/lib/index.js:6616:19)
+    at FlowParserMixin.unexpected (/opt/distravel/node_modules/@babel/parser/lib/index.js:6636:16)
+    at FlowParserMixin.expect (/opt/distravel/node_modules/@babel/parser/lib/index.js:6916:12)
+    at FlowParserMixin.parseCallExpressionArguments (/opt/distravel/node_modules/@babel/parser/lib/index.js:11260:14)
+    at FlowParserMixin.parseCoverCallAndAsyncArrowHead (/opt/distravel/node_modules/@babel/parser/lib/index.js:11203:29)
+    at FlowParserMixin.parseSubscript (/opt/distravel/node_modules/@babel/parser/lib/index.js:11137:19)
+    at FlowParserMixin.parseSubscript (/opt/distravel/node_modules/@babel/parser/lib/index.js:3662:18)
+    at FlowParserMixin.parseSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11111:19)
+    at FlowParserMixin.parseSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:3628:18)
+    at FlowParserMixin.parseExprSubscripts (/opt/distravel/node_modules/@babel/parser/lib/index.js:11102:17)
+    at FlowParserMixin.parseUpdate (/opt/distravel/node_modules/@babel/parser/lib/index.js:11083:21)
+    at FlowParserMixin.parseMaybeUnary (/opt/distravel/node_modules/@babel/parser/lib/index.js:11063:23)
+    at FlowParserMixin.parseMaybeUnaryOrPrivate (/opt/distravel/node_modules/@babel/parser/lib/index.js:10916:61)
+    at FlowParserMixin.parseExprOps (/opt/distravel/node_modules/@babel/parser/lib/index.js:10921:23)
+    at FlowParserMixin.parseMaybeConditional (/opt/distravel/node_modules/@babel/parser/lib/index.js:10898:23)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:10848:21)
+    at FlowParserMixin.parseMaybeAssign (/opt/distravel/node_modules/@babel/parser/lib/index.js:3561:18)
+    at FlowParserMixin.parseExpressionBase (/opt/distravel/node_modules/@babel/parser/lib/index.js:10801:23)
+    at /opt/distravel/node_modules/@babel/parser/lib/index.js:10797:39
+    at FlowParserMixin.allowInAnd (/opt/distravel/node_modules/@babel/parser/lib/index.js:12438:16)
+    at FlowParserMixin.parseExpression (/opt/distravel/node_modules/@babel/parser/lib/index.js:10797:17)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12912:23)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseStatementListItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12764:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:61)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseBlock (/opt/distravel/node_modules/@babel/parser/lib/index.js:13314:10)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12875:21)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseStatementOrSloppyAnnexBFunctionDeclaration (/opt/distravel/node_modules/@babel/parser/lib/index.js:12774:17)
+    at FlowParserMixin.parseIfStatement (/opt/distravel/node_modules/@babel/parser/lib/index.js:13147:28)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12813:21)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseStatementListItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12764:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:61)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseBlock (/opt/distravel/node_modules/@babel/parser/lib/index.js:13314:10)
+    at FlowParserMixin.parseTryStatement (/opt/distravel/node_modules/@babel/parser/lib/index.js:13222:23)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12821:21)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseStatementListItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12764:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:61)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseBlock (/opt/distravel/node_modules/@babel/parser/lib/index.js:13314:10)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12875:21)
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 691ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ ERROR  [TypeError: Cannot read property 'address' of undefined]
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ ERROR  [TypeError: Cannot read property 'address' of undefined]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 65ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ ERROR  [TypeError: Cannot read property 'address' of undefined]
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ ERROR  [TypeError: Cannot read property 'address' of undefined]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 79ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ ERROR  [TypeError: Cannot read property 'address' of undefined]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 1064ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ ERROR  [TypeError: Cannot read property 'address' of undefined]
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 1028ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 1246ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 203ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  SafeAreaView has been deprecated and will be removed in a future release. Please use 'react-native-safe-area-context' instead. See https://github.com/th3rdwave/react-native-safe-area-context
+ LOG  [Gemini v1] [gemini-2.5-flash] Success: ```json
+{
+  "name": "Museo Naval",
+  "city": "Cartagena",
+  "category": "Museo",
+  "description": "E...
+ LOG  [IA Local] Buscando coincidencia para: "museo naval"
+ WARN  Sincronización en segundo plano falló, datos guardados localmente
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 66ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundling failed 624ms index.js (1 module)
+ ERROR  SyntaxError: /opt/distravel/src/screens/PlaceDetailScreen.js: Identifier 'GeminiService' has already been declared. (75:9)
+
+  73 | import { PROVINCE_TO_REGION, INE_PROVINCES } from '../data/provinces';
+  74 | import MUNICIPIOS_DATA from '../data/municipios.json';
+> 75 | import { GeminiService } from '../utils/gemini';
+     |          ^
+  76 |
+  77 | const DARK_MAP_STYLE = [
+  78 |   { "elementType": "geometry", "stylers": [{ "color": "#242f3e" }] },
+    at constructor (/opt/distravel/node_modules/@babel/parser/lib/index.js:365:19)
+    at FlowParserMixin.raise (/opt/distravel/node_modules/@babel/parser/lib/index.js:6616:19)
+    at FlowScopeHandler.checkRedeclarationInScope (/opt/distravel/node_modules/@babel/parser/lib/index.js:1619:19)
+    at FlowScopeHandler.declareName (/opt/distravel/node_modules/@babel/parser/lib/index.js:1585:12)
+    at FlowScopeHandler.declareName (/opt/distravel/node_modules/@babel/parser/lib/index.js:1686:11)
+    at FlowParserMixin.declareNameFromIdentifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:7584:16)
+    at FlowParserMixin.checkIdentifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:7580:12)
+    at FlowParserMixin.checkLVal (/opt/distravel/node_modules/@babel/parser/lib/index.js:7517:12)
+    at FlowParserMixin.finishImportSpecifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:14283:10)
+    at FlowParserMixin.parseImportSpecifier (/opt/distravel/node_modules/@babel/parser/lib/index.js:3468:17)
+    at FlowParserMixin.parseNamedImportSpecifiers (/opt/distravel/node_modules/@babel/parser/lib/index.js:14415:36)
+    at FlowParserMixin.parseImportSpecifiersAndAfter (/opt/distravel/node_modules/@babel/parser/lib/index.js:14259:37)
+    at FlowParserMixin.parseImport (/opt/distravel/node_modules/@babel/parser/lib/index.js:14252:17)
+    at FlowParserMixin.parseStatementContent (/opt/distravel/node_modules/@babel/parser/lib/index.js:12893:27)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:12784:17)
+    at FlowParserMixin.parseStatementLike (/opt/distravel/node_modules/@babel/parser/lib/index.js:2930:24)
+    at FlowParserMixin.parseModuleItem (/opt/distravel/node_modules/@babel/parser/lib/index.js:12761:17)
+    at FlowParserMixin.parseBlockOrModuleBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13333:36)
+    at FlowParserMixin.parseBlockBody (/opt/distravel/node_modules/@babel/parser/lib/index.js:13326:10)
+    at FlowParserMixin.parseProgram (/opt/distravel/node_modules/@babel/parser/lib/index.js:12639:10)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:12629:25)
+    at FlowParserMixin.parseTopLevel (/opt/distravel/node_modules/@babel/parser/lib/index.js:3697:28)
+    at FlowParserMixin.parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14505:25)
+    at parse (/opt/distravel/node_modules/@babel/parser/lib/index.js:14518:26)
+    at parser (/opt/distravel/node_modules/@babel/core/lib/parser/index.js:41:34)
+    at parser.next (<anonymous>)
+    at normalizeFile (/opt/distravel/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+    at normalizeFile.next (<anonymous>)
+    at run (/opt/distravel/node_modules/@babel/core/lib/transformation/index.js:22:50)
+    at run.next (<anonymous>)
+    at transform (/opt/distravel/node_modules/@babel/core/lib/transform.js:22:33)
+    at transform.next (<anonymous>)
+    at evaluateSync (/opt/distravel/node_modules/gensync/index.js:251:28)
+    at sync (/opt/distravel/node_modules/gensync/index.js:89:14)
+    at stopHiding - secret - don't use this - v1 (/opt/distravel/node_modules/@babel/core/lib/errors/rewrite-stack-trace.js:47:12)
+    at Object.transformSync (/opt/distravel/node_modules/@babel/core/lib/transform.js:40:76)
+    at parseWithBabel (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transformSync.js:75:18)
+    at transformSync (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transformSync.js:64:12)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/babel-transformer.js:127:58)
+    at transformJSWithBabel (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/metro-transform-worker.js:468:47)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/metro-transform-worker.js:583:12)
+    at Object.transform (/opt/distravel/node_modules/expo/node_modules/@expo/metro-config/build/transform-worker/transform-worker.js:178:19)
+    at transformFile (/opt/distravel/node_modules/metro/src/DeltaBundler/Worker.flow.js:67:36)
+    at Object.transform (/opt/distravel/node_modules/metro/src/DeltaBundler/Worker.flow.js:42:10)
+    at execFunction (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:149:17)
+    at execHelper (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:137:5)
+    at execMethod (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:140:5)
+    at process.messageListener (/opt/distravel/node_modules/jest-worker/build/workers/processChild.js:44:7)
+    at process.emit (node:events:517:28)
+    at emit (node:internal/child_process:944:14)
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 1042ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini] Primary prompt failed, trying simplified fallback...
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ LOG  [IA Local] Buscando coincidencia para: "marq"
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini] Primary prompt failed, trying simplified fallback...
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ LOG  [IA Local] Buscando coincidencia para: "museo arqueológico"
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 73ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object]], "message": "Invalid JSON payload received. Unknown name \"response_mime_type\" at 'generation_config': Cannot find field.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object]], "message": "Invalid JSON payload received. Unknown name \"response_mime_type\" at 'generation_config': Cannot find field.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini] Primary prompt failed, trying simplified fallback...
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object]], "message": "Invalid JSON payload received. Unknown name \"response_mime_type\" at 'generation_config': Cannot find field.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object]], "message": "Invalid JSON payload received. Unknown name \"response_mime_type\" at 'generation_config': Cannot find field.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ LOG  [IA Local] Buscando coincidencia para: "marq"
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object]], "message": "Invalid JSON payload received. Unknown name \"response_mime_type\" at 'generation_config': Cannot find field.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object]], "message": "Invalid JSON payload received. Unknown name \"response_mime_type\" at 'generation_config': Cannot find field.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini] Primary prompt failed, trying simplified fallback...
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object]], "message": "Invalid JSON payload received. Unknown name \"response_mime_type\" at 'generation_config': Cannot find field.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object]], "message": "Invalid JSON payload received. Unknown name \"response_mime_type\" at 'generation_config': Cannot find field.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ LOG  [IA Local] Buscando coincidencia para: "museo arqueológico"
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object]], "message": "Invalid JSON payload received. Unknown name \"response_mime_type\" at 'generation_config': Cannot find field.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object]], "message": "Invalid JSON payload received. Unknown name \"response_mime_type\" at 'generation_config': Cannot find field.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini] Primary prompt failed, trying simplified fallback...
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object]], "message": "Invalid JSON payload received. Unknown name \"response_mime_type\" at 'generation_config': Cannot find field.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object]], "message": "Invalid JSON payload received. Unknown name \"response_mime_type\" at 'generation_config': Cannot find field.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ LOG  [IA Local] Buscando coincidencia para: "museo arqueológico"
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 99ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ LOG  [Gemini] Primary result: FAILED
+ WARN  [Gemini] Primary prompt failed, trying simplified fallback...
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini] All AI attempts failed, using Local Mock Data.
+ LOG  [IA Local] Buscando coincidencia para: "maca"
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ LOG  [Gemini] Primary result: FAILED
+ WARN  [Gemini] Primary prompt failed, trying simplified fallback...
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini] All AI attempts failed, using Local Mock Data.
+ LOG  [IA Local] Buscando coincidencia para: "marq"
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 69ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ LOG  [Gemini] Primary result: FAILED
+ WARN  [Gemini] Primary prompt failed, trying simplified fallback...
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini] All AI attempts failed, using Local Mock Data.
+ LOG  [IA Local] Buscando coincidencia para: "marq"
+ WARN  Sincronización en segundo plano falló, datos guardados localmente
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ LOG  [Gemini] Primary result: FAILED
+ WARN  [Gemini] Primary prompt failed, trying simplified fallback...
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini] All AI attempts failed, using Local Mock Data.
+ LOG  [IA Local] Buscando coincidencia para: "maca"
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 83ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ LOG  [Gemini] Primary result: FAILED
+ WARN  [Gemini] Primary prompt failed, trying simplified fallback...
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini] All AI attempts failed, using Local Mock Data.
+ LOG  [IA Local] Buscando coincidencia para: "maca"
+Android ./index.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Android Bundled 144ms index.js (1 module)
+ LOG  Distravel v3.0: Iniciando carga de datos...
+ LOG  [Gemini] Attempting with key: AIzaSyAH...
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ LOG  [Gemini] Primary result: FAILED
+ WARN  [Gemini] Primary prompt failed, trying simplified fallback...
+ LOG  [Gemini] Attempting with key: AIzaSyAH...
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini v1beta] Error 400: {"error": {"code": 400, "details": [[Object], [Object]], "message": "API key not valid. Please pass a valid API key.", "status": "INVALID_ARGUMENT"}}
+ WARN  [Gemini] All AI attempts failed, using Local Mock Data.
+ LOG  [IA Local] Buscando coincidencia para: "maca"

@@ -85,9 +85,7 @@ export function HomeScreen({ navigation }) {
   const [serverPlaces, setServerPlaces] = useState([]);
   const searchTimeout = useRef(null);
   
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAboutModal, setShowAboutModal] = useState(false);
-  const menuAnim = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef(null);
 
   // Efecto para buscar en el servidor con debounce
@@ -248,25 +246,6 @@ export function HomeScreen({ navigation }) {
   const goToAdmin = () => navigation.navigate('AdminValidations');
   const goToMap = () => navigation.navigate('Map');
 
-  const toggleMenu = () => {
-    const toValue = isMenuOpen ? 0 : 1;
-    Animated.spring(menuAnim, {
-      toValue,
-      friction: 5,
-      useNativeDriver: true,
-    }).start();
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-  const menuScale = menuAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0.5, 1],
-  });
-
-  const menuOpacity = menuAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 1],
-  });
 
   const headerTranslateY = scrollY.interpolate({
     inputRange: [0, 50],
@@ -396,30 +375,58 @@ export function HomeScreen({ navigation }) {
         </View>
 
         {/* Mission Cards Section */}
-        <View style={[styles.missionCardsContainer, { marginTop: 10 }]}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.missionListPadding}>
+        <View style={[styles.missionCardsContainer, { marginTop: 25, paddingHorizontal: 20 }]}>
+          {/* Fila Superior: ¿Qué es Distravel? (100% ancho) */}
+          <TouchableOpacity 
+            onPress={() => setShowAboutModal(true)}
+            style={[
+              styles.missionCard, 
+              { 
+                backgroundColor: isDarkMode ? '#1E293B' : '#F8FAFC', 
+                borderWidth: 1, 
+                borderColor: theme.border, 
+                width: '100%', 
+                height: 110,
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingHorizontal: 20,
+                marginBottom: 12
+              }
+            ]}
+          >
+            <View style={[styles.missionIconBox, { backgroundColor: '#3498DB20', width: 50, height: 50, borderRadius: 25 }]}>
+              <Info color="#3498DB" size={24} />
+            </View>
+            <View style={{ marginLeft: 15, flex: 1 }}>
+              <Text style={[styles.missionTitle, { color: theme.text, fontSize: 16, marginTop: 0 }]}>¿Qué es Distravel?</Text>
+              <Text style={[styles.missionDesc, { color: theme.textSecondary, fontSize: 12, lineHeight: 16 }]}>
+                Tu guía inteligente para viajar con confianza.
+              </Text>
+            </View>
+            <ChevronRight color={theme.textSecondary} size={20} />
+          </TouchableOpacity>
+
+          {/* Fila Inferior: Misión y Añadir (50% cada uno) */}
+          <View style={{ flexDirection: 'row', gap: 12 }}>
             <TouchableOpacity 
               onPress={goToMap}
               style={[
                 styles.missionCard, 
                 { 
                   backgroundColor: '#F1C40F', 
-                  width: 160, 
-                  height: 160,
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowRadius: 3,
-                  shadowOpacity: 0.03,
-                  elevation: 1
+                  flex: 1,
+                  height: 140,
+                  marginRight: 0 // Usamos el gap del padre
                 }
               ]}
             >
               <View style={styles.missionIconBox}>
-                <Sparkles color="#070B14" size={24} />
+                <Sparkles color="#070B14" size={22} />
               </View>
-              <View style={[styles.xpBadge, { top: 10, right: 10 }]}>
-                <Text style={[styles.xpBadgeText, { fontSize: 10 }]}>+200 XP</Text>
+              <View style={[styles.xpBadge, { top: 8, right: 8 }]}>
+                <Text style={[styles.xpBadgeText, { fontSize: 9 }]}>+200 XP</Text>
               </View>
-              <Text style={[styles.missionTitle, { color: '#070B14', fontSize: 15, marginTop: 4 }]}>Misión del Día</Text>
+              <Text style={[styles.missionTitle, { color: '#070B14', fontSize: 14, marginTop: 8 }]}>Misión del Día</Text>
               <Text style={[styles.missionDesc, { color: '#070B14', fontSize: 11, lineHeight: 14 }]}>
                 Verifica la accesibilidad y gana puntos.
               </Text>
@@ -431,53 +438,24 @@ export function HomeScreen({ navigation }) {
                 styles.missionCard, 
                 { 
                   backgroundColor: '#2ECC71', 
-                  width: 160, 
-                  height: 160,
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowRadius: 3,
-                  shadowOpacity: 0.03,
-                  elevation: 1
+                  flex: 1,
+                  height: 140,
+                  marginRight: 0
                 }
               ]}
             >
               <View style={[styles.missionIconBox, { backgroundColor: 'rgba(255,255,255,0.2)' }]}>
-                <PlusCircle color="#FFF" size={24} />
+                <PlusCircle color="#FFF" size={22} />
               </View>
-              <View style={[styles.xpBadge, { top: 10, right: 10, backgroundColor: 'rgba(255,255,255,0.3)' }]}>
-                <Text style={[styles.xpBadgeText, { fontSize: 10, color: '#FFF' }]}>NUEVO</Text>
+              <View style={[styles.xpBadge, { top: 8, right: 8, backgroundColor: 'rgba(255,255,255,0.3)' }]}>
+                <Text style={[styles.xpBadgeText, { fontSize: 9, color: '#FFF' }]}>NUEVO</Text>
               </View>
-              <Text style={[styles.missionTitle, { color: '#FFF', fontSize: 15, marginTop: 4 }]}>Añadir Lugar</Text>
+              <Text style={[styles.missionTitle, { color: '#FFF', fontSize: 14, marginTop: 8 }]}>Añadir Lugar</Text>
               <Text style={[styles.missionDesc, { color: '#FFF', fontSize: 11, lineHeight: 14 }]}>
                 Contribuye con la comunidad y gana puntos.
               </Text>
             </TouchableOpacity>
-
-            <TouchableOpacity 
-              onPress={() => setShowAboutModal(true)}
-              style={[
-                styles.missionCard, 
-                { 
-                  backgroundColor: isDarkMode ? '#1E293B' : '#F8FAFC', 
-                  borderWidth: 1, 
-                  borderColor: theme.border, 
-                  width: 160, 
-                  height: 160,
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowRadius: 3,
-                  shadowOpacity: 0.03,
-                  elevation: 1
-                }
-              ]}
-            >
-              <View style={[styles.missionIconBox, { backgroundColor: '#3498DB20' }]}>
-                <Info color="#3498DB" size={24} />
-              </View>
-              <Text style={[styles.missionTitle, { color: theme.text, fontSize: 15, marginTop: 4 }]}>¿Qué es Distravel?</Text>
-              <Text style={[styles.missionDesc, { color: theme.textSecondary, fontSize: 11, lineHeight: 14 }]}>
-                Tu guía inteligente para viajar con confianza.
-              </Text>
-            </TouchableOpacity>
-          </ScrollView>
+          </View>
         </View>
 
         <View style={{ paddingHorizontal: 20, marginTop: 30 }}>
@@ -619,15 +597,14 @@ export function HomeScreen({ navigation }) {
               style={[
                 styles.serviceCard, 
                 { 
-                  backgroundColor: isDarkMode ? '#000' : theme.primary,
-                  borderWidth: isDarkMode ? 1 : 0,
-                  borderColor: isDarkMode ? '#444' : 'transparent'
+                  backgroundColor: isDarkMode ? '#FFFFFF' : theme.primary,
+                  borderWidth: 0
                 }
               ]} 
               onPress={() => navigation.navigate('Map')}
             >
-              <Compass color="#FFF" size={24} />
-              <Text style={styles.serviceText}>MAPA</Text>
+              <Compass color={isDarkMode ? '#000000' : '#FFFFFF'} size={24} />
+              <Text style={[styles.serviceText, { color: isDarkMode ? '#000000' : '#FFFFFF' }]}>MAPA</Text>
             </TouchableOpacity>
           </ScrollView>
         </View>
@@ -832,39 +809,6 @@ export function HomeScreen({ navigation }) {
         <View style={{ height: 100 }} />
       </Animated.ScrollView>
 
-      {/* Expandable FAB Menu */}
-      <View style={styles.fabContainer}>
-        {isMenuOpen && (
-          <Animated.View style={[styles.expandedMenu, { opacity: menuOpacity, transform: [{ scale: menuScale }] }]}>
-            <TouchableOpacity 
-              style={[styles.miniFab, { backgroundColor: '#FF3B30' }]} 
-              onPress={() => { toggleMenu(); navigation.navigate('Emergency'); }}
-            >
-              <TriangleAlert color="#FFF" size={20} />
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.miniFab, { backgroundColor: '#3498DB' }]} 
-              onPress={() => { toggleMenu(); navigation.navigate('Toilets'); }}
-            >
-              <Users color="#FFF" size={20} />
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.miniFab, { backgroundColor: theme.primary }]} 
-              onPress={() => { toggleMenu(); navigation.navigate('Map'); }}
-            >
-              <MapPin color="#FFF" size={20} />
-            </TouchableOpacity>
-          </Animated.View>
-        )}
-        <TouchableOpacity
-          style={[styles.fab, { backgroundColor: theme.primary }]}
-          onPress={toggleMenu}
-        >
-          <Animated.View style={{ transform: [{ rotate: menuAnim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '45deg'] }) }] }}>
-            {isMenuOpen ? <X color="#FFF" size={32} /> : <PlusCircle color="#FFF" size={32} />}
-          </Animated.View>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 }
@@ -988,11 +932,11 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   missionCard: {
-    width: 160,
+    width: 145,
     borderRadius: 16,
-    padding: 15,
-    marginRight: 12,
-    height: 160,
+    padding: 12,
+    marginRight: 10,
+    height: 145,
     justifyContent: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },

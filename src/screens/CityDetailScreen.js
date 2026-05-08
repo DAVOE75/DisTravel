@@ -12,8 +12,11 @@ import {
   StatusBar,
   Alert,
   Platform,
-  ActivityIndicator
+  ActivityIndicator,
+  Animated,
+  Keyboard
 } from 'react-native';
+import { useRef } from 'react';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
 import { GeminiService } from '../utils/gemini';
@@ -44,6 +47,10 @@ import {
   Sparkles,
   TrendingDown,
   Users,
+  TriangleAlert,
+  Bath,
+  ShieldCheck,
+  PlusCircle,
   Sun,
   Moon,
   CloudRain,
@@ -532,6 +539,29 @@ export function CityDetailScreen({ route, navigation }) {
 
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [aiProgress, setAiProgress] = useState(0);
+
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuAnim = useRef(new Animated.Value(0)).current;
+
+  const toggleMenu = () => {
+    const toValue = isMenuOpen ? 0 : 1;
+    Animated.spring(menuAnim, {
+      toValue,
+      friction: 5,
+      useNativeDriver: true,
+    }).start();
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const menuScale = menuAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.5, 1],
+  });
+
+  const menuOpacity = menuAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 1],
+  });
   const [isAiEnhanced, setIsAiEnhanced] = useState(false);
   const [aiResults, setAiResults] = useState(null);
 
@@ -543,10 +573,13 @@ export function CityDetailScreen({ route, navigation }) {
   // Datos de contexto (Simulados para el Store)
   const cityContextData = React.useMemo(() => {
     const name = tempCityData.name || city.name;
-    // Priorizar población del servidor
-    const popRaw = tempCityData.population ? tempCityData.population.toLocaleString() : getPoblacion(name);
-    const popFormatted = popRaw.toString().replace(' hab.', '').replace(' (aprox.)', '');
+    // Priorizar población real de INE si los datos actuales son genéricos o faltan
+    let popRaw = tempCityData.population;
+    if (!popRaw || popRaw.includes('censo') || popRaw.includes('habitantes')) {
+      popRaw = getPoblacion(name);
+    }
     
+    const popFormatted = popRaw.toString().replace(' hab.', '').replace(' (aprox.)', '');
     return { pop: popFormatted, temp: '22°C', status: 'sunny' };
   }, [tempCityData.name, tempCityData.population, city.name]);
 
@@ -606,25 +639,8 @@ export function CityDetailScreen({ route, navigation }) {
       clearInterval(progressInterval);
     }
 
-    // Fallback absoluto por si falla el servicio interno
-    const realData = REAL_CITY_DATA[cityKey];
-    let fallbackContent;
-    
-    if (realData) {
-      fallbackContent = { ...realData };
-    } else {
-      const province = displayCityData.province || 'España';
-      const region = displayCityData.region || 'España';
-      fallbackContent = {
-        history: `La historia de ${cityName} está ligada a la provincia de ${province}. Como parte de la región de ${region}, ha sido testigo de los procesos de repoblación medieval y el desarrollo agrícola que define este territorio. Su patrimonio refleja la arquitectura típica de la zona.`,
-        geography: `${cityName} se integra en la geografía de ${province}. Su ubicación en ${region} le confiere un relieve que combina la orografía local con los accidentes geográficos propios de esta zona.`,
-        climate: `El clima en ${cityName} es el propio de ${province}, caracterizado por ser un clima ${region.includes('Mediterránea') ? 'Mediterráneo con veranos secos' : 'Continental con marcadas oscilaciones térmicas'}.`,
-        landscape: `El entorno de ${cityName} ofrece un paisaje dominado por la flora de ${region}. Desde las tierras de cultivo hasta los parajes naturales protegidos de ${province}, invita a la contemplación.`,
-        gastronomy: `La gastronomía en ${cityName} se nutre de la despensa de ${province}. Destacan los productos de temporada y los guisos tradicionales de la región de ${region}.`,
-        festivities: `Las festividades de ${cityName} celebran la identidad de sus gentes a través de tradiciones compartidas con el resto de ${province}. El calendario festivo está marcado por eventos populares inclusivos.`
-      };
-    }
-    finishProcessing(fallbackContent, false);
+    // El servicio ya devuelve mockData enriquecida si falla la IA
+    finishProcessing(aiContent, !!(aiContent && !aiContent.isMock));
   };
 
   const applyAiCityResults = (aiContent, isRealGemini) => {
@@ -684,7 +700,7 @@ export function CityDetailScreen({ route, navigation }) {
             userData.aiApiKey && { backgroundColor: '#8E44AD' }
           ]} 
           onPress={handleAiEnhance}
-          disabled={isAiProcessing || isAiEnhanced}
+          disabled={isAiProcessing}
         >
           {isAiProcessing ? (
             <Zap color="#FFF" size={20} />
@@ -1037,13 +1053,43 @@ export function CityDetailScreen({ route, navigation }) {
         <View style={{ height: 100 }} />
       </ScrollView>
 
-      {/* FAB: Añadir Lugar */}
+      {/* Expandable FAB Menu */}
       <View style={styles.fabContainer}>
+        {isMenuOpen && (
+          <Animated.View style={[styles.expandedMenu, { opacity: menuOpacity, transform: [{ scale: menuScale }] }]}>
+            <TouchableOpacity 
+              style={[styles.miniFab, { backgroundColor: '#FF3B30' }]} 
+              onPress={() => { toggleMenu(); navigation.navigate('Emergency'); }}
+            >
+              <TriangleAlert color="#FFF" size={20} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.miniFab, { backgroundColor: '#3498DB' }]} 
+              onPress={() => { toggleMenu(); navigation.navigate('Toilets'); }}
+            >
+              <Bath color="#FFF" size={20} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.miniFab, { backgroundColor: '#F1C40F' }]} 
+              onPress={() => { toggleMenu(); navigation.navigate('Report'); }}
+            >
+              <ShieldCheck color="#070B14" size={20} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.miniFab, { backgroundColor: theme.primary }]} 
+              onPress={() => { toggleMenu(); navigation.navigate('AddLocation', { defaultCity: tempCityData.name || city.name }); }}
+            >
+              <Plus color="#FFF" size={20} />
+            </TouchableOpacity>
+          </Animated.View>
+        )}
         <TouchableOpacity
           style={[styles.fab, { backgroundColor: theme.primary }]}
-          onPress={() => navigation.navigate('AddLocation', { defaultCity: tempCityData.name || city.name })}
+          onPress={toggleMenu}
         >
-          <Plus color="#FFF" size={32} />
+          <Animated.View style={{ transform: [{ rotate: menuAnim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '45deg'] }) }] }}>
+            {isMenuOpen ? <X color="#FFF" size={32} /> : <PlusCircle color="#FFF" size={32} />}
+          </Animated.View>
         </TouchableOpacity>
       </View>
 
@@ -1541,5 +1587,22 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 4.65,
+  },
+  expandedMenu: {
+    marginBottom: 15,
+    gap: 12,
+    alignItems: 'center',
+  },
+  miniFab: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
   },
 });
