@@ -23,12 +23,16 @@ const CitiesList = () => {
   const [selectedCity, setSelectedCity] = useState(null);
 
   useEffect(() => {
-    fetchCities();
-  }, []);
+    const delayDebounce = setTimeout(() => {
+      fetchCities();
+    }, 300);
+    return () => clearTimeout(delayDebounce);
+  }, [searchTerm]);
 
   const fetchCities = async () => {
+    setLoading(true);
     try {
-      const response = await axios.get('/api/municipalities?limit=500');
+      const response = await axios.get(`/api/municipalities?search=${searchTerm}&limit=200`);
       setCities(response.data);
     } catch (error) {
       console.error('Error fetching cities:', error);
@@ -65,9 +69,7 @@ const CitiesList = () => {
     }
   };
 
-  const filteredCities = cities.filter(city => 
-    city.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredCities = cities;
 
   return (
     <div className="flex flex-col gap-10">
