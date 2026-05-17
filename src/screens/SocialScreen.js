@@ -25,7 +25,7 @@ import {
   Star,
   Sparkles
 } from 'lucide-react-native';
-import { API_ENDPOINTS } from '../config/api';
+import { API_ENDPOINTS, API_BASE_URL } from '../config/api';
 import { typography } from '../theme/typography';
 
 export function SocialScreen({ navigation }) {
@@ -45,7 +45,7 @@ export function SocialScreen({ navigation }) {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3000);
       
-      const response = await fetch(API_ENDPOINTS.PLACES, { signal: controller.signal });
+      const response = await fetch(`${API_BASE_URL}/api/social/feed`, { signal: controller.signal });
       clearTimeout(timeoutId);
 
       if (response.ok) {
@@ -80,11 +80,15 @@ export function SocialScreen({ navigation }) {
         {/* User Header */}
         <View style={styles.postHeader}>
           <View style={[styles.userAvatar, { backgroundColor: theme.primary + '20' }]}>
-            <User size={20} color={theme.primary} />
+            {item.user_avatar ? (
+              <Image source={{ uri: item.user_avatar }} style={styles.userAvatar} />
+            ) : (
+              <User size={20} color={theme.primary} />
+            )}
           </View>
           <View style={styles.userInfo}>
             <View style={styles.userNameRow}>
-              <Text style={[styles.userName, { color: theme.text }]}>Colaborador Distravel</Text>
+              <Text style={[styles.userName, { color: theme.text }]}>{item.user_name || 'Colaborador Distravel'}</Text>
               {isVerified && <ShieldCheck size={14} color="#3498DB" style={{ marginLeft: 4 }} />}
             </View>
             <Text style={[styles.postLocation, { color: theme.textSecondary }]}>en {item.city}</Text>

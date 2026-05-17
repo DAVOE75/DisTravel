@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import * as Speech from 'expo-speech';
 import { 
   View, 
   Text, 
@@ -27,15 +28,25 @@ import { typography } from '../theme/typography';
 import { GeminiService } from '../utils/gemini';
 import { calculatePlaceSavings } from '../utils/savings';
 import * as ImagePicker from 'expo-image-picker';
-import MapViewRaw, { Marker as MarkerRaw } from 'react-native-maps';
+
+// Fallback seguro para react-native-maps
+let MapViewRaw, MarkerRaw;
+try {
+  const Maps = require('react-native-maps');
+  MapViewRaw = Maps.default;
+  MarkerRaw = Maps.Marker;
+} catch (e) {
+  console.warn('react-native-maps no disponible');
+}
+
 import { AutonomousCommunityMap } from '../components/AutonomousCommunityMap';
 import { PROVINCE_TO_REGION, INE_PROVINCES } from '../data/provinces';
 import MUNICIPIOS_DATA from '../data/municipios.json';
 
 // Normalización de iconos para evitar "Render Error"
 const getIcon = (name) => LucideIcons[name]?.default || LucideIcons[name] || LucideIcons.Info;
-const MapView = MapViewRaw?.default || MapViewRaw;
-const Marker = MarkerRaw?.default || MarkerRaw;
+const MapView = (MapViewRaw?.default || MapViewRaw);
+const Marker = (MarkerRaw?.default || MarkerRaw);
 
 const ChevronLeft = getIcon('ChevronLeft');
 const MapPin = getIcon('MapPin');
@@ -72,6 +83,12 @@ const Construction = getIcon('Construction');
 const Zap = getIcon('Zap');
 const ChevronRight = getIcon('ChevronRight');
 const Check = getIcon('Check');
+const Volume2 = getIcon('Volume2');
+const Flag = getIcon('Flag');
+const Star = getIcon('Star');
+const MessageSquare = getIcon('MessageSquare');
+const Send = getIcon('Send');
+const VolumeX = getIcon('VolumeX');
 
 const DARK_MAP_STYLE = [
   { "elementType": "geometry", "stylers": [{ "color": "#242f3e" }] },
@@ -108,7 +125,13 @@ const TARIFF_PRESETS = [
   'Entrada General',
   'Entrada Reducida',
   'Entrada Gratuita',
-  'Abono',
+  'Entrada Conjunta General',
+  'Entrada Conjunta Reducida',
+  'Abono General',
+  'Abono Anual',
+  'Abono Mensual',
+  'Abono Temporada',
+  'Abono Familiar',
   'Visita en Grupo',
   'Otros / Personalizado'
 ];
@@ -123,15 +146,29 @@ const TARIFF_SUBTYPES = [
   { id: 'student', label: 'Estudiantes (X a Y años)' },
   { id: 'disability', label: 'Personas con Discapacidad (X %)' },
   { id: 'unemployed', label: 'Personas Desempleadas' },
-  { id: 'teacher', label: 'Personas Docentes' }
+  { id: 'teacher', label: 'Personas Docentes' },
+  { id: 'sundays_holidays', label: 'Domingos y Festivos' }
 ];
 
 const PERCENTAGES = ['33', '65', '75', '100'];
+
+const CATEGORIES = [
+  'Cultura',
+  'Historia',
+  'Arquitectura',
+  'Religión',
+  'Ocio',
+  'Naturaleza',
+  'Gastronomía',
+  'Deporte',
+  'Compras',
+  'Otros'
+];
 const AGES = Array.from({ length: 100 }, (_, i) => (i + 1).toString());
 const DAYS_MAP = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
 export function PlaceDetailScreen({ route, navigation }) {
-    const { place: navigationPlace } = route.params;
+    const { place: navigationPlace } = route.params || {};
     const { theme, isDarkMode } = useTheme();
     const { userData, updateUserData, awardExperience } = useUser();
     const insets = useSafeAreaInsets();
@@ -156,9 +193,51 @@ export function PlaceDetailScreen({ route, navigation }) {
   const [place, setPlace] = useState(initialPlace);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [reviews, setReviews] = useState([]);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
+  const [showReviewModal, setShowReviewModal] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  
   const menuAnim = useRef(new Animated.Value(0)).current;
+
+  const toggleSpeech = () => {
+    if (isSpeaking) {
+      Speech.stop();
+      setIsSpeaking(false);
+    } else {
+      const textToSpeak = `${place.name}. ${place.description}. Ubicado en ${place.city}.`;
+      setIsSpeaking(true);
+      Speech.speak(textToSpeak, {
+        language: 'es',
+        onDone: () => setIsSpeaking(false),
+        onError: () => setIsSpeaking(false),
+      });
+    }
+  };
+
+  useEffect(() => {
+    return () => Speech.stop();
+  }, []);
+
+  const fetchReviews = async () => {
+    if (!place.id || String(place.id).startsWith('custom-')) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/places/${place.id}/reviews`);
+      if (res.ok) {
+        const data = await res.json();
+        setReviews(data);
+      }
+    } catch (e) {
+      console.warn('Error fetching reviews:', e);
+    }
+  };
+
+  useEffect(() => {
+    fetchReviews();
+  }, [place.id]);
 
   const toggleMenu = () => {
     const toValue = isMenuOpen ? 0 : 1;
@@ -186,11 +265,11 @@ export function PlaceDetailScreen({ route, navigation }) {
       return;
     }
     const filtered = MUNICIPIOS_DATA.filter(m => 
-      m.municipio.toLowerCase().includes(query.toLowerCase())
+      (m.label || '').toLowerCase().includes(query.toLowerCase())
     ).slice(0, 5).map(m => ({
-      id: m.id,
-      label: m.municipio,
-      province: m.provincia
+      id: m.code,
+      label: m.label,
+      province: m.parent_code
     }));
     setSearchResults(filtered);
   };
@@ -425,7 +504,11 @@ export function PlaceDetailScreen({ route, navigation }) {
           await fetch(`${API_BASE_URL}/api/places/${place.id}`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ verified: true, verifiedStatus: 'Verificado' }),
+            body: JSON.stringify({ 
+              verified: true, 
+              verifiedStatus: 'Verificado',
+              extra_data: { verified: true, verifiedStatus: 'Verificado' }
+            }),
             signal: controller.signal
           });
           clearTimeout(timeoutId);
@@ -529,16 +612,45 @@ export function PlaceDetailScreen({ route, navigation }) {
     }, 2500);
   };
 
-  const updateTariffCondition = (idx, field, value) => {
+  const updateTariffSubtype = (idx, subIdx, field, value) => {
     const newTariffs = [...(place.tariffs || [])];
+    let newSubtypes = newTariffs[idx].subtypes || [newTariffs[idx].condition || { type: 'none' }];
+    newSubtypes = [...newSubtypes];
+    newSubtypes[subIdx] = {
+      ...newSubtypes[subIdx],
+      [field]: value
+    };
     newTariffs[idx] = {
       ...newTariffs[idx],
-      condition: {
-        ...newTariffs[idx].condition,
-        [field]: value
-      }
+      subtypes: newSubtypes
     };
     setPlace({ ...place, tariffs: newTariffs });
+  };
+
+  const addTariffSubtype = (idx) => {
+    const newTariffs = [...(place.tariffs || [])];
+    let newSubtypes = newTariffs[idx].subtypes || [newTariffs[idx].condition || { type: 'none' }];
+    newSubtypes = [...newSubtypes];
+    newSubtypes.push({ id: `sub-${Date.now()}`, type: 'none', value: '', from: '', to: '' });
+    newTariffs[idx] = {
+      ...newTariffs[idx],
+      subtypes: newSubtypes
+    };
+    setPlace({ ...place, tariffs: newTariffs });
+  };
+
+  const removeTariffSubtype = (idx, subIdx) => {
+    const newTariffs = [...(place.tariffs || [])];
+    let newSubtypes = newTariffs[idx].subtypes || [newTariffs[idx].condition || { type: 'none' }];
+    newSubtypes = [...newSubtypes];
+    if (newSubtypes.length > 1) {
+      newSubtypes.splice(subIdx, 1);
+      newTariffs[idx] = {
+        ...newTariffs[idx],
+        subtypes: newSubtypes
+      };
+      setPlace({ ...place, tariffs: newTariffs });
+    }
   };
 
   const getConditionText = (condition) => {
@@ -563,6 +675,8 @@ export function PlaceDetailScreen({ route, navigation }) {
         return 'Personas en situación de desempleo';
       case 'teacher':
         return 'Personal docente en activo';
+      case 'sundays_holidays':
+        return 'Domingos y Festivos';
       default:
         return null;
     }
@@ -632,6 +746,21 @@ export function PlaceDetailScreen({ route, navigation }) {
             }
 
             updateUserData({ contributions: updatedContributions });
+            
+            // Sincronización automática con el servidor para Administradores
+            if (isAdmin && !normalizedPlace.isLocalOnly && normalizedPlace.id && !String(normalizedPlace.id).startsWith('custom-')) {
+              try {
+                await fetch(`${API_BASE_URL}/api/places/${normalizedPlace.id}`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ image: finalImageUrl }),
+                });
+                console.log('[Auto-Sync] Imagen guardada en base de datos');
+              } catch (e) {
+                console.error('[Auto-Sync] Error al sincronizar imagen:', e);
+              }
+            }
+            
             Alert.alert("Éxito", "Imagen subida y guardada en la nube.");
           }
         } else {
@@ -868,6 +997,22 @@ export function PlaceDetailScreen({ route, navigation }) {
     // NUEVO: Sistema de Horarios Estructurados (V3)
     if (displayPlace.structuredSchedules && displayPlace.structuredSchedules.length > 0) {
       const activeSeason = displayPlace.structuredSchedules.find(s => {
+        if (s.startDate && s.endDate) {
+          const currentYear = now.getFullYear();
+          const startParts = s.startDate.split('-');
+          const endParts = s.endDate.split('-');
+          
+          const start = new Date(currentYear, parseInt(startParts[1]) - 1, parseInt(startParts[2]), 0, 0, 0);
+          const end = new Date(currentYear, parseInt(endParts[1]) - 1, parseInt(endParts[2]), 23, 59, 59);
+          
+          if (start <= end) {
+            return now >= start && now <= end;
+          } else {
+            const nextYearEnd = new Date(currentYear + 1, parseInt(endParts[1]) - 1, parseInt(endParts[2]), 23, 59, 59);
+            const prevYearStart = new Date(currentYear - 1, parseInt(startParts[1]) - 1, parseInt(startParts[2]), 0, 0, 0);
+            return (now >= start && now <= nextYearEnd) || (now >= prevYearStart && now <= end);
+          }
+        }
         const monthMap = {
           'Enero': 1, 'Febrero': 2, 'Marzo': 3, 'Abril': 4, 'Mayo': 5, 'Junio': 6,
           'Julio': 7, 'Agosto': 8, 'Septiembre': 9, 'Octubre': 10, 'Noviembre': 11, 'Diciembre': 12
@@ -948,8 +1093,9 @@ export function PlaceDetailScreen({ route, navigation }) {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
-      <ScrollView 
+      <>
+        <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+        <ScrollView 
         ref={scrollRef}
         style={styles.container} 
         showsVerticalScrollIndicator={false}
@@ -963,17 +1109,7 @@ export function PlaceDetailScreen({ route, navigation }) {
               <Text style={{ color: '#FFF', marginTop: 10, fontWeight: '700' }}>Subiendo...</Text>
             </View>
           )}
-          <View style={styles.overlay} />
-          
-          <View style={styles.heroMapOverlay}>
-            <AutonomousCommunityMap 
-              regionName={effectiveRegion} 
-              cityCoords={place.location}
-              width={100}
-              height={100}
-              opacity={0.3}
-            />
-          </View>
+          {/* Overlay eliminado para máxima claridad de imagen */}
 
           <SafeAreaView style={styles.headerActions}>
             <TouchableOpacity 
@@ -1044,13 +1180,20 @@ export function PlaceDetailScreen({ route, navigation }) {
           <View style={styles.heroContent}>
             <View style={{ flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
               {isEditing ? (
-                <TextInput
-                  style={[styles.badgeEdit, { backgroundColor: theme.primary, color: isDarkMode ? '#000' : '#FFF' }]}
-                  value={place.category}
-                  onChangeText={(v) => setPlace({...place, category: v})}
-                  placeholder="Categoría"
-                  placeholderTextColor="rgba(255,255,255,0.6)"
-                />
+                <TouchableOpacity
+                  style={[styles.badgeEdit, { backgroundColor: theme.primary, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12 }]}
+                  onPress={() => setPickerModal({
+                    visible: true,
+                    title: 'Seleccionar Categoría',
+                    options: CATEGORIES,
+                    onSelect: (cat) => setPlace({...place, category: cat})
+                  })}
+                >
+                  <Text style={{ color: isDarkMode ? '#000' : '#FFF', fontWeight: '900', fontSize: 11 }}>
+                    {(place.category || 'CATEGORÍA').toUpperCase()}
+                  </Text>
+                  <LucideIcons.ChevronDown color={isDarkMode ? '#000' : '#FFF'} size={14} />
+                </TouchableOpacity>
               ) : (
                 <View style={[styles.badge, { backgroundColor: theme.primary }]}>
                   <Text style={[styles.badgeText, { color: isDarkMode ? '#000000' : '#FFFFFF' }]}>{category.toUpperCase()}</Text>
@@ -1129,6 +1272,9 @@ export function PlaceDetailScreen({ route, navigation }) {
             ) : (
               <View>
                 <Text style={[styles.placeName, typography.h1]}>{displayPlace.name}</Text>
+                {displayPlace.address && (
+                  <Text style={styles.headerAddress} numberOfLines={1}>{displayPlace.address}</Text>
+                )}
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 }}>
                   <TouchableOpacity 
                     onPress={handleGoToCity}
@@ -1149,15 +1295,27 @@ export function PlaceDetailScreen({ route, navigation }) {
           </View>
         </View>
 
-        <TouchableOpacity 
-          onPress={handleGoToMap}
-          style={[styles.locationBar, { backgroundColor: '#EFBF04' }]}
-        >
-          <MapPin color="#000000" size={18} />
-          <Text style={[styles.locationBarText, { color: '#000000' }]}>
-            {(displayPlace.province || displayPlace.city || 'ALICANTE').toUpperCase()} / <Text style={{ fontWeight: '800' }}>VER EN EL MAPA</Text>
-          </Text>
-        </TouchableOpacity>
+        <View style={[styles.locationBar, { backgroundColor: '#EFBF04', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16 }]}>
+          <TouchableOpacity 
+            onPress={handleGoToMap}
+            style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}
+          >
+            <MapPin color="#000" size={18} />
+            <Text style={[styles.locationBarText, { color: '#000', marginLeft: 8 }]}>
+              {(displayPlace.province || displayPlace.city || 'ALICANTE').toUpperCase()} / <Text style={{ fontWeight: '800' }}>VER EN EL MAPA</Text>
+            </Text>
+          </TouchableOpacity>
+          
+          <View style={{ width: 1, height: 20, backgroundColor: 'rgba(0,0,0,0.15)', marginHorizontal: 12 }} />
+          
+          <TouchableOpacity 
+            onPress={toggleSpeech}
+            style={{ flexDirection: 'row', alignItems: 'center' }}
+          >
+            {isSpeaking ? <VolumeX color="#000" size={20} /> : <Volume2 color="#000" size={20} />}
+            <Text style={{ color: '#000', fontWeight: '800', fontSize: 11, marginLeft: 6 }}>AUDIO</Text>
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.mainContent}>
           {/* Description */}
@@ -1869,101 +2027,116 @@ export function PlaceDetailScreen({ route, navigation }) {
                           </View>
 
                           {/* Subtipos / Condiciones */}
-                          <View style={styles.conditionSection}>
-                            <TouchableOpacity 
-                              style={[styles.conditionSelector, { backgroundColor: theme.background, borderColor: theme.border }]}
-                              onPress={() => setPickerModal({
-                                visible: true,
-                                title: 'Subtipo / Condición',
-                                options: TARIFF_SUBTYPES.map(s => s.label),
-                                onSelect: (val) => {
-                                  const subtype = TARIFF_SUBTYPES.find(s => s.label === val);
-                                  updateTariffCondition(idx, 'type', subtype.id);
-                                }
-                              })}
-                            >
-                              <Info color={theme.primary} size={14} />
-                              <Text style={{ color: theme.textSecondary, fontSize: 11, fontWeight: '600', flex: 1, marginLeft: 5 }}>
-                                {TARIFF_SUBTYPES.find(s => s.id === (tariff.condition?.type || 'none'))?.label}
-                              </Text>
-                              <ChevronLeft color={theme.textSecondary} size={12} style={{ transform: [{ rotate: '-90deg' }] }} />
-                            </TouchableOpacity>
-
-                            {/* Controles específicos según tipo */}
-                            {(tariff.condition?.type === 'disability') && (
-                              <View style={styles.conditionDetails}>
-                                <Text style={{ color: theme.textSecondary, fontSize: 11 }}>Mínimo:</Text>
+                          {(tariff.subtypes || [tariff.condition || { type: 'none' }]).map((subtype, subIdx) => (
+                            <View key={subtype.id || subIdx} style={[styles.conditionSection, { marginTop: subIdx > 0 ? 10 : 0 }]}>
+                              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                 <TouchableOpacity 
-                                  style={styles.smallSelector}
+                                  style={[styles.conditionSelector, { flex: 1, backgroundColor: theme.background, borderColor: theme.border }]}
                                   onPress={() => setPickerModal({
                                     visible: true,
-                                    title: 'Porcentaje Discapacidad',
-                                    options: PERCENTAGES.map(p => `${p}%`),
-                                    onSelect: (val) => updateTariffCondition(idx, 'value', val.replace('%', ''))
+                                    title: 'Subtipo / Condición',
+                                    options: TARIFF_SUBTYPES.map(s => s.label),
+                                    onSelect: (val) => {
+                                      const selectedType = TARIFF_SUBTYPES.find(s => s.label === val);
+                                      updateTariffSubtype(idx, subIdx, 'type', selectedType.id);
+                                    }
                                   })}
                                 >
-                                  <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12 }}>{tariff.condition.value || '33'}%</Text>
+                                  <Info color={theme.primary} size={14} />
+                                  <Text style={{ color: theme.textSecondary, fontSize: 11, fontWeight: '600', flex: 1, marginLeft: 5 }}>
+                                    {TARIFF_SUBTYPES.find(s => s.id === (subtype.type || 'none'))?.label}
+                                  </Text>
+                                  <ChevronLeft color={theme.textSecondary} size={12} style={{ transform: [{ rotate: '-90deg' }] }} />
                                 </TouchableOpacity>
+                                
+                                {(tariff.subtypes || [tariff.condition]).length > 1 && (
+                                  <TouchableOpacity onPress={() => removeTariffSubtype(idx, subIdx)} style={{ marginLeft: 8 }}>
+                                    <MinusCircle color="#E74C3C" size={16} />
+                                  </TouchableOpacity>
+                                )}
                               </View>
-                            )}
 
-                            {(tariff.condition?.type === 'senior' || tariff.condition?.type === 'child') && (
-                              <View style={styles.conditionDetails}>
-                                <Text style={{ color: theme.textSecondary, fontSize: 11 }}>Edad:</Text>
-                                <TouchableOpacity 
-                                  style={styles.smallSelector}
-                                  onPress={() => setPickerModal({
-                                    visible: true,
-                                    title: 'Seleccionar Edad',
-                                    options: AGES,
-                                    onSelect: (val) => updateTariffCondition(idx, 'value', val)
-                                  })}
-                                >
-                                  <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12 }}>{tariff.condition.value || '65'} años</Text>
-                                </TouchableOpacity>
-                              </View>
-                            )}
+                              {/* Controles específicos según tipo */}
+                              {(subtype.type === 'disability') && (
+                                <View style={styles.conditionDetails}>
+                                  <Text style={{ color: theme.textSecondary, fontSize: 11 }}>Mínimo:</Text>
+                                  <TouchableOpacity 
+                                    style={styles.smallSelector}
+                                    onPress={() => setPickerModal({
+                                      visible: true,
+                                      title: 'Porcentaje Discapacidad',
+                                      options: PERCENTAGES.map(p => `${p}%`),
+                                      onSelect: (val) => updateTariffSubtype(idx, subIdx, 'value', val.replace('%', ''))
+                                    })}
+                                  >
+                                    <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12 }}>{subtype.value || '33'}%</Text>
+                                  </TouchableOpacity>
+                                </View>
+                              )}
 
-                            {(tariff.condition?.type === 'age_range' || tariff.condition?.type === 'student') && (
-                              <View style={styles.conditionDetails}>
-                                <Text style={{ color: theme.textSecondary, fontSize: 11 }}>De:</Text>
-                                <TouchableOpacity 
-                                  style={styles.smallSelector}
-                                  onPress={() => setPickerModal({
-                                    visible: true,
-                                    title: 'Desde Edad',
-                                    options: AGES,
-                                    onSelect: (val) => updateTariffCondition(idx, 'from', val)
-                                  })}
-                                >
-                                  <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12 }}>{tariff.condition.from || '18'}</Text>
-                                </TouchableOpacity>
-                                <Text style={{ color: theme.textSecondary, fontSize: 11 }}>a:</Text>
-                                <TouchableOpacity 
-                                  style={styles.smallSelector}
-                                  onPress={() => setPickerModal({
-                                    visible: true,
-                                    title: 'Hasta Edad',
-                                    options: AGES,
-                                    onSelect: (val) => updateTariffCondition(idx, 'to', val)
-                                  })}
-                                >
-                                  <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12 }}>{tariff.condition.to || '25'}</Text>
-                                </TouchableOpacity>
-                              </View>
-                            )}
-                          </View>
+                              {(subtype.type === 'senior' || subtype.type === 'child') && (
+                                <View style={styles.conditionDetails}>
+                                  <Text style={{ color: theme.textSecondary, fontSize: 11 }}>Edad:</Text>
+                                  <TouchableOpacity 
+                                    style={styles.smallSelector}
+                                    onPress={() => setPickerModal({
+                                      visible: true,
+                                      title: 'Seleccionar Edad',
+                                      options: AGES,
+                                      onSelect: (val) => updateTariffSubtype(idx, subIdx, 'value', val)
+                                    })}
+                                  >
+                                    <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12 }}>{subtype.value || '65'} años</Text>
+                                  </TouchableOpacity>
+                                </View>
+                              )}
+
+                              {(subtype.type === 'age_range' || subtype.type === 'student') && (
+                                <View style={styles.conditionDetails}>
+                                  <Text style={{ color: theme.textSecondary, fontSize: 11 }}>De:</Text>
+                                  <TouchableOpacity 
+                                    style={styles.smallSelector}
+                                    onPress={() => setPickerModal({
+                                      visible: true,
+                                      title: 'Desde Edad',
+                                      options: AGES,
+                                      onSelect: (val) => updateTariffSubtype(idx, subIdx, 'from', val)
+                                    })}
+                                  >
+                                    <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12 }}>{subtype.from || '18'}</Text>
+                                  </TouchableOpacity>
+                                  <Text style={{ color: theme.textSecondary, fontSize: 11 }}>a:</Text>
+                                  <TouchableOpacity 
+                                    style={styles.smallSelector}
+                                    onPress={() => setPickerModal({
+                                      visible: true,
+                                      title: 'Hasta Edad',
+                                      options: AGES,
+                                      onSelect: (val) => updateTariffSubtype(idx, subIdx, 'to', val)
+                                    })}
+                                  >
+                                    <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12 }}>{subtype.to || '25'}</Text>
+                                  </TouchableOpacity>
+                                </View>
+                              )}
+                            </View>
+                          ))}
+                          
+                          <TouchableOpacity onPress={() => addTariffSubtype(idx)} style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, paddingVertical: 5 }}>
+                            <PlusCircle color={theme.primary} size={14} />
+                            <Text style={{ color: theme.primary, fontSize: 11, marginLeft: 4, fontWeight: '600' }}>Añadir Subtipo a esta Tarifa</Text>
+                          </TouchableOpacity>
                         </View>
                       ) : (
                         <View style={{ flex: 1 }}>
                           <View style={[styles.tariffRow, { borderBottomWidth: 0, paddingVertical: 0 }]}>
                             <View style={{ flex: 1 }}>
                               <Text style={[styles.tariffLabel, { color: theme.text }]}>{tariff.label}</Text>
-                              {getConditionText(tariff.condition) && (
-                                <Text style={{ color: theme.textSecondary, fontSize: 11, marginTop: 2 }}>
-                                  {getConditionText(tariff.condition)}
+                              {(tariff.subtypes || [tariff.condition]).map((st, i) => getConditionText(st) ? (
+                                <Text key={i} style={{ color: theme.textSecondary, fontSize: 11, marginTop: 2 }}>
+                                  • {getConditionText(st)}
                                 </Text>
-                              )}
+                              ) : null)}
                             </View>
                             <View style={[styles.priceTag, { backgroundColor: theme.primary + '20', paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8 }]}>
                               <Text style={[styles.priceText, { color: theme.primary, fontWeight: 'bold' }]}>{tariff.price}</Text>
@@ -2101,8 +2274,9 @@ export function PlaceDetailScreen({ route, navigation }) {
           <View style={styles.section}>
             <Text style={[styles.sectionTitle, { color: theme.text }]}>Ubicación</Text>
             <View style={[styles.mapContainer, { backgroundColor: theme.surface, borderColor: theme.border, overflow: 'hidden' }]}>
-              {place.location && place.location.latitude ? (
+              {place.location && place.location.latitude && MapView ? (
                 <MapView
+                  key={isDarkMode ? 'dark' : 'light'}
                   style={{ width: '100%', height: '100%' }}
                   userInterfaceStyle={isDarkMode ? 'dark' : 'light'}
                   customMapStyle={isDarkMode ? DARK_MAP_STYLE : []}
@@ -2115,10 +2289,12 @@ export function PlaceDetailScreen({ route, navigation }) {
                   scrollEnabled={true}
                   zoomEnabled={true}
                 >
-                  <Marker coordinate={{
-                    latitude: Number(displayPlace.location.latitude),
-                    longitude: Number(displayPlace.location.longitude),
-                  }} />
+                  {Marker && (
+                    <Marker coordinate={{
+                      latitude: Number(displayPlace.location.latitude),
+                      longitude: Number(displayPlace.location.longitude),
+                    }} />
+                  )}
                 </MapView>
               ) : (
                 <View style={{ alignItems: 'center', justifyContent: 'center', flex: 1, padding: 20 }}>
@@ -2223,8 +2399,127 @@ export function PlaceDetailScreen({ route, navigation }) {
             </View>
           </View>
         </View>
-        <View style={{ height: 40 }} />
-      </ScrollView>
+
+            {/* --- SECCIÓN DE COMUNIDAD Y RESEÑAS --- */}
+            <View style={[styles.communityHeader, { backgroundColor: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }]}>
+              <View style={styles.sectionTitleContainer}>
+                <MessageSquare color={theme.primary} size={20} />
+                <Text style={[styles.communityTitle, { color: theme.text }]}>Comunidad</Text>
+              </View>
+              <TouchableOpacity 
+                style={[styles.writeReviewBtn, { backgroundColor: theme.primary }]}
+                onPress={() => setShowReviewModal(true)}
+              >
+                <Plus color="#FFF" size={16} strokeWidth={3} />
+                <Text style={styles.writeReviewBtnText}>OPINAR</Text>
+              </TouchableOpacity>
+            </View>
+
+              {reviews.length === 0 ? (
+                <View style={[styles.emptyReviews, { backgroundColor: theme.surface }]}>
+                  <Sparkles color={theme.textSecondary} size={30} style={{ opacity: 0.3 }} />
+                  <Text style={[styles.emptyReviewsText, { color: theme.textSecondary }]}>
+                    Sé el primero en compartir tu experiencia de accesibilidad en este lugar.
+                  </Text>
+                </View>
+              ) : (
+                <View style={styles.reviewsList}>
+                  {reviews.map((item, idx) => {
+                    const initials = (item.user_name || 'E').charAt(0).toUpperCase();
+                    const avatarColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEEAD'];
+                    const avatarColor = avatarColors[idx % avatarColors.length];
+
+                    return (
+                      <View key={idx} style={[styles.reviewCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                        <View style={styles.reviewHeader}>
+                          <View style={[styles.avatar, { backgroundColor: avatarColor }]}>
+                            <Text style={styles.avatarText}>{initials}</Text>
+                          </View>
+                          <View style={{ flex: 1, marginLeft: 12 }}>
+                            <Text style={[styles.reviewUser, { color: theme.text }]}>{item.user_name || 'Explorador Anónimo'}</Text>
+                            <View style={styles.starsRow}>
+                              {[1,2,3,4,5].map(s => (
+                                <Star key={s} size={12} color={s <= item.rating ? '#F1C40F' : theme.border} fill={s <= item.rating ? '#F1C40F' : 'transparent'} />
+                              ))}
+                            </View>
+                          </View>
+                          <Text style={styles.reviewDate}>{new Date(item.created_at).toLocaleDateString()}</Text>
+                        </View>
+                        <Text style={[styles.reviewComment, { color: theme.textSecondary }]}>{item.comment}</Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
+            
+            <View style={{ height: 100 }} />
+          </ScrollView>
+
+        {/* Modal de Nueva Reseña */}
+        <Modal visible={showReviewModal} animationType="slide" transparent={true}>
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContent, { backgroundColor: theme.background }]}>
+              <View style={styles.modalHeader}>
+                <Text style={[styles.modalTitle, { color: theme.text }]}>Tu experiencia es valiosa</Text>
+                <TouchableOpacity onPress={() => setShowReviewModal(false)}>
+                  <X color={theme.text} size={24} />
+                </TouchableOpacity>
+              </View>
+              
+              <Text style={[styles.modalLabel, { color: theme.textSecondary }]}>Puntuación de Accesibilidad:</Text>
+              <View style={styles.ratingSelector}>
+                {[1,2,3,4,5].map(s => (
+                  <TouchableOpacity key={s} onPress={() => setNewReview({...newReview, rating: s})}>
+                    <Star size={32} color={s <= newReview.rating ? '#F1C40F' : theme.border} fill={s <= newReview.rating ? '#F1C40F' : 'transparent'} />
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <TextInput
+                style={[styles.reviewInput, { color: theme.text, backgroundColor: theme.surface }]}
+                placeholder="¿Cómo fue la accesibilidad? ¿Hay algo que otros deban saber?"
+                placeholderTextColor={theme.textSecondary}
+                multiline
+                numberOfLines={4}
+                value={newReview.comment}
+                onChangeText={(v) => setNewReview({...newReview, comment: v})}
+              />
+
+              <TouchableOpacity 
+                style={[styles.submitBtn, { backgroundColor: theme.primary }]}
+                onPress={async () => {
+                  if (!newReview.comment) return Alert.alert("Falta información", "Por favor, cuéntanos algo sobre tu visita.");
+                  setIsSubmittingReview(true);
+                  try {
+                    const res = await fetch(`${API_BASE_URL}/api/reviews`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        place_id: place.id,
+                        user_id: userData.id,
+                        user_name: userData.name,
+                        rating: newReview.rating,
+                        comment: newReview.comment
+                      })
+                    });
+                    if (res.ok) {
+                      setNewReview({ rating: 5, comment: '' });
+                      setShowReviewModal(false);
+                      fetchReviews();
+                      Alert.alert("¡Gracias!", "Tu reseña ayudará a que más personas viajen con seguridad.");
+                    }
+                  } catch (e) {
+                    Alert.alert("Error", "No se pudo enviar la reseña en este momento.");
+                  } finally {
+                    setIsSubmittingReview(false);
+                  }
+                }}
+              >
+                {isSubmittingReview ? <ActivityIndicator color="#FFF" /> : <Text style={styles.submitBtnText}>PUBLICAR EXPERIENCIA</Text>}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
 
       {/* Custom Picker Modal */}
       <Modal
@@ -2303,10 +2598,16 @@ export function PlaceDetailScreen({ route, navigation }) {
               <Bath color="#FFF" size={20} />
             </TouchableOpacity>
             <TouchableOpacity 
-              style={[styles.miniFab, { backgroundColor: '#F1C40F' }]} 
-              onPress={() => { toggleMenu(); navigation.navigate('Report'); }}
+              style={[styles.miniFab, { backgroundColor: '#FF9500' }]} 
+              onPress={() => { 
+                toggleMenu(); 
+                Alert.alert("Reportar Ubicación", "¿Deseas informar de algún error o contenido inapropiado en este lugar?", [
+                  { text: "Cancelar", style: "cancel" },
+                  { text: "Reportar", style: "destructive", onPress: () => Alert.alert("Enviado", "Tu reporte ha sido enviado al equipo de moderación. Gracias por ayudarnos.") }
+                ]);
+              }}
             >
-              <ShieldCheck color="#070B14" size={20} />
+              <Flag color="#FFF" size={20} />
             </TouchableOpacity>
           </Animated.View>
         )}
@@ -2330,6 +2631,7 @@ export function PlaceDetailScreen({ route, navigation }) {
           </View>
         </View>
       )}
+      </>
     </View>
   );
 }
@@ -2423,6 +2725,16 @@ const styles = StyleSheet.create({
   addressEdit: { flex: 1, borderWidth: 1, borderRadius: 8, padding: 8, fontSize: 13 },
   accessibilityEdit: { borderWidth: 1, borderRadius: 12, padding: 12, fontSize: 14, marginTop: 10, minHeight: 80 },
   placeName: { color: '#FFFFFF', marginTop: 10, textShadowColor: 'rgba(0,0,0,0.5)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4, fontSize: 32, fontWeight: '900' },
+  headerAddress: {
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: 14,
+    fontWeight: '600',
+    marginTop: 4,
+    marginBottom: 8,
+    textShadowColor: 'rgba(0,0,0,0.4)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
+  },
   mainContent: { padding: 20 },
   aiButton: {
     marginTop: 20,
@@ -2463,7 +2775,7 @@ const styles = StyleSheet.create({
   },
   section: { marginBottom: 25 },
   sectionTitle: { fontSize: 18, fontWeight: '800', marginBottom: 12 },
-  description: { fontSize: 15, lineHeight: 24 },
+  description: { fontSize: 15, lineHeight: 24, textAlign: 'justify' },
   contactContainer: {
     marginTop: 15,
     paddingTop: 15,
@@ -2497,7 +2809,7 @@ const styles = StyleSheet.create({
   tipCard: { flexDirection: 'row', padding: 15, borderRadius: 15, borderWidth: 1, marginBottom: 25, gap: 12 },
   tipContent: { flex: 1 },
   tipTitle: { fontSize: 14, fontWeight: '800', marginBottom: 4 },
-  tipText: { fontSize: 14, lineHeight: 20 },
+  tipText: { fontSize: 14, lineHeight: 20, textAlign: 'justify' },
   accessRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 10 },
   accessIconBox: { flex: 1, padding: 12, borderRadius: 15, alignItems: 'center', gap: 6 },
   accessIconText: { fontSize: 10, fontWeight: '700' },
@@ -2676,10 +2988,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
-  noticeText: {
-    fontSize: 14,
-    lineHeight: 20,
+  locationText: {
+    fontSize: 12,
+    marginLeft: 4,
     fontWeight: '600',
+  },
+  addressText: {
+    fontSize: 10,
+    marginTop: 2,
+    fontStyle: 'italic',
   },
   noticeTextEdit: {
     flex: 1,
@@ -2888,6 +3205,7 @@ const styles = StyleSheet.create({
   augmentedText: {
     fontSize: 14,
     lineHeight: 22,
+    textAlign: 'justify',
   },
   augmentedTextEdit: {
     fontSize: 14,
@@ -2919,6 +3237,7 @@ const styles = StyleSheet.create({
   savingsDesc: {
     fontSize: 13,
     lineHeight: 18,
+    textAlign: 'justify',
   },
   savingsRow: {
     flexDirection: 'row',
@@ -3105,7 +3424,197 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 4.65,
+    shadowRadius: 10,
+  },
+  communityHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 15,
+    marginTop: 20,
+    marginBottom: 10,
+    marginHorizontal: 4
+  },
+  communityTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    letterSpacing: 0.5
+  },
+  writeReviewBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4
+  },
+  writeReviewBtnText: {
+    color: '#FFF',
+    fontSize: 11,
+    fontWeight: '900',
+    letterSpacing: 1
+  },
+  sectionTitleContainer: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    gap: 8 
+  },
+  emptyReviews: { 
+    padding: 30, 
+    borderRadius: 24, 
+    alignItems: 'center', 
+    marginTop: 15, 
+    borderStyle: 'dashed', 
+    borderWidth: 1.5 
+  },
+  emptyReviewsText: { 
+    marginTop: 15, 
+    textAlign: 'center', 
+    fontSize: 15, 
+    lineHeight: 22, 
+    opacity: 0.8 
+  },
+  reviewsList: { 
+    gap: 16, 
+    marginTop: 15 
+  },
+  reviewCard: { 
+    padding: 18, 
+    borderRadius: 20, 
+    borderWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2
+  },
+  reviewHeader: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    marginBottom: 14 
+  },
+  avatar: { 
+    width: 42, 
+    height: 42, 
+    borderRadius: 21, 
+    justifyContent: 'center', 
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4
+  },
+  avatarText: { 
+    color: '#FFF', 
+    fontWeight: '900', 
+    fontSize: 16 
+  },
+  reviewUser: { 
+    fontSize: 15, 
+    fontWeight: '800' 
+  },
+  reviewComment: { 
+    fontSize: 15, 
+    lineHeight: 24, 
+    textAlign: 'justify',
+    marginTop: 4
+  },
+  reviewDate: { 
+    fontSize: 11, 
+    color: '#95A5A6', 
+    fontWeight: '600' 
+  },
+  starsRow: { 
+    flexDirection: 'row', 
+    gap: 3, 
+    marginTop: 4 
+  },
+  modalOverlay: { 
+    flex: 1, 
+    backgroundColor: 'rgba(0,0,0,0.7)', 
+    justifyContent: 'flex-end' 
+  },
+  modalContent: { 
+    borderTopLeftRadius: 35, 
+    borderTopRightRadius: 35, 
+    padding: 25, 
+    paddingBottom: 40,
+    maxHeight: '85%' 
+  },
+  modalHeader: { 
+    flexDirection: 'row', 
+    justifyContent: 'space-between', 
+    alignItems: 'center', 
+    marginBottom: 30 
+  },
+  modalTitle: { 
+    fontSize: 22, 
+    fontWeight: '900',
+    letterSpacing: -0.5
+  },
+  modalLabel: { 
+    fontSize: 15, 
+    fontWeight: '800', 
+    marginBottom: 18,
+    textTransform: 'uppercase',
+    letterSpacing: 1
+  },
+  ratingSelector: { 
+    flexDirection: 'row', 
+    gap: 15, 
+    justifyContent: 'center', 
+    marginBottom: 30 
+  },
+  reviewInput: { 
+    borderRadius: 20, 
+    padding: 20, 
+    fontSize: 16, 
+    minHeight: 140, 
+    textAlignVertical: 'top', 
+    marginBottom: 30,
+    borderWidth: 1
+  },
+  submitBtn: { 
+    paddingVertical: 18, 
+    borderRadius: 20, 
+    alignItems: 'center', 
+    shadowColor: '#000', 
+    shadowOffset: { width: 0, height: 6 }, 
+    shadowOpacity: 0.3, 
+    shadowRadius: 12, 
+    elevation: 6 
+  },
+  submitBtnText: { 
+    color: '#FFF', 
+    fontWeight: '900', 
+    fontSize: 16,
+    letterSpacing: 1
+  },
+  audioBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2
+  },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%'
   },
   expandedMenu: {
     marginBottom: 15,

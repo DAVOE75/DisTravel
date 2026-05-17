@@ -102,6 +102,12 @@ export default function CategoryListScreen({ route, navigation }) {
             <Text style={[styles.locationText, { color: theme.textSecondary }]}>{item.cityName}</Text>
           </View>
 
+          {item.address && (
+            <Text style={[styles.addressText, { color: theme.textSecondary }]} numberOfLines={1}>
+              {item.address}
+            </Text>
+          )}
+
           <View style={styles.ratingRow}>
             <View style={styles.stars}>
               {[1, 2, 3, 4, 5].map(s => <Star key={s} size={10} color="#F1C40F" fill="#F1C40F" />)}
@@ -304,6 +310,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginLeft: 4,
     fontWeight: '600',
+  },
+  addressText: {
+    fontSize: 11,
+    marginTop: 2,
+    fontStyle: 'italic',
   },
   ratingRow: {
     flexDirection: 'row',

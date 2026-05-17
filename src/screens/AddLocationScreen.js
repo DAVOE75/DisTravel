@@ -58,9 +58,18 @@ const Construction = getIcon('Construction');
 const Sparkles = getIcon('Sparkles');
 const Phone = getIcon('Phone');
 import * as ImagePicker from 'expo-image-picker';
-import MapViewRaw, { Marker as MarkerRaw } from 'react-native-maps';
-const MapView = MapViewRaw?.default || MapViewRaw;
-const Marker = MarkerRaw?.default || MarkerRaw;
+// Importación segura de react-native-maps
+let MapViewRaw, MarkerRaw;
+try {
+  const Maps = require('react-native-maps');
+  MapViewRaw = Maps.default || Maps;
+  MarkerRaw = Maps.Marker;
+} catch (e) {
+  console.warn('react-native-maps no disponible en AddLocationScreen');
+}
+
+const MapView = MapViewRaw;
+const Marker = MarkerRaw;
 import { typography } from '../theme/typography';
 import { API_ENDPOINTS, API_BASE_URL } from '../config/api';
 import { GeminiService } from '../utils/gemini';
@@ -82,7 +91,13 @@ const TARIFF_PRESETS = [
   'Entrada General',
   'Entrada Reducida',
   'Entrada Gratuita',
-  'Abono',
+  'Entrada Conjunta General',
+  'Entrada Conjunta Reducida',
+  'Abono General',
+  'Abono Anual',
+  'Abono Mensual',
+  'Abono Temporada',
+  'Abono Familiar',
   'Visita en Grupo',
   'Otros / Personalizado'
 ];
@@ -97,7 +112,8 @@ const TARIFF_SUBTYPES = [
   { id: 'student', label: 'Estudiantes (X a Y años)' },
   { id: 'disability', label: 'Personas con Discapacidad (X %)' },
   { id: 'unemployed', label: 'Personas Desempleadas' },
-  { id: 'teacher', label: 'Personas Docentes' }
+  { id: 'teacher', label: 'Personas Docentes' },
+  { id: 'sundays_holidays', label: 'Domingos y Festivos' }
 ];
 
 const PERCENTAGES = ['33', '65', '75', '100'];
@@ -151,13 +167,13 @@ export default function AddLocationScreen({ navigation, route }) {
         id: '1', 
         label: 'Entrada General', 
         price: '15.00 €',
-        condition: { type: 'none', value: '', from: '', to: '' }
+        subtypes: [{ id: 'sub-1', type: 'none', value: '', from: '', to: '' }]
       },
       { 
         id: '2', 
         label: 'Entrada Gratuita', 
         price: '0 €',
-        condition: { type: 'disability', value: '33', from: '', to: '' }
+        subtypes: [{ id: 'sub-2', type: 'disability', value: '33', from: '', to: '' }]
       }
     ],
     specialClosures: '',
@@ -229,6 +245,28 @@ export default function AddLocationScreen({ navigation, route }) {
     onSelect: () => {}
   });
 
+  const [placesInCity, setPlacesInCity] = useState([]);
+  
+  useEffect(() => {
+    if (formData.city || formData.cityName) {
+      const city = formData.city || formData.cityName;
+      fetch(`${API_BASE_URL}/api/places?city=${encodeURIComponent(city)}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success && data.data) {
+               const placeNames = data.data.map(p => p.name).filter(n => n !== formData.name);
+               setPlacesInCity(placeNames.length > 0 ? placeNames : ['MARQ', 'LUCENTUM', 'LA ILLETA']);
+            }
+        })
+        .catch(() => {
+           const localPlaces = (userData.contributions || [])
+             .filter(p => (p.city === city || p.cityName === city) && p.name !== formData.name)
+             .map(p => p.name);
+           setPlacesInCity(localPlaces.length > 0 ? localPlaces : ['MARQ', 'LUCENTUM', 'LA ILLETA']);
+        });
+    }
+  }, [formData.city, formData.cityName, formData.name, userData.contributions]);
+
   const handleAiEnhance = async () => {
     if (!formData.name || !formData.city) {
       Alert.alert('Información insuficiente', 'Por favor, introduce el nombre del lugar y el municipio para que la IA pueda investigar.');
@@ -271,7 +309,7 @@ export default function AddLocationScreen({ navigation, route }) {
               return { id: String(Date.now() + i), name: s.name || 'Temporada Única', period: s.period || 'Todo el año', days: days, isEnabled: true };
             }) : prev.structuredSchedules,
             tariffs: aiData.tariffs ? aiData.tariffs.map((t, i) => ({
-              id: String(Date.now() + i + 10), preset: t.preset || 'Otros / Personalizado', label: t.label, price: t.price.includes('€') ? t.price : `${t.price} €`, condition: { type: 'none', value: '', from: '', to: '' }
+              id: String(Date.now() + i + 10), preset: t.preset || 'Otros / Personalizado', label: t.label, price: t.price.includes('€') ? t.price : `${t.price} €`, subtypes: [{ id: `sub-${Date.now()}-${i}`, type: 'none', value: '', from: '', to: '' }]
             })) : prev.tariffs,
             additionalServices: aiData.services ? {
               audioguide: { enabled: aiData.services.audioguide?.has || false, price: aiData.services.audioguide?.price || '0', freeForDisabled: aiData.services.audioguide?.isFreePCD || false },
@@ -572,16 +610,46 @@ export default function AddLocationScreen({ navigation, route }) {
     }));
   };
 
-  const updateTariffCondition = (idx, field, value) => {
+  const updateTariffSubtype = (idx, subIdx, field, value) => {
     setFormData(prev => {
       const newTariffs = [...prev.tariffs];
+      const newSubtypes = [...(newTariffs[idx].subtypes || [])];
+      newSubtypes[subIdx] = {
+        ...newSubtypes[subIdx],
+        [field]: value
+      };
       newTariffs[idx] = {
         ...newTariffs[idx],
-        condition: {
-          ...newTariffs[idx].condition,
-          [field]: value
-        }
+        subtypes: newSubtypes
       };
+      return { ...prev, tariffs: newTariffs };
+    });
+  };
+
+  const addTariffSubtype = (idx) => {
+    setFormData(prev => {
+      const newTariffs = [...prev.tariffs];
+      const newSubtypes = [...(newTariffs[idx].subtypes || [])];
+      newSubtypes.push({ id: `sub-${Date.now()}`, type: 'none', value: '', from: '', to: '' });
+      newTariffs[idx] = {
+        ...newTariffs[idx],
+        subtypes: newSubtypes
+      };
+      return { ...prev, tariffs: newTariffs };
+    });
+  };
+
+  const removeTariffSubtype = (idx, subIdx) => {
+    setFormData(prev => {
+      const newTariffs = [...prev.tariffs];
+      const newSubtypes = [...(newTariffs[idx].subtypes || [])];
+      if (newSubtypes.length > 1) {
+        newSubtypes.splice(subIdx, 1);
+        newTariffs[idx] = {
+          ...newTariffs[idx],
+          subtypes: newSubtypes
+        };
+      }
       return { ...prev, tariffs: newTariffs };
     });
   };
@@ -841,28 +909,34 @@ export default function AddLocationScreen({ navigation, route }) {
               <Text style={[styles.sectionTitle, { color: theme.text, marginLeft: 10 }]}>Ubicación Geográfica</Text>
             </View>
             <View style={[styles.mapContainer, { borderColor: theme.border }]}>
-              <MapView
-                ref={mapRef}
-                style={styles.map}
-                initialRegion={{
-                  latitude: !isNaN(formData.location?.latitude) ? formData.location.latitude : 40.4168,
-                  longitude: !isNaN(formData.location?.longitude) ? formData.location.longitude : -3.7038,
-                  latitudeDelta: 0.0922,
-                  longitudeDelta: 0.0421,
-                }}
-                onRegionChangeComplete={(region) => {
-                  if (!isNaN(region.latitude) && !isNaN(region.longitude)) {
-                    setFormData(prev => ({
-                      ...prev,
-                      location: { latitude: region.latitude, longitude: region.longitude }
-                    }));
-                  }
-                }}
-              >
-                {isValidLocation(formData.location) && (
-                  <Marker coordinate={formData.location} />
-                )}
-              </MapView>
+              {MapView ? (
+                <MapView
+                  ref={mapRef}
+                  style={styles.map}
+                  initialRegion={{
+                    latitude: !isNaN(formData.location?.latitude) ? formData.location.latitude : 40.4168,
+                    longitude: !isNaN(formData.location?.longitude) ? formData.location.longitude : -3.7038,
+                    latitudeDelta: 0.0922,
+                    longitudeDelta: 0.0421,
+                  }}
+                  onRegionChangeComplete={(region) => {
+                    if (!isNaN(region.latitude) && !isNaN(region.longitude)) {
+                      setFormData(prev => ({
+                        ...prev,
+                        location: { latitude: region.latitude, longitude: region.longitude }
+                      }));
+                    }
+                  }}
+                >
+                  {isValidLocation(formData.location) && Marker && (
+                    <Marker coordinate={formData.location} />
+                  )}
+                </MapView>
+              ) : (
+                <View style={{ height: 200, backgroundColor: theme.surface, justifyContent: 'center', alignItems: 'center' }}>
+                  <Text style={{ color: theme.textSecondary }}>Mapa no disponible</Text>
+                </View>
+              )}
               <View style={styles.mapOverlay}>
                 <Text style={styles.mapOverlayText}>Mueve el mapa para ajustar el pin en la entrada principal.</Text>
               </View>
@@ -1039,7 +1113,7 @@ export default function AddLocationScreen({ navigation, route }) {
               <TouchableOpacity 
                 onPress={() => setFormData(prev => ({
                   ...prev,
-                  tariffs: [...prev.tariffs, { id: Date.now().toString(), label: 'Nueva Tarifa', price: '0 €', condition: { type: 'none', value: '', from: '', to: '' } }]
+                  tariffs: [...prev.tariffs, { id: Date.now().toString(), label: 'Nueva Tarifa', price: '0 €', subtypes: [{ id: `sub-${Date.now()}`, type: 'none', value: '', from: '', to: '' }] }]
                 }))}
               >
                 <PlusCircle color={theme.primary} size={24} />
@@ -1089,91 +1163,116 @@ export default function AddLocationScreen({ navigation, route }) {
                     />
                   </View>
 
-                  {/* Subtipos / Condiciones */}
-                  <View style={styles.conditionSection}>
-                    <TouchableOpacity 
-                      style={[styles.conditionSelector, { backgroundColor: theme.background, borderColor: theme.border }]}
-                      onPress={() => setPickerModal({
-                        visible: true,
-                        title: 'Subtipo / Condición',
-                        options: TARIFF_SUBTYPES.map(s => s.label),
-                        onSelect: (val) => {
-                          const subtype = TARIFF_SUBTYPES.find(s => s.label === val);
-                          updateTariffCondition(idx, 'type', subtype.id);
-                        }
-                      })}
-                    >
-                      <Info color={theme.primary} size={14} />
-                      <Text style={{ color: theme.textSecondary, fontSize: 11, fontWeight: '600', flex: 1, marginLeft: 5 }}>
-                        {TARIFF_SUBTYPES.find(s => s.id === (tariff.condition?.type || 'none'))?.label}
-                      </Text>
-                      <ChevronLeft color={theme.textSecondary} size={12} style={{ transform: [{ rotate: '-90deg' }] }} />
-                    </TouchableOpacity>
-
-                    {/* Controles específicos según tipo */}
-                    {(tariff.condition?.type === 'disability') && (
-                      <View style={styles.conditionDetails}>
-                        <Text style={{ color: theme.textSecondary, fontSize: 11 }}>Mínimo:</Text>
+                  {/* Subtipos / Condiciones / Lugares Incluidos */}
+                  {tariff.subtypes && tariff.subtypes.map((subtype, subIdx) => {
+                    const isConjunta = tariff.label && tariff.label.includes('Conjunta');
+                    return (
+                    <View key={subtype.id || subIdx} style={[styles.conditionSection, { marginTop: subIdx > 0 ? 10 : 0 }]}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <TouchableOpacity 
-                          style={styles.smallSelector}
+                          style={[styles.conditionSelector, { flex: 1, backgroundColor: theme.background, borderColor: theme.border }]}
                           onPress={() => setPickerModal({
                             visible: true,
-                            title: 'Porcentaje Discapacidad',
-                            options: PERCENTAGES.map(p => `${p}%`),
-                            onSelect: (val) => updateTariffCondition(idx, 'value', val.replace('%', ''))
+                            title: isConjunta ? 'Lugar Incluido' : 'Subtipo / Condición',
+                            options: isConjunta ? placesInCity : TARIFF_SUBTYPES.map(s => s.label),
+                            onSelect: (val) => {
+                              if (isConjunta) {
+                                updateTariffSubtype(idx, subIdx, 'type', 'included_place');
+                                updateTariffSubtype(idx, subIdx, 'value', val);
+                              } else {
+                                const selectedType = TARIFF_SUBTYPES.find(s => s.label === val);
+                                updateTariffSubtype(idx, subIdx, 'type', selectedType.id);
+                              }
+                            }
                           })}
                         >
-                          <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12 }}>{tariff.condition.value || '33'}%</Text>
+                          <Info color={theme.primary} size={14} />
+                          <Text style={{ color: theme.textSecondary, fontSize: 11, fontWeight: '600', flex: 1, marginLeft: 5 }}>
+                            {isConjunta 
+                              ? (subtype.value || 'Seleccionar lugar incluido...') 
+                              : TARIFF_SUBTYPES.find(s => s.id === (subtype.type || 'none'))?.label}
+                          </Text>
+                          <ChevronLeft color={theme.textSecondary} size={12} style={{ transform: [{ rotate: '-90deg' }] }} />
                         </TouchableOpacity>
+                        
+                        {tariff.subtypes.length > 1 && (
+                          <TouchableOpacity onPress={() => removeTariffSubtype(idx, subIdx)} style={{ marginLeft: 8 }}>
+                            <MinusCircle color="#E74C3C" size={16} />
+                          </TouchableOpacity>
+                        )}
                       </View>
-                    )}
 
-                    {(tariff.condition?.type === 'senior' || tariff.condition?.type === 'child') && (
-                      <View style={styles.conditionDetails}>
-                        <Text style={{ color: theme.textSecondary, fontSize: 11 }}>Edad:</Text>
-                        <TouchableOpacity 
-                          style={styles.smallSelector}
-                          onPress={() => setPickerModal({
-                            visible: true,
-                            title: 'Seleccionar Edad',
-                            options: AGES,
-                            onSelect: (val) => updateTariffCondition(idx, 'value', val)
-                          })}
-                        >
-                          <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12 }}>{tariff.condition.value || '65'} años</Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
+                      {/* Controles específicos según tipo */}
+                      {(subtype.type === 'disability') && (
+                        <View style={styles.conditionDetails}>
+                          <Text style={{ color: theme.textSecondary, fontSize: 11 }}>Mínimo:</Text>
+                          <TouchableOpacity 
+                            style={styles.smallSelector}
+                            onPress={() => setPickerModal({
+                              visible: true,
+                              title: 'Porcentaje Discapacidad',
+                              options: PERCENTAGES.map(p => `${p}%`),
+                              onSelect: (val) => updateTariffSubtype(idx, subIdx, 'value', val.replace('%', ''))
+                            })}
+                          >
+                            <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12 }}>{subtype.value || '33'}%</Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
 
-                    {(tariff.condition?.type === 'age_range' || tariff.condition?.type === 'student') && (
-                      <View style={styles.conditionDetails}>
-                        <Text style={{ color: theme.textSecondary, fontSize: 11 }}>De:</Text>
-                        <TouchableOpacity 
-                          style={styles.smallSelector}
-                          onPress={() => setPickerModal({
-                            visible: true,
-                            title: 'Desde Edad',
-                            options: AGES,
-                            onSelect: (val) => updateTariffCondition(idx, 'from', val)
-                          })}
-                        >
-                          <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12 }}>{tariff.condition.from || '18'}</Text>
-                        </TouchableOpacity>
-                        <Text style={{ color: theme.textSecondary, fontSize: 11 }}>a:</Text>
-                        <TouchableOpacity 
-                          style={styles.smallSelector}
-                          onPress={() => setPickerModal({
-                            visible: true,
-                            title: 'Hasta Edad',
-                            options: AGES,
-                            onSelect: (val) => updateTariffCondition(idx, 'to', val)
-                          })}
-                        >
-                          <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12 }}>{tariff.condition.to || '25'}</Text>
-                        </TouchableOpacity>
-                      </View>
-                    )}
-                  </View>
+                      {(subtype.type === 'senior' || subtype.type === 'child') && (
+                        <View style={styles.conditionDetails}>
+                          <Text style={{ color: theme.textSecondary, fontSize: 11 }}>Edad:</Text>
+                          <TouchableOpacity 
+                            style={styles.smallSelector}
+                            onPress={() => setPickerModal({
+                              visible: true,
+                              title: 'Seleccionar Edad',
+                              options: AGES,
+                              onSelect: (val) => updateTariffSubtype(idx, subIdx, 'value', val)
+                            })}
+                          >
+                            <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12 }}>{subtype.value || '65'} años</Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+
+                      {(subtype.type === 'age_range' || subtype.type === 'student') && (
+                        <View style={styles.conditionDetails}>
+                          <Text style={{ color: theme.textSecondary, fontSize: 11 }}>De:</Text>
+                          <TouchableOpacity 
+                            style={styles.smallSelector}
+                            onPress={() => setPickerModal({
+                              visible: true,
+                              title: 'Desde Edad',
+                              options: AGES,
+                              onSelect: (val) => updateTariffSubtype(idx, subIdx, 'from', val)
+                            })}
+                          >
+                            <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12 }}>{subtype.from || '18'}</Text>
+                          </TouchableOpacity>
+                          <Text style={{ color: theme.textSecondary, fontSize: 11 }}>a:</Text>
+                          <TouchableOpacity 
+                            style={styles.smallSelector}
+                            onPress={() => setPickerModal({
+                              visible: true,
+                              title: 'Hasta Edad',
+                              options: AGES,
+                              onSelect: (val) => updateTariffSubtype(idx, subIdx, 'to', val)
+                            })}
+                          >
+                            <Text style={{ color: theme.primary, fontWeight: '800', fontSize: 12 }}>{subtype.to || '25'}</Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    </View>
+                    );
+                  })}
+                  
+                  <TouchableOpacity onPress={() => addTariffSubtype(idx)} style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10, paddingVertical: 5 }}>
+                    <PlusCircle color={theme.primary} size={14} />
+                    <Text style={{ color: theme.primary, fontSize: 11, marginLeft: 4, fontWeight: '600' }}>{tariff.label && tariff.label.includes('Conjunta') ? 'Añadir Lugar Incluido' : 'Añadir Subtipo a esta Tarifa'}</Text>
+                  </TouchableOpacity>
                 </View>
               ))}
               

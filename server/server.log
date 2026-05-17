@@ -1,7 +1,55 @@
-[DB] Base de datos inicializada correctamente.
-[DISTRAVEL SERVER] Corriendo en puerto 3000
-[DISTRAVEL SERVER] Modo: development
-[API] GET /api/places - City: all
-[IA PROXY] Investigando: Hola...
-Imagen subida: image-1778167059569-242858593.jpg
-[IA PROXY] Investigando: Dime hola...
+◇ injected env (2) from ../.env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+[AI] Model initialized. Key starts with: AIzaS... ends with: ..._TUVM
+[SERVER] Ready on 3000
+✅ PostgreSQL conectado y listo.
+[2026-05-17T06:19:56.854Z] GET /places
+[2026-05-17T06:19:57.151Z] GET /vite.svg
+[2026-05-17T06:20:12.970Z] GET /vite.svg
+[2026-05-17T06:20:13.001Z] GET /vite.svg
+[2026-05-17T06:20:19.215Z] GET /places
+[2026-05-17T06:20:19.364Z] GET /vite.svg
+[2026-05-17T06:21:15.730Z] GET /api/stats
+[2026-05-17T06:21:15.772Z] GET /api/health
+[2026-05-17T06:21:30.465Z] GET /api/stats
+[2026-05-17T06:21:30.515Z] GET /api/health
+[2026-05-17T06:22:20.105Z] GET /api/places
+[2026-05-17T06:22:26.704Z] GET /api/municipalities?limit=9000
+[2026-05-17T06:24:01.068Z] GET /api/places
+[2026-05-17T06:24:01.169Z] POST /api/users/sync
+[2026-05-17T06:24:01.217Z] GET /api/places
+[2026-05-17T06:24:01.255Z] GET /api/municipalities
+[2026-05-17T06:24:49.230Z] GET /api/places
+[2026-05-17T06:24:51.371Z] GET /api/municipalities?limit=9000
+[2026-05-17T06:28:02.838Z] GET /api/places
+[2026-05-17T06:28:04.589Z] GET /api/municipalities?limit=9000
+[2026-05-17T06:28:33.840Z] GET /api/places
+[2026-05-17T06:28:33.843Z] GET /api/municipalities
+[2026-05-17T06:28:55.203Z] PATCH /api/places/27
+[2026-05-17T06:28:55.243Z] GET /api/places
+[2026-05-17T06:29:14.246Z] GET /api/municipalities?limit=9000
+[2026-05-17T06:29:22.362Z] PATCH /api/places/26
+[2026-05-17T06:29:22.396Z] GET /api/places
+[2026-05-17T06:29:44.131Z] GET /api/municipalities/16617
+[2026-05-17T06:29:44.142Z] GET /api/places?city=Alicante%2FAlacant
+[2026-05-17T06:29:44.143Z] GET /api/municipalities/16617
+[2026-05-17T06:29:44.172Z] POST /api/users/sync
+[2026-05-17T06:29:44.369Z] POST /api/users/sync
+[2026-05-17T06:29:45.054Z] POST /api/users/sync
+[2026-05-17T06:29:55.611Z] GET /api/municipalities?limit=9000
+[2026-05-17T06:29:59.696Z] PATCH /api/places/27
+[2026-05-17T06:29:59.730Z] GET /api/places
+[2026-05-17T06:30:11.696Z] GET /api/places/27/reviews
+[2026-05-17T06:30:18.943Z] GET /api/places
+[2026-05-17T06:30:18.976Z] GET /api/municipalities
+[2026-05-17T06:30:39.639Z] GET /api/places
+[2026-05-17T06:30:39.728Z] POST /api/users/sync
+[2026-05-17T06:30:39.781Z] GET /api/places
+[2026-05-17T06:30:39.782Z] GET /api/municipalities
+[2026-05-17T06:31:14.259Z] GET /api/municipalities/16617
+[2026-05-17T06:31:14.260Z] GET /api/places?city=Alicante%2FAlacant
+[2026-05-17T06:31:14.261Z] GET /api/municipalities/16617
+[2026-05-17T06:31:14.286Z] POST /api/users/sync
+[2026-05-17T06:31:14.482Z] POST /api/users/sync
+[2026-05-17T06:31:14.703Z] POST /api/users/sync
+[2026-05-17T06:31:57.105Z] GET /api/stats
+[2026-05-17T06:31:57.159Z] GET /api/health

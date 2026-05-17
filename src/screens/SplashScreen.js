@@ -6,36 +6,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 const { width } = Dimensions.get('window');
 
 export function SplashScreen() {
-  const { theme, isDarkMode, logo } = useTheme();
+  const { isDarkMode } = useTheme();
 
   return (
-    <View style={styles.container}>
-      <StatusBar 
-        barStyle={isDarkMode ? "light-content" : "dark-content"} 
-        backgroundColor="transparent" 
-        translucent 
-      />
-      
-      <LinearGradient
-        colors={isDarkMode ? ['#070B14', '#111827'] : ['#FFFFFF', '#F8FAFC']}
-        style={styles.gradient}
-      >
-        <View style={[styles.logoContainer, { 
-          backgroundColor: isDarkMode ? 'transparent' : '#FFFFFF',
-          shadowColor: isDarkMode ? '#000' : '#64748B'
-        }]}>
-          <Image 
-            source={logo} 
-            style={styles.logo} 
-            resizeMode="contain"
-          />
-        </View>
-        <View style={styles.footer}>
-          <Text style={[styles.footerText, { color: isDarkMode ? '#94A3B8' : '#64748B' }]}>
-            VIAJAR SIN BARRERAS
-          </Text>
-        </View>
-      </LinearGradient>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: isDarkMode ? '#070B14' : '#FFFFFF' }}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
+      <Text style={{ color: isDarkMode ? '#FFF' : '#000', fontSize: 20 }}>Cargando DisTravel...</Text>
     </View>
   );
 }

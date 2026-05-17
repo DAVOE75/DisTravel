@@ -34,10 +34,29 @@ export const getOpeningStatus = (place) => {
   if (place.structuredSchedules && place.structuredSchedules.length > 0) {
     const currentMonth = now.getMonth() + 1;
     const schedule = place.structuredSchedules.find(s => {
+      if (s.startDate && s.endDate) {
+        const currentYear = now.getFullYear();
+        const startParts = s.startDate.split('-');
+        const endParts = s.endDate.split('-');
+        
+        const start = new Date(currentYear, parseInt(startParts[1]) - 1, parseInt(startParts[2]), 0, 0, 0);
+        const end = new Date(currentYear, parseInt(endParts[1]) - 1, parseInt(endParts[2]), 23, 59, 59);
+        
+        if (start <= end) {
+          return now >= start && now <= end;
+        } else {
+          const nextYearEnd = new Date(currentYear + 1, parseInt(endParts[1]) - 1, parseInt(endParts[2]), 23, 59, 59);
+          const prevYearStart = new Date(currentYear - 1, parseInt(startParts[1]) - 1, parseInt(startParts[2]), 0, 0, 0);
+          return (now >= start && now <= nextYearEnd) || (now >= prevYearStart && now <= end);
+        }
+      }
       const start = parseInt(s.startMonth);
       const end = parseInt(s.endMonth);
-      if (start <= end) return currentMonth >= start && currentMonth <= end;
-      return currentMonth >= start || currentMonth <= end; // Cruce de año
+      if (!isNaN(start) && !isNaN(end)) {
+        if (start <= end) return currentMonth >= start && currentMonth <= end;
+        return currentMonth >= start || currentMonth <= end; // Cruce de año
+      }
+      return false;
     }) || place.structuredSchedules[0];
 
     const dayInfo = schedule.days[day];

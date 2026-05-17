@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/logo_official.png",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/logo_official.png",
       "resizeMode": "contain",
@@ -14,11 +14,18 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.distravel.app"
+      "bundleIdentifier": "com.distravel.app",
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
+      }
     },
+    "platforms": ["android", "ios"],
     "android": {
       "package": "com.distravel.app",
       "versionCode": 9,
+      "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/logo_official.png",
         "backgroundColor": "#0A192F"
@@ -33,9 +40,7 @@
         "android.permission.RECORD_AUDIO"
       ]
     },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
+
     "plugins": [
       "@react-native-community/datetimepicker",
       "expo-image-picker"

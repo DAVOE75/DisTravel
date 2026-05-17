@@ -81,70 +81,89 @@ export const UserProvider = ({ children }) => {
           }
         });
 
-        // 3. Intentar obtener lugares del SERVIDOR
+        // 3. Obtener lugares del SERVIDOR (Fuente de Verdad Absoluta)
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 2000);
+          const timeoutId = setTimeout(() => controller.abort(), 3000);
           const response = await fetch(`${API_BASE_URL}/api/places`, { signal: controller.signal });
           clearTimeout(timeoutId);
+          
           if (response.ok) {
             const serverPlaces = await response.json();
-            serverPlaces.forEach(sp => {
-              const idx = currentContributions.findIndex(p => p && p.id === sp.id);
-              if (idx === -1) currentContributions.push(sp);
-            });
+            console.log(`[SYNC] Servidor devolvió ${serverPlaces.length} lugares. Aplicando limpieza absoluta.`);
+            // REEMPLAZO TOTAL: Lo que diga el servidor va a misa.
+            currentContributions = serverPlaces;
           }
-        } catch (e) {}
+        } catch (e) {
+          console.warn('[SYNC] Servidor offline. Usando caché local temporal.');
+        }
 
         // 4. Limpieza final de duplicados y ordenación
         const uniqueContributions = [];
         const seen = new Set();
-        const sortedContributions = currentContributions.sort((a, b) => {
-          if (!a || !b) return 0;
-          const aHasImg = a.image && !a.image.includes('http');
-          const bHasImg = b.image && !b.image.includes('http');
+        
+        // Asegurar que currentContributions es un array
+        const safeContributions = Array.isArray(currentContributions) ? currentContributions : [];
+
+        // Ordenar para priorizar los que tienen imagen local si hubiera empates
+        const sorted = safeContributions.filter(p => p).sort((a, b) => {
+          const aHasImg = a.image && a.image.startsWith('/');
+          const bHasImg = b.image && b.image.startsWith('/');
           return (aHasImg === bHasImg) ? 0 : aHasImg ? -1 : 1;
         });
 
-        sortedContributions.forEach(p => {
-          if (!p) return;
-          const key = `${(p.name || '').toLowerCase().trim()}-${(p.city || p.cityName || '').toLowerCase().trim()}`;
+        sorted.forEach(p => {
+          const key = `${(p.name || '').toLowerCase().trim()}-${(p.city || '').toLowerCase().trim()}`;
           if (!seen.has(key) && key !== '-') {
             seen.add(key);
             uniqueContributions.push(p);
           }
         });
 
-        setUserData({ ...parsed, contributions: uniqueContributions });
-      } catch (e) {
-        console.error('Error cargando datos:', e);
+        parsed.contributions = uniqueContributions;
+
+        // 5. Sincronización de Perfil con el servidor
+        if (parsed.email && parsed.isLoggedIn) {
+          fetch(`${API_BASE_URL}/api/users/sync`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(parsed)
+          }).catch(e => console.warn('[SYNC] Fallo al sincronizar perfil inicial'));
+        }
+
+        setUserData(parsed);
+      } catch (error) {
+        console.error('Error cargando datos de usuario:', error);
       } finally {
         setIsLoading(false);
       }
     };
-
     loadData();
   }, []);
-
-
-
-  const saveData = async (data) => {
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  };
 
   const updateUserData = (arg1, arg2) => {
     setUserData(prev => {
       let updated;
       if (typeof arg1 === 'string' && typeof arg2 === 'function') {
-        // Soporte para updateUserData('key', (prevVal) => newVal)
         updated = { ...prev, [arg1]: arg2(prev[arg1]) };
       } else if (typeof arg1 === 'object' && arg1 !== null) {
-        // Soporte para updateUserData({ key: value })
         updated = { ...prev, ...arg1 };
       } else {
         return prev;
       }
-      saveData(updated);
+      
+      // Persistencia local
+      AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+
+      // Sincronización con PostgreSQL (si está logueado)
+      if (updated.isLoggedIn) {
+        fetch(`${API_BASE_URL}/api/users/sync`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updated)
+        }).catch(e => console.warn('Sync diferido falló:', e));
+      }
+      
       return updated;
     });
   };

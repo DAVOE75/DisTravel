@@ -15,6 +15,7 @@ export const typography = {
   body: {
     fontSize: 16,
     fontWeight: '400',
+    textAlign: 'justify',
   },
   caption: {
     fontSize: 12,

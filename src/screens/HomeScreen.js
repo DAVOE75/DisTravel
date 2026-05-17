@@ -13,6 +13,9 @@ import {
   Modal,
   ActivityIndicator,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import { SplashScreen } from './SplashScreen';
+
 
 import { 
   MapPin, 
@@ -41,12 +44,16 @@ import {
   Info,
   Map as MapIcon,
   MessageSquare,
-  Church
+  Church,
+  AlertTriangle
 } from 'lucide-react-native';
+
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
+import { colors } from '../theme/colors';
 import { MONUMENTOS } from '../data/monumentos';
 import { CIUDADES_PREMIUM } from '../data/ciudades';
+import { REAL_CITY_DATA } from '../data/municipiosIA';
 import { calculatePlaceSavings } from '../utils/savings';
 import { getOpeningStatus } from '../utils/timeUtils';
 import { typography } from '../theme/typography';
@@ -80,12 +87,14 @@ export function HomeScreen({ navigation }) {
   const scrollY = useRef(new Animated.Value(0)).current;
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [serverPlaces, setServerPlaces] = useState([]);
+  const [serverMunicipalities, setServerMunicipalities] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [showSearchResults, setShowSearchResults] = useState(false);
-  const [serverPlaces, setServerPlaces] = useState([]);
   const searchTimeout = useRef(null);
   
   const [showAboutModal, setShowAboutModal] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const scrollViewRef = useRef(null);
 
   // Efecto para buscar en el servidor con debounce
@@ -141,39 +150,55 @@ export function HomeScreen({ navigation }) {
     return () => clearTimeout(searchTimeout.current);
   }, [searchQuery]);
 
-  // Efecto para cargar lugares destacados del servidor
-  useEffect(() => {
-    const fetchServerPlaces = async () => {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 3000);
+  const fetchServerPlaces = async () => {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-      try {
-        const response = await fetch(API_ENDPOINTS.PLACES, { signal: controller.signal });
-        clearTimeout(timeoutId);
+    const isAdminUser = userData?.isAdmin || userData?.role === 'admin';
+    const url = isAdminUser ? API_ENDPOINTS.PLACES : `${API_ENDPOINTS.PLACES}?verified=true`;
+    
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
 
-        if (response.ok) {
-          const data = await response.json();
-          // Mapear para compatibilidad: los monumentos oficiales ahora vienen con extra_data
-          const mapped = data.map(p => ({
-            ...p,
-            ...p.extra_data,
-            cityName: p.city // Compatibilidad con el resto del código
-          }));
-          setServerPlaces(mapped);
-        } else {
-          const flatMonumentos = Object.values(MONUMENTOS).flat();
-          setServerPlaces(flatMonumentos.slice(0, 10));
-        }
-      } catch (error) {
-        if (error.name !== 'AbortError') {
-          console.error('Error cargando lugares del servidor:', error);
-        }
-        const flatMonumentos = Object.values(MONUMENTOS).flat();
-        setServerPlaces(flatMonumentos.slice(0, 10));
+      if (response.ok) {
+        const data = await response.json();
+        const mapped = data.map(p => ({
+          ...p.extra_data,
+          ...p,
+          cityName: p.city
+        }));
+        setServerPlaces(mapped);
       }
-    };
+    } catch (error) {
+      if (error.name !== 'AbortError') console.error('Error cargando lugares:', error);
+    }
+  };
 
-    fetchServerPlaces();
+  const fetchServerMunicipalities = async () => {
+    try {
+      const response = await fetch(API_ENDPOINTS.MUNICIPALITIES);
+      if (response.ok) {
+        const data = await response.json();
+        setServerMunicipalities(data);
+      }
+    } catch (e) {
+      console.warn("Error cargando municipios:", e);
+    }
+  };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchServerPlaces();
+      fetchServerMunicipalities();
+    }, [])
+  );
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitialLoading(false);
+    }, 1500);
+    return () => clearTimeout(timer);
   }, []);
 
   const performLocalSearch = () => {
@@ -209,9 +234,11 @@ export function HomeScreen({ navigation }) {
   
   const normalize = (text) => {
     if (!text) return '';
-    return text.toString().trim().toLowerCase()
+    return text.toString().toLowerCase().trim()
+      .split('/')[0].split('(')[0].trim()
       .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-      .replace(/y/g, 'i');
+      .replace(/y/g, 'i')
+      .replace(/[^a-z0-9]/g, '');
   };
   
 
@@ -239,6 +266,77 @@ export function HomeScreen({ navigation }) {
     });
   }, [userData?.contributions, serverPlaces]);
 
+  // Cálculo dinámico de ciudades destacadas
+  const featuredCities = useMemo(() => {
+    const cityCounts = {};
+    
+    // 1. Contar lugares por ciudad
+    mergedPlaces.forEach(p => {
+      const cityName = p.city || p.cityName;
+      if (cityName) {
+        const key = normalize(cityName);
+        if (!cityCounts[key]) {
+          cityCounts[key] = { name: cityName, count: 0 };
+        }
+        cityCounts[key].count += 1;
+      }
+    });
+
+    // 2. Asegurar que las ciudades con imagen en el servidor también aparezcan
+    serverMunicipalities.forEach(m => {
+      const key = normalize(m.name);
+      if (m.image_url && !cityCounts[key]) {
+        cityCounts[key] = { name: m.name, count: 0 };
+      }
+    });
+
+    return Object.values(cityCounts)
+      .sort((a, b) => b.count - a.count) 
+      .slice(0, 10)
+      .map(c => {
+        const cityKey = normalize(c.name);
+        
+        // Buscamos la data base completa del municipio (provincia, region, etc)
+        const baseData = LOCAL_FALLBACK_MUNICIPIOS.find(m => normalize(m.label || m.name) === cityKey) || {};
+        
+        const premium = CIUDADES_PREMIUM[c.name] || REAL_CITY_DATA[cityKey] || {};
+        const customData = userData?.customCityData?.[cityKey] || {};
+        
+        // Datos del servidor (pueden contener la image_url actualizada)
+        const serverCity = serverMunicipalities.find(m => {
+          const mNorm = normalize(m.label || m.name);
+          return mNorm === cityKey || mNorm.startsWith(cityKey) || cityKey.startsWith(mNorm);
+        });
+
+        // Fallback inteligente: Si no hay imagen de ciudad, usamos la del monumento verificado más importante de esa ciudad
+        const cityPlaces = mergedPlaces.filter(p => normalize(p.city || p.cityName) === cityKey);
+        const placeWithImage = cityPlaces.find(p => p.verified && p.image) || cityPlaces.find(p => p.image);
+
+        // Imagen: Prioridad Usuario (Local) > Servidor (Oficial) > Premium > Imagen de Monumento > Fallback
+        let displayImage = customData.image || (serverCity && serverCity.image_url) || premium.image || premium.image_url || (serverCity && serverCity.image);
+        
+        // Si la imagen es una URI local y estamos en un modo de limpieza absoluta, 
+        // o si queremos asegurar consistencia, preferimos la del servidor si existe.
+        if (serverCity && serverCity.image_url) {
+          displayImage = serverCity.image_url;
+        }
+
+        if (!displayImage) {
+          displayImage = placeWithImage ? placeWithImage.image : 'https://images.unsplash.com/photo-1548013146-72479768b921?auto=format&fit=crop&q=80&w=800';
+        }
+        
+        return {
+          ...baseData, // Incluimos provincia, region, etc.
+          ...c,
+          ...premium,
+          ...(serverCity || {}), // Mezclar datos del servidor si existen
+          image: displayImage,
+          description: premium.description || (serverCity && serverCity.description) || `Explora los ${c.count} puntos de interés accesibles en ${c.name}.`,
+          cityKey
+        };
+      });
+  }, [mergedPlaces, userData?.customCityData, serverMunicipalities]);
+
   const searchData = LOCAL_FALLBACK_MUNICIPIOS;
 
   const goToProfile = () => navigation.navigate('Profile');
@@ -252,6 +350,8 @@ export function HomeScreen({ navigation }) {
     outputRange: [0, -10],
     extrapolate: 'clamp',
   });
+
+  if (isInitialLoading) return <SplashScreen />;
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
@@ -631,6 +731,11 @@ export function HomeScreen({ navigation }) {
                   <Image source={{ uri: place.image }} style={styles.recentImage} />
                   <View style={styles.recentInfo}>
                     <Text style={[styles.placeName, { color: theme.text }]} numberOfLines={1}>{place.name}</Text>
+                    {place.address && (
+                      <Text style={{ fontSize: 10, color: theme.textSecondary, marginBottom: 2 }} numberOfLines={1}>
+                        {place.address}
+                      </Text>
+                    )}
                     
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 4 }}>
                       {[1, 2, 3, 4, 5].map((s) => (
@@ -729,7 +834,7 @@ export function HomeScreen({ navigation }) {
                       {[1, 2, 3, 4, 5].map((s) => (
                         <Star key={s} size={10} color="#F1C40F" fill={s <= (place.rating || 5) ? "#F1C40F" : "transparent"} />
                       ))}
-                      <Text style={{ fontSize: 10, color: theme.textSecondary, marginLeft: 4, fontWeight: '700' }}>{place.rating ? place.rating.toFixed(1) : '5.0'}</Text>
+                      <Text style={{ fontSize: 10, color: theme.textSecondary, marginLeft: 4, fontWeight: '700' }}>{(Number(place.rating) || 5.0).toFixed(1)}</Text>
                     </View>
 
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
@@ -758,26 +863,21 @@ export function HomeScreen({ navigation }) {
             <Text style={[styles.sectionTitle, { color: theme.text }]}>Destinos Destacados</Text>
           </View>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.listPadding}>
-            {Object.entries(CIUDADES_PREMIUM).map(([name, city], index) => {
-              const cityKey = normalize(name);
-              const customData = userData?.customCityData?.[cityKey] || {};
-              const displayImage = customData.image || city.image;
-              const displayCity = { ...city, name, image: displayImage };
-              
+            {featuredCities.map((city, index) => {
               return (
                 <TouchableOpacity 
                   key={index}
                   style={[styles.featuredCityCard, { backgroundColor: theme.surface }]}
-                  onPress={() => navigation.navigate('CityDetail', { city: displayCity })}
+                  onPress={() => navigation.navigate('CityDetail', { city })}
                 >
-                  <Image source={{ uri: displayImage }} style={styles.featuredCityImage} />
+                  <Image source={{ uri: city.image }} style={styles.featuredCityImage} />
                   <View style={styles.featuredCityOverlay}>
                     <View style={styles.glassContainer}>
-                      <View>
-                        <Text style={styles.cityName}>{name}</Text>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.cityName}>{city.name}</Text>
                         <View style={styles.accessBadge}>
                           <Accessibility color="#2ECC71" size={12} />
-                          <Text style={styles.accessText}>ACCESIBLE</Text>
+                          <Text style={styles.accessText}>{city.count} LUGARES</Text>
                         </View>
                       </View>
                       <ChevronRight color="#FFF" size={20} />

@@ -58,7 +58,11 @@ export function AdminValidationsScreen({ navigation }) {
         fetch(`${SERVER_URL}/api/places/${placeId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ verified: true, verifiedStatus: 'Verificado' }),
+          body: JSON.stringify({ 
+            verified: true, 
+            verifiedStatus: 'Verificado',
+            extra_data: { verified: true, verifiedStatus: 'Verificado' }
+          }),
           signal: controller.signal
         }).then(() => clearTimeout(timeoutId))
           .catch(() => console.warn('Sync servidor fallida en segundo plano'));

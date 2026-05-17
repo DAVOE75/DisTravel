@@ -164,7 +164,7 @@ export function LoginScreen({ navigation }) {
 
           <View style={styles.footer}>
             <Text style={[styles.footerText, { color: theme.textSecondary }]}>
-              ¿No tienes cuenta? <Text style={{ color: theme.primary, fontWeight: '700' }}>Regístrate</Text>
+              ¿No tienes cuenta? <Text onPress={() => navigation.navigate('Register')} style={{ color: theme.primary, fontWeight: '700' }}>Regístrate</Text>
             </Text>
           </View>
         </ScrollView>

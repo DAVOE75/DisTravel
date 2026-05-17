@@ -16,6 +16,7 @@ import { ToiletsScreen } from '../screens/ToiletsScreen';
 import { SavingsSimulatorScreen } from '../screens/SavingsSimulatorScreen';
 import AddLocationScreen from '../screens/AddLocationScreen';
 import { LoginScreen } from '../screens/LoginScreen';
+import { RegisterScreen } from '../screens/RegisterScreen';
 import { DistravelAIScreen } from '../screens/DistravelAIScreen';
 import { DigitalWalletScreen } from '../screens/DigitalWalletScreen';
 import { HowToUseScreen } from '../screens/HowToUseScreen';
@@ -65,7 +66,7 @@ function AuthenticatedStack() {
   );
 }
 
-export function AppNavigator() {
+export default function AppNavigator() {
   const { userData, isLoading } = useUser();
   
   if (isLoading) return <SplashScreen />;
@@ -73,7 +74,10 @@ export function AppNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {!userData?.isLoggedIn ? (
-        <Stack.Screen name="Login" component={LoginScreen} />
+        <>
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
+        </>
       ) : (
         <Stack.Screen name="Auth" component={AuthenticatedStack} />
       )}

@@ -8,7 +8,17 @@ import {
   SafeAreaView,
   StatusBar
 } from 'react-native';
-import MapView, { Marker, Callout } from 'react-native-maps';
+// Fallback seguro para react-native-maps
+let MapViewRaw, MarkerRaw, CalloutRaw, PROVIDER_GOOGLE;
+try {
+  const Maps = require('react-native-maps');
+  MapViewRaw = Maps.default;
+  MarkerRaw = Maps.Marker;
+  CalloutRaw = Maps.Callout;
+  PROVIDER_GOOGLE = Maps.PROVIDER_GOOGLE;
+} catch (e) {
+  console.warn('react-native-maps no disponible en MapScreen');
+}
 
 import { colors } from '../theme/colors';
 import { MONUMENTOS } from '../data/monumentos';
@@ -17,11 +27,12 @@ import { mapStyles } from '../theme/mapStyles';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
 import * as Location from 'expo-location';
+import { API_ENDPOINTS } from '../config/api';
 
 // Normalizar componentes (evitar error 'Element type is invalid')
-const MapViewComponent = MapView?.default || MapView;
-const MarkerComponent = Marker?.default || Marker;
-const CalloutComponent = Callout?.default || Callout;
+const MapViewComponent = (MapViewRaw?.default || MapViewRaw);
+const MarkerComponent = (MarkerRaw?.default || MarkerRaw);
+const CalloutComponent = (CalloutRaw?.default || CalloutRaw);
 
 // Normalizar iconos
 const ChevronLeftIcon = ChevronLeft?.default || ChevronLeft;
@@ -35,18 +46,43 @@ export default function MapScreen({ route, navigation }) {
   const { theme } = useTheme();
   const { userData } = useUser();
   const mapRef = useRef(null);
-  const [mapTheme, setMapTheme] = useState('dark');
+  const [mapTheme, setMapTheme] = useState(theme.dark ? 'dark' : 'light');
+  const [serverPlaces, setServerPlaces] = useState([]);
   const [userLocation, setUserLocation] = useState(null);
 
   useEffect(() => {
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') return;
-
       let location = await Location.getCurrentPositionAsync({});
       setUserLocation(location.coords);
     })();
   }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    const fetchServerPlaces = async () => {
+      const isAdmin = userData?.isAdmin || userData?.role === 'admin';
+      const url = isAdmin ? API_ENDPOINTS.PLACES : `${API_ENDPOINTS.PLACES}?verified=true`;
+      
+      try {
+        const response = await fetch(url, { signal: controller.signal });
+        if (response.ok) {
+          const data = await response.json();
+          setServerPlaces(data);
+        }
+      } catch (e) {
+        if (e.name !== 'AbortError') {
+          console.warn('Error fetching server places for map:', e);
+        }
+      }
+    };
+    fetchServerPlaces();
+  }, []);
+
+  useEffect(() => {
+    setMapTheme(theme.dark ? 'dark' : 'light');
+  }, [theme.dark]);
 
   // Función para normalizar texto (quitar acentos)
   const normalize = (text) => {
@@ -66,6 +102,12 @@ export default function MapScreen({ route, navigation }) {
     if (!m) return;
     const key = `${normalize(m.name)}-${normalize(m.city || city?.name || '')}`;
     mergedMonumentsMap.set(key, { ...m, city: m.city || city?.name });
+  });
+
+  serverPlaces.forEach(m => {
+    if (!m) return;
+    const key = `${normalize(m.name)}-${normalize(m.city)}`;
+    mergedMonumentsMap.set(key, { ...m });
   });
   
   userContributions.forEach(m => {
@@ -134,8 +176,8 @@ export default function MapScreen({ route, navigation }) {
         }
       }
 
-      if (bestPriceType === 'free') return '#2ECC71'; // Verde
-      if (bestPriceType === 'reduced') return '#3498db'; // Azul
+      if (bestPriceType === 'free') return '#2ECC71'; // Verde (Gratis)
+      if (bestPriceType === 'reduced') return '#3498db'; // Azul (Reducida)
       return '#E67E22'; // Naranja (General)
     } catch (e) {
       console.warn('Error en getMarkerColor:', e);
@@ -156,6 +198,7 @@ export default function MapScreen({ route, navigation }) {
       
       {MapViewComponent ? (
         <MapViewComponent
+          key={mapTheme}
           ref={mapRef}
           style={styles.map}
           initialRegion={initialRegion}
@@ -165,6 +208,7 @@ export default function MapScreen({ route, navigation }) {
         >
           {displayMonuments.map((monument, idx) => {
             if (!monument.location || !monument.location.latitude) return null;
+            if (!MarkerComponent) return null;
             return (
               <MarkerComponent
                 key={`${monument.id || 'mon'}-${idx}`}
@@ -174,18 +218,20 @@ export default function MapScreen({ route, navigation }) {
                 }}
                 pinColor={getMarkerColor(monument)}
               >
-                <CalloutComponent 
-                  tooltip={false}
-                  onPress={() => navigation.navigate('PlaceDetail', { place: monument })}
-                >
-                  <View style={styles.callout}>
-                    <Text style={styles.calloutCategory}>{(monument.category || 'Lugar').toUpperCase()}</Text>
-                    <Text style={styles.calloutTitle}>{monument.name}</Text>
-                    <Text style={styles.calloutPrice}>{monument.price || 'Consultar precio'}</Text>
-                    <View style={styles.divider} />
-                    <Text style={[styles.calloutAction, { color: colors.primary }]}>VER FICHA COMPLETA</Text>
-                  </View>
-                </CalloutComponent>
+                {CalloutComponent && (
+                  <CalloutComponent 
+                    tooltip={false}
+                    onPress={() => navigation.navigate('PlaceDetail', { place: monument })}
+                  >
+                    <View style={styles.callout}>
+                      <Text style={styles.calloutCategory}>{(monument.category || 'Lugar').toUpperCase()}</Text>
+                      <Text style={styles.calloutTitle}>{monument.name}</Text>
+                      <Text style={styles.calloutPrice}>{monument.price || 'Consultar precio'}</Text>
+                      <View style={styles.divider} />
+                      <Text style={[styles.calloutAction, { color: colors.primary }]}>VER FICHA COMPLETA</Text>
+                    </View>
+                  </CalloutComponent>
+                )}
               </MarkerComponent>
             );
           })}

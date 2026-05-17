@@ -1,47 +1,86 @@
 import React from 'react';
-import { View, Text, StyleSheet, ImageBackground, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, Dimensions } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
-import { MapPin, Star } from 'lucide-react-native';
+import { MapPin, Star, Accessibility, Sparkles } from 'lucide-react-native';
 
-import { Sparkles } from 'lucide-react-native';
+const { width } = Dimensions.get('window');
+const CARD_WIDTH = width * 0.7;
 
 export const CityCard = ({ city, name, country, rating, image, onPress, theme }) => {
   // Soporte para objeto city o props individuales
-  const displayCity = city || { name, province: country, rating: rating || 5.0, image };
-  const { name: cityName, province, image: cityImage, rating: cityRating, isUserAdded } = displayCity;
+  const displayCity = city || { 
+    name, 
+    province: country, 
+    rating: rating || 5.0, 
+    image,
+    count: 0
+  };
+  
+  const { 
+    name: cityName, 
+    province, 
+    image: cityImage, 
+    rating: cityRating, 
+    isUserAdded,
+    count: placesCount 
+  } = displayCity;
+
+  const currentTheme = theme || colors;
 
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
+    <TouchableOpacity 
+      activeOpacity={0.9} 
+      style={styles.container} 
+      onPress={onPress}
+    >
       <ImageBackground
-        source={{ uri: cityImage || image }}
+        source={{ uri: cityImage || image || 'https://images.unsplash.com/photo-1548013146-72479768b921' }}
         style={styles.image}
-        imageStyle={{ borderRadius: 24 }}
+        imageStyle={{ borderRadius: 32 }}
       >
-        <View style={styles.overlay}>
+        <LinearGradient
+          colors={['transparent', 'rgba(7, 11, 20, 0.4)', 'rgba(7, 11, 20, 0.95)']}
+          style={styles.gradient}
+        >
           <View style={styles.header}>
             {isUserAdded && (
               <View style={styles.newBadge}>
-                <Sparkles color="#FFF" size={12} />
-                <Text style={styles.newBadgeText}>NUEVO</Text>
+                <Sparkles color="#FFF" size={12} fill="#FFF" />
+                <Text style={styles.newBadgeText}>MUNICPIO IA</Text>
               </View>
             )}
             <View style={styles.pinContainer}>
-              <MapPin color={colors.primary} size={16} />
+              <MapPin color={colors.primary} size={14} />
             </View>
           </View>
           
-          <View style={styles.footer}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.name, typography.h3]} numberOfLines={1}>{cityName}</Text>
-              <Text style={[styles.country, typography.caption]} numberOfLines={1}>{province || country}</Text>
+          <View style={styles.content}>
+            <View style={styles.mainInfo}>
+              <Text style={[styles.name, typography.h2]} numberOfLines={1}>{cityName}</Text>
+              <View style={styles.locationRow}>
+                <Text style={[styles.country, typography.caption]} numberOfLines={1}>
+                  {province || country || 'España'}
+                </Text>
+              </View>
             </View>
-            <View style={styles.ratingContainer}>
-              <Star color={colors.accent} size={14} fill={colors.accent} />
-              <Text style={styles.ratingText}>{cityRating || rating || '5.0'}</Text>
+
+            <View style={styles.footer}>
+              <View style={styles.metricContainer}>
+                <View style={[styles.iconWrapper, { backgroundColor: 'rgba(46, 204, 113, 0.2)' }]}>
+                  <Accessibility color="#2ECC71" size={14} />
+                </View>
+                <Text style={styles.metricText}>{placesCount || 0} LUGARES</Text>
+              </View>
+
+              <View style={styles.ratingContainer}>
+                <Star color="#EFBF04" size={14} fill="#EFBF04" />
+                <Text style={styles.ratingText}>{(cityRating || rating || 5.0).toFixed(1)}</Text>
+              </View>
             </View>
           </View>
-        </View>
+        </LinearGradient>
       </ImageBackground>
     </TouchableOpacity>
   );
@@ -49,22 +88,24 @@ export const CityCard = ({ city, name, country, rating, image, onPress, theme })
 
 const styles = StyleSheet.create({
   container: {
-    width: 240,
-    height: 300,
+    width: CARD_WIDTH,
+    height: 380,
     marginRight: 20,
+    borderRadius: 32,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 15,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    elevation: 12,
+    backgroundColor: '#000',
   },
   image: {
     flex: 1,
+    overflow: 'hidden',
   },
-  overlay: {
+  gradient: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.2)',
-    padding: 16,
+    padding: 24,
     justifyContent: 'space-between',
   },
   header: {
@@ -73,53 +114,92 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   newBadge: {
-    backgroundColor: '#E67E22',
+    backgroundColor: '#8E44AD',
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: 10,
+    borderRadius: 12,
     gap: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
   },
   newBadgeText: {
     color: '#FFF',
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: '900',
+    letterSpacing: 0.5,
   },
   pinContainer: {
-    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     padding: 8,
-    borderRadius: 12,
-    alignSelf: 'flex-end',
+    borderRadius: 14,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  content: {
+    gap: 16,
+  },
+  mainInfo: {
+    gap: 4,
+  },
+  name: {
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  country: {
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
   footer: {
-    backgroundColor: 'rgba(15, 23, 42, 0.8)',
-    padding: 16,
-    borderRadius: 20,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backdropFilter: 'blur(10px)',
+    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+    padding: 12,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
-  name: {
-    color: colors.text,
+  metricContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
-  country: {
-    color: colors.textSecondary,
-    marginTop: 2,
+  iconWrapper: {
+    padding: 6,
+    borderRadius: 10,
+  },
+  metricText: {
+    color: '#FFFFFF',
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.5,
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    gap: 4,
   },
   ratingText: {
-    color: colors.text,
-    fontSize: 12,
-    fontWeight: '700',
-    marginLeft: 4,
+    color: '#EFBF04',
+    fontSize: 13,
+    fontWeight: '900',
   },
 });
+

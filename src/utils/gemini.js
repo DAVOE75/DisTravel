@@ -23,7 +23,7 @@ export const GeminiService = {
     if (apiKey || envKey) {
       const activeKey = apiKey || envKey;
       console.log(`[Gemini] Attempting with key: ${activeKey.substring(0, 8)}...`);
-      const models = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.5-flash-8b'];
+      const models = ['gemini-2.0-flash-exp', 'gemini-1.5-flash-latest', 'gemini-1.5-pro-latest', 'gemini-1.5-flash-8b-latest'];
       for (const model of models) {
         const res = await this.tryGemini(prompt, activeKey, model, base64Image);
         if (res && res.length > 50) {
@@ -44,7 +44,7 @@ export const GeminiService = {
   },
 
   async tryGemini(prompt, key, model, image) {
-    const versions = ['v1', 'v1beta'];
+    const versions = ['v1beta', 'v1'];
     
     for (const version of versions) {
       const url = `https://generativelanguage.googleapis.com/${version}/models/${model}:generateContent?key=${key}`;
@@ -108,7 +108,7 @@ export const GeminiService = {
       const response = await fetch('http://82.223.44.196:3000/api/gemini', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt, modelName: 'gemini-2.0-flash' }),
+        body: JSON.stringify({ prompt, modelName: 'gemini-2.0-flash-exp' }),
         signal: controller.signal
       });
       clearTimeout(timeoutId);
@@ -352,7 +352,7 @@ export const GeminiService = {
       web: "https://sagradafamilia.org",
       phone: "+34 932 080 414",
       description: "La Basílica de la Sagrada Familia es un gran templo católico de Barcelona, diseñado por el arquitecto Antoni Gaudí. Iniciada en 1882, todavía está en construcción. Es la obra maestra de Gaudí y el máximo exponente de la arquitectura modernista catalana.",
-      history: "Gaudí asumió el proyecto en 1883, dedicando los últimos 43 años de su vida exclusivamente a esta obra. Tras su muerte en 1926, el proyecto continuó bajo diversos arquitectos siguiendo sus planos originales, enfrentándose a incendios y desafíos técnicos monumentales.",
+      history: "Gaudí asumió el proyecto en 1883, dedicando los últimos 43 años de su vida exclusivamente a esta obra. Tras su muerte in 1926, el proyecto continuó bajo diversos arquitectos siguiendo sus planos originales, enfrentándose a incendios y desafíos técnicos monumentales.",
       tariffs: [
         { id: "s1", preset: "general", label: "General con APP", price: "26.00" },
         { id: "s2", preset: "disability", label: "PCD + Acompañante", price: "0.00" }
@@ -450,7 +450,6 @@ export const GeminiService = {
       festivities: "El calendario festivo es amplio, destacando la Fiesta Mayor, ferias de artesanía y celebraciones tradicionales que involucran a toda la comunidad en eventos inclusivos.",
       transports: { bus: true, taxi: true, tram: false, train: false, plane: false, details: "Servicio de transporte local disponible con flota parcialmente adaptada para PMR." },
       fiesta: "Fiestas Mayores Patronales",
-      fiesta_date: "Variable (consultar calendario)",
       population: "Datos según último censo municipal",
       isMock: true
     };

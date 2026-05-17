@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import * as Speech from 'expo-speech';
 import { 
   StyleSheet, 
   Text, 
@@ -16,7 +17,6 @@ import {
   Animated,
   Keyboard
 } from 'react-native';
-import { useRef } from 'react';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
 import { GeminiService } from '../utils/gemini';
@@ -57,13 +57,19 @@ import {
   Thermometer,
   Wind,
   MessageCircle,
-  MessageSquare
+  MessageSquare,
+  Gift,
+  HandHelping,
+  Flag,
+  Volume2,
+  VolumeX
 } from 'lucide-react-native';
 import { MONUMENTOS } from '../data/monumentos';
 import { CIUDADES_PREMIUM } from '../data/ciudades';
 import { typography } from '../theme/typography';
 import { calculatePlaceSavings } from '../utils/savings';
 import * as ImagePicker from 'expo-image-picker';
+import { API_BASE_URL } from '../config/api';
 
 import * as Location from 'expo-location';
 import { AutonomousCommunityMap } from '../components/AutonomousCommunityMap';
@@ -111,12 +117,13 @@ const InfoModal = ({ visible, onClose, title, content, theme, icon: Icon }) => (
 export function CityDetailScreen({ route, navigation }) {
   const { city } = route.params;
   const { theme } = useTheme();
-  const { userData, updateUserData } = useUser();
+  const { userData, updateUserData, uploadImageToServer } = useUser();
   const isAdmin = userData?.isAdmin || false;
   
   const [modalVisible, setModalVisible] = useState(false);
   const [modalData, setModalData] = useState({ title: '', content: '', icon: Info });
   const [cityCoords, setCityCoords] = useState(null);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   
   // Helper para el estado del lugar (Sincronizado con PlaceDetail)
   const getPlaceStatus = (p) => {
@@ -143,10 +150,29 @@ export function CityDetailScreen({ route, navigation }) {
 
     if (p.structuredSchedules && p.structuredSchedules.length > 0) {
       const season = p.structuredSchedules.find(s => {
+        if (s.startDate && s.endDate) {
+          const currentYear = now.getFullYear();
+          const startParts = s.startDate.split('-');
+          const endParts = s.endDate.split('-');
+          
+          const start = new Date(currentYear, parseInt(startParts[1]) - 1, parseInt(startParts[2]), 0, 0, 0);
+          const end = new Date(currentYear, parseInt(endParts[1]) - 1, parseInt(endParts[2]), 23, 59, 59);
+          
+          if (start <= end) {
+            return now >= start && now <= end;
+          } else {
+            const nextYearEnd = new Date(currentYear + 1, parseInt(endParts[1]) - 1, parseInt(endParts[2]), 23, 59, 59);
+            const prevYearStart = new Date(currentYear - 1, parseInt(startParts[1]) - 1, parseInt(startParts[2]), 0, 0, 0);
+            return (now >= start && now <= nextYearEnd) || (now >= prevYearStart && now <= end);
+          }
+        }
         const sM = parseInt(s.startMonth);
         const eM = parseInt(s.endMonth);
-        if (sM <= eM) return currentMonth >= sM && currentMonth <= eM;
-        return currentMonth >= sM || currentMonth <= eM;
+        if (!isNaN(sM) && !isNaN(eM)) {
+          if (sM <= eM) return currentMonth >= sM && currentMonth <= eM;
+          return currentMonth >= sM || currentMonth <= eM;
+        }
+        return false;
       });
 
       if (season && season.days) {
@@ -200,6 +226,23 @@ export function CityDetailScreen({ route, navigation }) {
     ...premiumMatch,
     ...customData
   });
+
+  // Cargar datos del servidor
+  useEffect(() => {
+    const fetchLatestCityData = async () => {
+      if (!city.id) return;
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/municipalities/${city.id}`);
+        if (response.ok) {
+          const latest = await response.json();
+          setTempCityData(prev => ({ ...prev, ...latest }));
+        }
+      } catch (err) {
+        console.warn("Error sincronizando ciudad con servidor:", err);
+      }
+    };
+    fetchLatestCityData();
+  }, [city.id]);
 
   // Cargar datos extendidos del servidor
   useEffect(() => {
@@ -255,8 +298,8 @@ export function CityDetailScreen({ route, navigation }) {
           const data = await response.json();
           if (data && data.length > 0) {
             const mapped = data.map(p => ({
-              ...p,
               ...p.extra_data,
+              ...p,
               isPlace: true
             }));
             setServerPlaces(mapped);
@@ -287,10 +330,31 @@ export function CityDetailScreen({ route, navigation }) {
 
   // Determinar la región si falta
   const effectiveRegion = useMemo(() => {
-    if (tempCityData.region) return tempCityData.region;
-    if (tempCityData.province) return PROVINCE_TO_REGION[tempCityData.province] || tempCityData.province;
-    return tempCityData.name || 'Ciudad'; // Fallback dinámico
-  }, [tempCityData.region, tempCityData.province]);
+    const name = (tempCityData.name || city.name || '').toLowerCase();
+    const prov = (tempCityData.province || '').toLowerCase();
+    if (name.includes('alicante') || prov.includes('alicante')) return 'Valencia';
+    return PROVINCE_TO_REGION[tempCityData.province] || tempCityData.province || 'Comunidad Valenciana';
+  }, [tempCityData.province, tempCityData.name, city.name]);
+
+  // Audio Guía Logic
+  const toggleSpeech = async () => {
+    if (isSpeaking) {
+      Speech.stop();
+      setIsSpeaking(false);
+    } else {
+      const textToSpeak = tempCityData.description || `Bienvenido a ${tempCityData.name || city.name}. Ciudad rica en historia y cultura.`;
+      setIsSpeaking(true);
+      Speech.speak(textToSpeak, {
+        language: 'es',
+        onDone: () => setIsSpeaking(false),
+        onError: () => setIsSpeaking(false),
+      });
+    }
+  };
+
+  useEffect(() => {
+    return () => Speech.stop();
+  }, []);
 
   // Geocodificar la ciudad para el mapa
   useEffect(() => {
@@ -469,9 +533,41 @@ export function CityDetailScreen({ route, navigation }) {
       const newImage = result.assets[0].uri;
       setTempCityData(prev => ({ ...prev, image: newImage }));
       
-      // Persistir en perfil
       const cityName = displayCityData.name || city.name;
       const cityKey = normalize(cityName);
+
+      // 1. Intentar subir al servidor si somos admin
+      if (isAdmin) {
+        try {
+          const publicUrl = await uploadImageToServer(newImage);
+          if (publicUrl) {
+            let targetId = tempCityData.id || city.id;
+            
+            // Si no tenemos ID, lo buscamos en el servidor por nombre
+            if (!targetId) {
+              const findRes = await fetch(`${API_BASE_URL}/api/municipalities?search=${encodeURIComponent(cityName)}&limit=1`);
+              if (findRes.ok) {
+                const found = await findRes.json();
+                if (found && found.length > 0) targetId = found[0].id;
+              }
+            }
+
+            if (targetId) {
+              console.log(`[CLIENT] Patching city ${targetId} with ${publicUrl}`);
+              await fetch(`${API_BASE_URL}/api/municipalities/${targetId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ image_url: publicUrl })
+              });
+              console.log("Imagen oficial de ciudad actualizada en servidor");
+            }
+          }
+        } catch (err) {
+          console.warn("Error subiendo imagen oficial al servidor:", err);
+        }
+      }
+      
+      // 2. Persistir en perfil local (fallback y personalización)
       updateUserData('customCityData', (prevData) => {
         const current = prevData || {};
         return {
@@ -484,7 +580,7 @@ export function CityDetailScreen({ route, navigation }) {
         };
       });
       
-      Alert.alert("¡Imagen actualizada!", "La foto se ha guardado en tu perfil.");
+      Alert.alert("¡Imagen actualizada!", "La foto se ha guardado correctamente.");
     }
   };
 
@@ -756,16 +852,27 @@ export function CityDetailScreen({ route, navigation }) {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.heroContent}>
-            {/* Map Component */}
+          {/* CAPA 1: MAPA REGIONAL (DESPLAZADO A LA DERECHA) */}
+          <View style={{ 
+            position: 'absolute', 
+            top: '25%', 
+            right: -20, // Desplazado a la derecha
+            width: '100%',
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+            zIndex: 1,
+            opacity: 0.8
+          }}>
             <AutonomousCommunityMap 
               regionName={effectiveRegion} 
-              cityCoords={cityCoords}
-              width={140}
-              height={140}
+              cityCoords={displayCityData.coords || cityCoords}
+              width={200}
+              height={160}
             />
-            
-            {/* City Name inside Hero */}
+          </View>
+
+          <View style={styles.heroContent}>
+            {/* City Name inside Hero - Capa superior */}
             <Text style={styles.heroCityNameInside}>
               {displayCityData.name}
             </Text>
@@ -789,10 +896,25 @@ export function CityDetailScreen({ route, navigation }) {
         </View>
 
         <View style={[styles.locationBar, { backgroundColor: '#EFBF04' }]}>
-          <MapPin color="#0A192F" size={18} />
-          <Text style={styles.locationBarText}>
-            {displayCityData.province || 'Alicante'} / <Text style={{ fontWeight: '800' }}>ESPAÑA</Text>
-          </Text>
+          <TouchableOpacity 
+            style={{ flexDirection: 'row', alignItems: 'center', flex: 1, justifyContent: 'center' }}
+            onPress={() => navigation.navigate('Map', { city: displayCityData })}
+          >
+            <MapPin color="#0A192F" size={18} />
+            <Text style={styles.locationBarText}>
+              {(displayCityData.province || 'ALICANTE').toUpperCase()} / <Text style={{ fontWeight: '800' }}>MAPA</Text>
+            </Text>
+          </TouchableOpacity>
+
+          <View style={{ width: 1, height: 20, backgroundColor: 'rgba(10, 25, 47, 0.15)', marginHorizontal: 12 }} />
+          
+          <TouchableOpacity 
+            onPress={toggleSpeech}
+            style={{ flexDirection: 'row', alignItems: 'center', paddingRight: 20 }}
+          >
+            {isSpeaking ? <VolumeX color="#0A192F" size={20} /> : <Volume2 color="#0A192F" size={20} />}
+            <Text style={{ color: '#0A192F', fontWeight: '800', fontSize: 11, marginLeft: 6 }}>AUDIO</Text>
+          </TouchableOpacity>
         </View>
 
         {/* FIESTAS PATRONALES STRIP */}
@@ -953,6 +1075,41 @@ export function CityDetailScreen({ route, navigation }) {
             </ScrollView>
           </View>
 
+          {/* SECCIÓN DE AYUDA Y OFERTAS PCD */}
+          <View style={{ marginBottom: 35 }}>
+            <View style={styles.sectionHeader}>
+              <Text style={[styles.sectionTitle, { color: theme.text, marginBottom: 5 }]}>
+                Ayuda en tu Viaje: Ofertas PCD
+              </Text>
+              <Gift color={theme.primary} size={22} />
+            </View>
+            <Text style={{ color: theme.textSecondary, fontSize: 14, marginBottom: 15, fontStyle: 'italic' }}>
+              Descubre lugares con los mejores beneficios para tu grado de discapacidad en {displayCityData.name || city.name || 'esta ciudad'}.
+            </Text>
+            
+            <View style={[styles.offerBanner, { backgroundColor: theme.primary + '15', borderColor: theme.primary }]}>
+              <HandHelping color={theme.primary} size={24} />
+              <View style={{ flex: 1, marginLeft: 12 }}>
+                <Text style={[styles.offerTitle, { color: theme.text }]}>¿Sabías que...?</Text>
+                <Text style={[styles.offerDesc, { color: theme.textSecondary }]}>
+                  En la mayoría de museos de {displayCityData.name || city.name || 'esta ciudad'}, si tienes un grado de discapacidad mayor al 33%, la entrada suele ser gratuita para ti y un acompañante. ¡Aprovecha estos beneficios!
+                </Text>
+              </View>
+            </View>
+
+            <TouchableOpacity 
+              style={[styles.actionCard, { backgroundColor: theme.surface, marginTop: 15 }]}
+              onPress={() => navigation.navigate('Map', { city })}
+            >
+              <Zap color="#F1C40F" size={24} />
+              <View style={{ flex: 1, marginLeft: 15 }}>
+                <Text style={[styles.actionCardTitle, { color: theme.text }]}>Ver Mapa de Beneficios</Text>
+                <Text style={{ color: theme.textSecondary, fontSize: 12 }}>Identifica por colores los sitios gratis (Verde) y reducidos (Azul).</Text>
+              </View>
+              <ChevronRight color={theme.textSecondary} size={20} />
+            </TouchableOpacity>
+          </View>
+
           <ScrollView 
             horizontal 
             showsHorizontalScrollIndicator={false} 
@@ -1006,7 +1163,12 @@ export function CityDetailScreen({ route, navigation }) {
                         Tip IA: Mejor acceso a las 10:00 AM
                       </Text>
                     )}
-                    <Text style={styles.placeCardName} numberOfLines={2}>{place.name}</Text>
+                    <Text style={styles.placeCardName} numberOfLines={1}>{place.name}</Text>
+                    {place.address && (
+                      <Text style={styles.placeCardAddress} numberOfLines={1}>
+                        <MapPin size={10} color="rgba(255,255,255,0.7)" /> {place.address}
+                      </Text>
+                    )}
                     <View style={styles.placeCardTag}>
                       <Text style={styles.placeCardTagText}>{place.category || 'Monumento'}</Text>
                     </View>
@@ -1070,10 +1232,16 @@ export function CityDetailScreen({ route, navigation }) {
               <Bath color="#FFF" size={20} />
             </TouchableOpacity>
             <TouchableOpacity 
-              style={[styles.miniFab, { backgroundColor: '#F1C40F' }]} 
-              onPress={() => { toggleMenu(); navigation.navigate('Report'); }}
+              style={[styles.miniFab, { backgroundColor: '#FF9500' }]} 
+              onPress={() => { 
+                toggleMenu(); 
+                Alert.alert("Reportar Error", "¿Has encontrado información incorrecta sobre esta ciudad?", [
+                  { text: "Cancelar", style: "cancel" },
+                  { text: "Reportar", onPress: () => Alert.alert("Enviado", "Gracias por ayudarnos a mantener Distravel actualizado.") }
+                ]);
+              }}
             >
-              <ShieldCheck color="#070B14" size={20} />
+              <Flag color="#FFF" size={20} />
             </TouchableOpacity>
             <TouchableOpacity 
               style={[styles.miniFab, { backgroundColor: theme.primary }]} 
@@ -1322,7 +1490,7 @@ const styles = StyleSheet.create({
   description: { 
     fontSize: 16, 
     lineHeight: 24, 
-    textAlign: 'center',
+    textAlign: 'justify',
     marginBottom: 10 
   },
   readMore: {
@@ -1433,10 +1601,19 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '900',
     color: '#FFFFFF',
-    marginBottom: 6,
+    marginBottom: 4,
     textShadowColor: 'rgba(0,0,0,0.5)',
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 4,
+  },
+  placeCardAddress: {
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.8)',
+    fontWeight: '600',
+    marginBottom: 10,
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   placeCardTag: {
     backgroundColor: 'rgba(255,255,255,0.2)',
@@ -1470,7 +1647,7 @@ const styles = StyleSheet.create({
   modalIconBox: { width: 50, height: 50, borderRadius: 15, justifyContent: 'center', alignItems: 'center' },
   modalTitle: { marginLeft: 15, flex: 1 },
   modalBody: { flex: 1 },
-  modalText: { fontSize: 17, lineHeight: 28 },
+  modalText: { fontSize: 17, lineHeight: 28, textAlign: 'justify' },
   closeButton: { padding: 8, borderRadius: 12, backgroundColor: 'rgba(0,0,0,0.05)' },
   transportCard: {
     width: 140,

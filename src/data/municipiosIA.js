@@ -3,6 +3,7 @@ export const REAL_CITY_DATA = {
     "name": "Alicante / Alacant",
     "province": "Alicante",
     "region": "Comunidad Valenciana",
+    "coords": { "latitude": 38.3452, "longitude": -0.4815 },
     "population": "338.577",
     "fiesta": "Fogueres de Sant Joan",
     "fiesta_date": "20-24 de Junio",
@@ -18,6 +19,7 @@ export const REAL_CITY_DATA = {
     "name": "Madrid",
     "province": "Madrid",
     "region": "Comunidad de Madrid",
+    "coords": { "latitude": 40.4168, "longitude": -3.7038 },
     "population": "3.332.035",
     "fiesta": "San Isidro Labrador",
     "fiesta_date": "15 de Mayo"
