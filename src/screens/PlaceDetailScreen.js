@@ -28,6 +28,7 @@ import { typography } from '../theme/typography';
 import { GeminiService } from '../utils/gemini';
 import { calculatePlaceSavings } from '../utils/savings';
 import * as ImagePicker from 'expo-image-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 // Fallback seguro para react-native-maps
 let MapViewRaw, MarkerRaw;
@@ -182,6 +183,19 @@ export function PlaceDetailScreen({ route, navigation }) {
       .replace(/y/g, 'i');
   };
 
+  const getSeasonPeriodText = (season) => {
+    if (!season) return 'Todo el año';
+    if (season.startDate && season.endDate) {
+      const startDM = season.startDate.split('-').reverse().slice(0,2).join('/');
+      const endDM = season.endDate.split('-').reverse().slice(0,2).join('/');
+      return `${startDM} al ${endDM}`;
+    }
+    if (season.startMonth && season.endMonth) {
+      return `${season.startMonth} - ${season.endMonth}`;
+    }
+    return season.period || 'Todo el año';
+  };
+
   const placeFromContext = (userData?.contributions || []).find(p => 
     p.id === navigationPlace.id || (p.name === navigationPlace.name && p.city === navigationPlace.city)
   );
@@ -191,6 +205,7 @@ export function PlaceDetailScreen({ route, navigation }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [place, setPlace] = useState(initialPlace);
+  const [datePickerState, setDatePickerState] = useState({ visible: false, seasonIdx: null, field: null, value: new Date() });
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -1759,9 +1774,11 @@ export function PlaceDetailScreen({ route, navigation }) {
                   style={styles.addSeasonBtn}
                   onPress={() => {
                     const newSeason = {
-                      name: 'Nueva Temporada',
-                      startMonth: 'Enero',
-                      endMonth: 'Diciembre',
+                      id: Date.now().toString(),
+                      name: (displayPlace.structuredSchedules || []).length === 0 ? 'Horario General' : 'Nueva Temporada',
+                      startDate: '',
+                      endDate: '',
+                      period: 'Todo el año',
                       days: {
                         1: { isOpen: true, mOpen: '10:00', mClose: '14:00', aOpen: '16:00', aClose: '20:00' },
                         2: { isOpen: true, mOpen: '10:00', mClose: '14:00', aOpen: '16:00', aClose: '20:00' },
@@ -1785,7 +1802,7 @@ export function PlaceDetailScreen({ route, navigation }) {
               <View key={sIdx} style={[styles.structuredSeasonCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
                 <View style={styles.seasonHeaderRow}>
                   {isEditing ? (
-                    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                    <View style={{ flex: 1, flexDirection: 'column', gap: 8 }}>
                       <TextInput 
                         style={[styles.seasonNameInput, { color: theme.primary }]}
                         value={season.name}
@@ -1794,43 +1811,43 @@ export function PlaceDetailScreen({ route, navigation }) {
                           newSchedules[sIdx].name = v;
                           setPlace({ ...place, structuredSchedules: newSchedules });
                         }}
+                        placeholder="Nombre de Temporada"
+                        placeholderTextColor={theme.textSecondary}
                       />
-                      <Text style={{ color: theme.textSecondary, fontSize: 12 }}>De mes:</Text>
-                      <TouchableOpacity 
-                        style={[styles.monthSelector, { borderColor: theme.border, backgroundColor: theme.background }]}
-                        onPress={() => setPickerModal({
-                          visible: true,
-                          title: 'Seleccionar Mes de Inicio',
-                          options: MONTHS,
-                          onSelect: (val) => {
-                            const newSchedules = [...displayPlace.structuredSchedules];
-                            newSchedules[sIdx].startMonth = val;
-                            setPlace({ ...place, structuredSchedules: newSchedules });
-                          }
-                        })}
-                      >
-                        <Text style={[styles.monthSelectorText, { color: theme.text }]}>{season.startMonth}</Text>
-                      </TouchableOpacity>
-                      
-                      <Text style={{ color: theme.textSecondary, fontSize: 12 }}>A:</Text>
-                      <TouchableOpacity 
-                        style={[styles.monthSelector, { borderColor: theme.border, backgroundColor: theme.background }]}
-                        onPress={() => setPickerModal({
-                          visible: true,
-                          title: 'Seleccionar Mes de Fin',
-                          options: MONTHS,
-                          onSelect: (val) => {
-                            const newSchedules = [...displayPlace.structuredSchedules];
-                            newSchedules[sIdx].endMonth = val;
-                            setPlace({ ...place, structuredSchedules: newSchedules });
-                          }
-                        })}
-                      >
-                        <Text style={[styles.monthSelectorText, { color: theme.text }]}>{season.endMonth}</Text>
-                      </TouchableOpacity>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                        <Text style={{ color: theme.textSecondary, fontSize: 12 }}>Desde:</Text>
+                        <TouchableOpacity 
+                          style={[styles.monthSelector, { borderColor: theme.border, backgroundColor: theme.background, flex: 1 }]}
+                          onPress={() => setDatePickerState({
+                            visible: true,
+                            seasonIdx: sIdx,
+                            field: 'startDate',
+                            value: season.startDate ? new Date(season.startDate) : new Date()
+                          })}
+                        >
+                          <Text style={[styles.monthSelectorText, { color: theme.text }]}>
+                            {season.startDate ? season.startDate.split('-').reverse().join('/') : 'Seleccionar'}
+                          </Text>
+                        </TouchableOpacity>
+                        
+                        <Text style={{ color: theme.textSecondary, fontSize: 12 }}>Hasta:</Text>
+                        <TouchableOpacity 
+                          style={[styles.monthSelector, { borderColor: theme.border, backgroundColor: theme.background, flex: 1 }]}
+                          onPress={() => setDatePickerState({
+                            visible: true,
+                            seasonIdx: sIdx,
+                            field: 'endDate',
+                            value: season.endDate ? new Date(season.endDate) : new Date()
+                          })}
+                        >
+                          <Text style={[styles.monthSelectorText, { color: theme.text }]}>
+                            {season.endDate ? season.endDate.split('-').reverse().join('/') : 'Seleccionar'}
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
                     </View>
                   ) : (
-                    <Text style={[styles.seasonTitle, { color: theme.primary }]}>{season.name} ({season.startMonth}-{season.endMonth})</Text>
+                    <Text style={[styles.seasonTitle, { color: theme.primary }]}>{season.name} ({getSeasonPeriodText(season)})</Text>
                   )}
                   {isEditing && (
                     <TouchableOpacity onPress={() => {
@@ -2562,6 +2579,34 @@ export function PlaceDetailScreen({ route, navigation }) {
           </View>
         </TouchableOpacity>
       </Modal>
+
+      {datePickerState.visible && (
+        <DateTimePicker
+          value={datePickerState.value || new Date()}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={(event, selectedDate) => {
+            setDatePickerState(prev => ({ ...prev, visible: false }));
+            if (selectedDate && datePickerState.seasonIdx !== null && datePickerState.field) {
+              const yyyy = selectedDate.getFullYear();
+              const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
+              const dd = String(selectedDate.getDate()).padStart(2, '0');
+              const dateStr = `${yyyy}-${mm}-${dd}`;
+              
+              const newSchedules = [...displayPlace.structuredSchedules];
+              const updatedSeason = newSchedules[datePickerState.seasonIdx];
+              updatedSeason[datePickerState.field] = dateStr;
+              
+              // Auto-format human-friendly period
+              const startDM = updatedSeason.startDate ? updatedSeason.startDate.split('-').reverse().slice(0,2).join('/') : '';
+              const endDM = updatedSeason.endDate ? updatedSeason.endDate.split('-').reverse().slice(0,2).join('/') : '';
+              updatedSeason.period = startDM && endDM ? `${startDM} al ${endDM}` : 'Todo el año';
+              
+              setPlace({ ...place, structuredSchedules: newSchedules });
+            }
+          }}
+        />
+      )}
 
       {isAiProcessing && (
         <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.85)', zIndex: 10000, justifyContent: 'center', alignItems: 'center' }}>

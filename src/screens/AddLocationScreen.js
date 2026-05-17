@@ -21,6 +21,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../theme/ThemeContext';
 import { useUser } from '../context/UserContext';
 import * as LucideIcons from 'lucide-react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 // Normalización de iconos para evitar "Render Error"
 const getIcon = (name) => LucideIcons[name]?.default || LucideIcons[name] || LucideIcons.Info;
@@ -131,6 +132,7 @@ export default function AddLocationScreen({ navigation, route }) {
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiProgress, setAiProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [datePickerState, setDatePickerState] = useState({ visible: false, seasonIdx: null, field: null, value: new Date() });
   const [showSuccess, setShowSuccess] = useState(false);
   const mapRef = useRef(null);
 
@@ -434,9 +436,11 @@ export default function AddLocationScreen({ navigation, route }) {
 
   const handleAddSeason = () => {
     const newSeason = {
-      name: formData.structuredSchedules.length === 0 ? 'Horario General' : 'Temporada Alta',
-      startMonth: 'Enero',
-      endMonth: 'Diciembre',
+      id: Date.now().toString(),
+      name: formData.structuredSchedules.length === 0 ? 'Horario General' : 'Nueva Temporada',
+      startDate: '',
+      endDate: '',
+      period: 'Todo el año',
       days: {
         1: { isOpen: true, mOpen: '10:00', mClose: '14:00', aOpen: '16:00', aClose: '20:00' },
         2: { isOpen: true, mOpen: '10:00', mClose: '14:00', aOpen: '16:00', aClose: '20:00' },
@@ -974,38 +978,35 @@ export default function AddLocationScreen({ navigation, route }) {
                   </TouchableOpacity>
                 </View>
 
-                <View style={styles.monthRow}>
-                  <Text style={{ color: theme.textSecondary, fontSize: 12 }}>De:</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginVertical: 10 }}>
+                  <Text style={{ color: theme.textSecondary, fontSize: 12 }}>Desde:</Text>
                   <TouchableOpacity 
-                    style={[styles.selector, { borderColor: theme.border, backgroundColor: theme.background }]}
-                    onPress={() => setPickerModal({
+                    style={[styles.selector, { borderColor: theme.border, backgroundColor: theme.background, flex: 1 }]}
+                    onPress={() => setDatePickerState({
                       visible: true,
-                      title: 'Mes de Inicio',
-                      options: MONTHS,
-                      onSelect: (val) => {
-                        const newSchedules = [...formData.structuredSchedules];
-                        newSchedules[sIdx].startMonth = val;
-                        setFormData(prev => ({ ...prev, structuredSchedules: newSchedules }));
-                      }
+                      seasonIdx: sIdx,
+                      field: 'startDate',
+                      value: season.startDate ? new Date(season.startDate) : new Date()
                     })}
                   >
-                    <Text style={{ color: theme.text, fontSize: 12, fontWeight: '700' }}>{season.startMonth}</Text>
+                    <Text style={{ color: theme.text, fontSize: 12, fontWeight: '700' }}>
+                      {season.startDate ? season.startDate.split('-').reverse().join('/') : 'Seleccionar'}
+                    </Text>
                   </TouchableOpacity>
-                  <Text style={{ color: theme.textSecondary, fontSize: 12 }}>A:</Text>
+                  
+                  <Text style={{ color: theme.textSecondary, fontSize: 12 }}>Hasta:</Text>
                   <TouchableOpacity 
-                    style={[styles.selector, { borderColor: theme.border, backgroundColor: theme.background }]}
-                    onPress={() => setPickerModal({
+                    style={[styles.selector, { borderColor: theme.border, backgroundColor: theme.background, flex: 1 }]}
+                    onPress={() => setDatePickerState({
                       visible: true,
-                      title: 'Mes de Fin',
-                      options: MONTHS,
-                      onSelect: (val) => {
-                        const newSchedules = [...formData.structuredSchedules];
-                        newSchedules[sIdx].endMonth = val;
-                        setFormData(prev => ({ ...prev, structuredSchedules: newSchedules }));
-                      }
+                      seasonIdx: sIdx,
+                      field: 'endDate',
+                      value: season.endDate ? new Date(season.endDate) : new Date()
                     })}
                   >
-                    <Text style={{ color: theme.text, fontSize: 12, fontWeight: '700' }}>{season.endMonth}</Text>
+                    <Text style={{ color: theme.text, fontSize: 12, fontWeight: '700' }}>
+                      {season.endDate ? season.endDate.split('-').reverse().join('/') : 'Seleccionar'}
+                    </Text>
                   </TouchableOpacity>
                 </View>
 
@@ -1514,6 +1515,34 @@ export default function AddLocationScreen({ navigation, route }) {
           </View>
         </TouchableOpacity>
       </Modal>
+
+      {datePickerState.visible && (
+        <DateTimePicker
+          value={datePickerState.value || new Date()}
+          mode="date"
+          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          onChange={(event, selectedDate) => {
+            setDatePickerState(prev => ({ ...prev, visible: false }));
+            if (selectedDate && datePickerState.seasonIdx !== null && datePickerState.field) {
+              const yyyy = selectedDate.getFullYear();
+              const mm = String(selectedDate.getMonth() + 1).padStart(2, '0');
+              const dd = String(selectedDate.getDate()).padStart(2, '0');
+              const dateStr = `${yyyy}-${mm}-${dd}`;
+              
+              const newSchedules = [...formData.structuredSchedules];
+              const updatedSeason = newSchedules[datePickerState.seasonIdx];
+              updatedSeason[datePickerState.field] = dateStr;
+              
+              // Auto-format human-friendly period
+              const startDM = updatedSeason.startDate ? updatedSeason.startDate.split('-').reverse().slice(0,2).join('/') : '';
+              const endDM = updatedSeason.endDate ? updatedSeason.endDate.split('-').reverse().slice(0,2).join('/') : '';
+              updatedSeason.period = startDM && endDM ? `${startDM} al ${endDM}` : 'Todo el año';
+              
+              setFormData(prev => ({ ...prev, structuredSchedules: newSchedules }));
+            }
+          }}
+        />
+      )}
 
       <>
         {isAiLoading && (
