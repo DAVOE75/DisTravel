@@ -6,7 +6,8 @@ import {
   Image as ImageIcon,
   Upload,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  PartyPopper
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -158,10 +159,27 @@ const CitiesList = () => {
                 <span className="text-[11px] font-black uppercase tracking-widest">{city.province || 'Comunidad Valenciana'}</span>
               </div>
               
+              {/* Fiestas Patronales */}
+              <div className="mt-4 flex flex-col gap-1 text-slate-500 dark:text-slate-400">
+                <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1">
+                  <PartyPopper size={10} className="text-indigo-500" /> Fiesta Patronal
+                </span>
+                {city.patronal_fiesta || city.fiesta ? (
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold dark:text-slate-200 line-clamp-1">{city.patronal_fiesta || city.fiesta}</span>
+                    <span className="text-[10px] text-indigo-500 font-semibold">{city.patronal_date || city.fiesta_date || 'Sin fecha'}</span>
+                  </div>
+                ) : (
+                  <span className="text-xs italic text-slate-400 dark:text-slate-500">No especificada</span>
+                )}
+              </div>
+
               <div className="mt-auto pt-6 flex items-center justify-between border-t border-slate-50 dark:border-slate-800">
                 <div className="flex flex-col">
                   <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Habitantes</span>
-                  <span className="text-sm font-black dark:text-slate-200 mt-0.5 tracking-tight">{city.population ? city.population.toLocaleString() : '---'}</span>
+                  <span className="text-sm font-black dark:text-slate-200 mt-0.5 tracking-tight">
+                    {city.population ? (isNaN(city.population) ? city.population : Number(city.population).toLocaleString()) : '---'}
+                  </span>
                 </div>
                 <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-indigo-600 group-hover:bg-indigo-50 transition-all">
                   <AlertCircle size={20} />

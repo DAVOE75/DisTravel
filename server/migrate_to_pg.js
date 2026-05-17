@@ -63,10 +63,32 @@ const migrate = async () => {
     
     for (const m of munis) {
       await pgClient.query(`
-        INSERT INTO municipalities (id, name, normalized_name, province, region, parent_code, image_url, is_verified)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-        ON CONFLICT (id) DO UPDATE SET image_url = EXCLUDED.image_url
-      `, [m.id, m.name, m.normalized_name, m.province, m.region, m.parent_code, m.image_url, m.is_verified]);
+        INSERT INTO municipalities (
+          id, name, normalized_name, province, region, parent_code, image_url, is_verified,
+          population, history, geography, climate, landscape, gastronomy, festivities, patronal_fiesta, patronal_date
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+        ON CONFLICT (id) DO UPDATE SET 
+          name = EXCLUDED.name,
+          normalized_name = EXCLUDED.normalized_name,
+          province = EXCLUDED.province,
+          region = EXCLUDED.region,
+          parent_code = EXCLUDED.parent_code,
+          population = EXCLUDED.population,
+          history = EXCLUDED.history,
+          geography = EXCLUDED.geography,
+          climate = EXCLUDED.climate,
+          landscape = EXCLUDED.landscape,
+          gastronomy = EXCLUDED.gastronomy,
+          festivities = EXCLUDED.festivities,
+          patronal_fiesta = EXCLUDED.patronal_fiesta,
+          patronal_date = EXCLUDED.patronal_date,
+          image_url = EXCLUDED.image_url,
+          is_verified = EXCLUDED.is_verified
+      `, [
+        m.id, m.name, m.normalized_name, m.province, m.region, m.parent_code, m.image_url, m.is_verified,
+        m.population, m.history, m.geography, m.climate, m.landscape, m.gastronomy, m.festivities, m.patronal_fiesta, m.patronal_date
+      ]);
     }
 
     // 3. Migrar Lugares
