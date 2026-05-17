@@ -30,7 +30,10 @@ const MANUAL_MAPPING = {
   '24_valle de ancares': '24_candin',
   '43_bisbal de montsant, la': '43_bisbal de falset, la',
   '43_rapita, la': '43_sant carles de la rapita',
-  '46_alfarb': '46_alfarp'
+  '46_alfarb': '46_alfarp',
+  '10_higuera de albalat': '10_higuera',
+  '31_romanzado/erromantzatua': '31_romanzado',
+  '46_castello': '46_villanueva de castellon'
 };
 
 async function runImport() {
@@ -134,9 +137,10 @@ async function runImport() {
         // Format to Spanish dots string: e.g. 338577 -> "338.577"
         const formattedPopulation = populationVal.toLocaleString('de-DE');
 
+        // Update database with both new official name, normalized name, and 2025 population data
         await client.query(
-          'UPDATE municipalities SET population = $1, population_int = $2 WHERE id = $3',
-          [formattedPopulation, populationVal, matchedMuni.id]
+          'UPDATE municipalities SET name = $1, normalized_name = $2, population = $3, population_int = $4 WHERE id = $5',
+          [name, normalizedName, formattedPopulation, populationVal, matchedMuni.id]
         );
         updatedCount++;
       } else {
