@@ -1826,7 +1826,7 @@ export function PlaceDetailScreen({ route, navigation }) {
                           })}
                         >
                           <Text style={[styles.monthSelectorText, { color: theme.text }]}>
-                            {season.startDate ? season.startDate.split('-').reverse().join('/') : 'Seleccionar'}
+                            {season.startDate ? season.startDate.split('-').reverse().slice(0,2).join('/') : 'Seleccionar'}
                           </Text>
                         </TouchableOpacity>
                         
@@ -1841,7 +1841,7 @@ export function PlaceDetailScreen({ route, navigation }) {
                           })}
                         >
                           <Text style={[styles.monthSelectorText, { color: theme.text }]}>
-                            {season.endDate ? season.endDate.split('-').reverse().join('/') : 'Seleccionar'}
+                            {season.endDate ? season.endDate.split('-').reverse().slice(0,2).join('/') : 'Seleccionar'}
                           </Text>
                         </TouchableOpacity>
                       </View>

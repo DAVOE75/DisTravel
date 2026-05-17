@@ -990,7 +990,7 @@ export default function AddLocationScreen({ navigation, route }) {
                     })}
                   >
                     <Text style={{ color: theme.text, fontSize: 12, fontWeight: '700' }}>
-                      {season.startDate ? season.startDate.split('-').reverse().join('/') : 'Seleccionar'}
+                      {season.startDate ? season.startDate.split('-').reverse().slice(0,2).join('/') : 'Seleccionar'}
                     </Text>
                   </TouchableOpacity>
                   
@@ -1005,7 +1005,7 @@ export default function AddLocationScreen({ navigation, route }) {
                     })}
                   >
                     <Text style={{ color: theme.text, fontSize: 12, fontWeight: '700' }}>
-                      {season.endDate ? season.endDate.split('-').reverse().join('/') : 'Seleccionar'}
+                      {season.endDate ? season.endDate.split('-').reverse().slice(0,2).join('/') : 'Seleccionar'}
                     </Text>
                   </TouchableOpacity>
                 </View>
