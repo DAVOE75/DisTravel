@@ -409,18 +409,7 @@ const PlaceModal = ({ isOpen, onClose, place, onSave }) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest">Nombre del Monumento</label>
-                      <button 
-                        type="button"
-                        onClick={handleAIGenerate}
-                        disabled={loading}
-                        className="flex items-center gap-1.5 px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[10px] font-black uppercase tracking-wider shadow-lg shadow-indigo-200 transition-all disabled:opacity-50"
-                      >
-                        <Sparkles size={12} />
-                        Auto-completar IA
-                      </button>
-                    </div>
+                    <label className="block text-[11px] font-black text-slate-400 uppercase tracking-widest mb-2">Nombre del Monumento</label>
                     <input 
                       type="text" 
                       required
