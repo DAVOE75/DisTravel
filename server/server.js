@@ -187,7 +187,7 @@ app.get('/api/municipalities', async (req, res) => {
       const p = `%${search.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "")}%`;
       params = [p, p];
     }
-    query += ` ORDER BY (image_url IS NOT NULL) DESC, population DESC LIMIT $${params.length + 1}`;
+    query += ` ORDER BY name ASC LIMIT $${params.length + 1}`;
     params.push(parseInt(limit));
     const result = await db.query(query, params);
     res.json(result.rows.map(r => ({ ...r, fiesta: r.patronal_fiesta, fiesta_date: r.patronal_date })));
